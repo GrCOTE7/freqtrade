@@ -19,7 +19,6 @@ from tests.conftest import (
     log_has_re,
 )
 
-
 spot, margin, futures = TradingMode.SPOT, TradingMode.MARGIN, TradingMode.FUTURES
 
 
@@ -520,7 +519,9 @@ def test_update_limit_order(
 
 
 @pytest.mark.usefixtures("init_persistence")
-def test_update_market_order(market_buy_order_usdt, market_sell_order_usdt, fee, caplog):
+def test_update_market_order(
+    market_buy_order_usdt, market_sell_order_usdt, fee, caplog
+):
     trade = Trade(
         id=1,
         pair="ADA/USDT",
@@ -634,7 +635,10 @@ def test_calc_open_close_trade_price(
     assert trade.funding_fees == funding_fees
     assert trade.orders[-1].funding_fee == funding_fees
 
-    assert pytest.approx(trade._calc_open_trade_value(trade.amount, trade.open_rate)) == open_value
+    assert (
+        pytest.approx(trade._calc_open_trade_value(trade.amount, trade.open_rate))
+        == open_value
+    )
     assert pytest.approx(trade.calc_close_trade_value(trade.close_rate)) == close_value
     assert pytest.approx(trade.close_profit_abs) == profit
     assert pytest.approx(trade.close_profit) == profit_ratio
@@ -859,7 +863,15 @@ def test_calc_open_trade_value(
 )
 @pytest.mark.usefixtures("init_persistence")
 def test_calc_close_trade_price(
-    open_rate, exchange, is_short, lev, close_rate, fee_rate, result, trading_mode, funding_fees
+    open_rate,
+    exchange,
+    is_short,
+    lev,
+    close_rate,
+    fee_rate,
+    result,
+    trading_mode,
+    funding_fees,
 ):
     trade = Trade(
         pair="ADA/USDT",
@@ -949,7 +961,15 @@ def test_calc_close_trade_price(
 )
 @pytest.mark.usefixtures("init_persistence")
 def test_calc_profit(
-    exchange, is_short, lev, close_rate, fee_close, profit, profit_ratio, trading_mode, funding_fees
+    exchange,
+    is_short,
+    lev,
+    close_rate,
+    fee_close,
+    profit,
+    profit_ratio,
+    trading_mode,
+    funding_fees,
 ):
     """
     10 minute limit trade on Binance/Kraken at 1x, 3x leverage
@@ -1189,7 +1209,9 @@ def test_calc_profit(
     assert pytest.approx(profit_res.total_profit_ratio) == round(profit_ratio, 8)
 
     assert pytest.approx(trade.calc_profit(rate=close_rate)) == round(profit, 8)
-    assert pytest.approx(trade.calc_profit_ratio(rate=close_rate)) == round(profit_ratio, 8)
+    assert pytest.approx(trade.calc_profit_ratio(rate=close_rate)) == round(
+        profit_ratio, 8
+    )
 
     profit_res2 = trade.calculate_profit(close_rate, trade.amount, trade.open_rate)
     assert pytest.approx(profit_res2.profit_abs) == round(profit, 8)
@@ -1198,9 +1220,9 @@ def test_calc_profit(
     assert pytest.approx(profit_res2.total_profit) == round(profit, 8)
     assert pytest.approx(profit_res2.total_profit_ratio) == round(profit_ratio, 8)
 
-    assert pytest.approx(trade.calc_profit(close_rate, trade.amount, trade.open_rate)) == round(
-        profit, 8
-    )
+    assert pytest.approx(
+        trade.calc_profit(close_rate, trade.amount, trade.open_rate)
+    ) == round(profit, 8)
     assert pytest.approx(
         trade.calc_profit_ratio(close_rate, trade.amount, trade.open_rate)
     ) == round(profit_ratio, 8)
@@ -2209,10 +2231,14 @@ def test_select_order_skip_unfilled_closed_order(fee):
     Trade.commit()
 
     # When only_filled=True, should skip order with no filled amount
-    order = trade.select_order(unfilled_order.ft_order_side, is_open=False, only_filled=True)
+    order = trade.select_order(
+        unfilled_order.ft_order_side, is_open=False, only_filled=True
+    )
     assert order is None
     # When only_filled=False, should return order with no filled amount
-    order = trade.select_order(unfilled_order.ft_order_side, is_open=False, only_filled=False)
+    order = trade.select_order(
+        unfilled_order.ft_order_side, is_open=False, only_filled=False
+    )
     assert order is not None
 
 
@@ -2236,10 +2262,14 @@ def test_select_order_only_filled_skip_wrong_status(fee):
     Trade.commit()
 
     # When only_filled=True, should skip order with non-standard status
-    order = trade.select_order(bad_status_order.ft_order_side, is_open=False, only_filled=True)
+    order = trade.select_order(
+        bad_status_order.ft_order_side, is_open=False, only_filled=True
+    )
     assert order is None
     # When only_filled=False, should return order with non-standard status
-    order = trade.select_order(bad_status_order.ft_order_side, is_open=False, only_filled=False)
+    order = trade.select_order(
+        bad_status_order.ft_order_side, is_open=False, only_filled=False
+    )
     assert order is not None
 
 
@@ -2297,7 +2327,9 @@ def test_select_order_only_filled_false_ignores_status(fee):
     Trade.commit()
 
     # With only_filled=False, should still find the order
-    found_order = trade.select_order(order.ft_order_side, is_open=False, only_filled=False)
+    found_order = trade.select_order(
+        order.ft_order_side, is_open=False, only_filled=False
+    )
 
     assert found_order is not None
 
@@ -2511,7 +2543,10 @@ def test_recalc_trade_from_orders(fee):
     assert trade.stake_amount == o1_cost + o2_cost + o3_cost
     assert trade.open_rate == avg_price
     assert pytest.approx(trade.fee_open_cost) == o1_fee_cost + o2_fee_cost + o3_fee_cost
-    assert pytest.approx(trade.open_trade_value) == o1_trade_val + o2_trade_val + o3_trade_val
+    assert (
+        pytest.approx(trade.open_trade_value)
+        == o1_trade_val + o2_trade_val + o3_trade_val
+    )
 
     # Just to make sure full sell orders are ignored, let's calculate one more time.
 
@@ -2538,7 +2573,10 @@ def test_recalc_trade_from_orders(fee):
     assert trade.stake_amount == o1_cost + o2_cost + o3_cost
     assert trade.open_rate == avg_price
     assert pytest.approx(trade.fee_open_cost) == o1_fee_cost + o2_fee_cost + o3_fee_cost
-    assert pytest.approx(trade.open_trade_value) == o1_trade_val + o2_trade_val + o3_trade_val
+    assert (
+        pytest.approx(trade.open_trade_value)
+        == o1_trade_val + o2_trade_val + o3_trade_val
+    )
 
 
 @pytest.mark.usefixtures("init_persistence")
@@ -2970,7 +3008,10 @@ def test_order_to_ccxt(limit_buy_order_open, limit_sell_order_usdt_open):
             "orders": [
                 (("buy", 100, 10), (100.0, 10.0, 1000.0, 0.0, None, None)),
                 (("buy", 100, 15), (200.0, 12.5, 2500.0, 0.0, None, None)),
-                (("sell", 50, 12), (150.0, 12.5, 1875.0, -28.0625, -28.0625, -0.011197)),
+                (
+                    ("sell", 50, 12),
+                    (150.0, 12.5, 1875.0, -28.0625, -28.0625, -0.011197),
+                ),
                 (("sell", 100, 20), (50.0, 12.5, 625.0, 713.8125, 741.875, 0.2848129)),
                 (("sell", 50, 5), (50.0, 12.5, 625.0, 336.625, -377.1875, 0.1343142)),
             ],
@@ -3123,7 +3164,8 @@ def test_close_rate_for_roi(fee, is_short, lev, trading_mode):
         amount=30.0,
         is_open=True,
         open_date=open_dt,
-        close_date=open_dt + trade_duration,  # to trigger interest calculation in margin mode
+        close_date=open_dt
+        + trade_duration,  # to trigger interest calculation in margin mode
         fee_open=fee.return_value,
         fee_close=fee.return_value,
         exchange="binance",
@@ -3135,6 +3177,6 @@ def test_close_rate_for_roi(fee, is_short, lev, trading_mode):
     )
     for roi in [0.1337, 0.5, -0.1, 0.25]:
         close_rate = trade.calc_close_rate_for_roi(roi)
-        assert roi == trade.calc_profit_ratio(close_rate), (
-            f"Failed for ROI {roi}, close_rate {close_rate}"
-        )
+        assert roi == trade.calc_profit_ratio(
+            close_rate
+        ), f"Failed for ROI {roi}, close_rate {close_rate}"

@@ -8,7 +8,6 @@ from technical import qtpylib
 
 from freqtrade.strategy import IntParameter, IStrategy, merge_informative_pair  # noqa
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -91,10 +90,18 @@ class FreqaiExampleHybridStrategy(IStrategy):
     can_short = True
 
     # Hyperoptable parameters
-    buy_rsi = IntParameter(low=1, high=50, default=30, space="buy", optimize=True, load=True)
-    sell_rsi = IntParameter(low=50, high=100, default=70, space="sell", optimize=True, load=True)
-    short_rsi = IntParameter(low=51, high=100, default=70, space="sell", optimize=True, load=True)
-    exit_short_rsi = IntParameter(low=1, high=50, default=30, space="buy", optimize=True, load=True)
+    buy_rsi = IntParameter(
+        low=1, high=50, default=30, space="buy", optimize=True, load=True
+    )
+    sell_rsi = IntParameter(
+        low=50, high=100, default=70, space="sell", optimize=True, load=True
+    )
+    short_rsi = IntParameter(
+        low=51, high=100, default=70, space="sell", optimize=True, load=True
+    )
+    exit_short_rsi = IntParameter(
+        low=1, high=50, default=30, space="buy", optimize=True, load=True
+    )
 
     def feature_engineering_expand_all(
         self, dataframe: DataFrame, period: int, metadata: dict, **kwargs
@@ -139,7 +146,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
         dataframe["%-bb_width-period"] = (
             dataframe["bb_upperband-period"] - dataframe["bb_lowerband-period"]
         ) / dataframe["bb_middleband-period"]
-        dataframe["%-close-bb_lower-period"] = dataframe["close"] / dataframe["bb_lowerband-period"]
+        dataframe["%-close-bb_lower-period"] = (
+            dataframe["close"] / dataframe["bb_lowerband-period"]
+        )
 
         dataframe["%-roc-period"] = ta.ROC(dataframe, timeperiod=period)
 
@@ -211,7 +220,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
         dataframe["%-hour_of_day"] = dataframe["date"].dt.hour
         return dataframe
 
-    def set_freqai_targets(self, dataframe: DataFrame, metadata: dict, **kwargs) -> DataFrame:
+    def set_freqai_targets(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ) -> DataFrame:
         """
         *Only functional with FreqAI enabled strategies*
         Required function to set the targets for the model.
@@ -232,7 +243,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
 
         return dataframe
 
-    def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:  # noqa: C901
+    def populate_indicators(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:  # noqa: C901
         # User creates their own custom strat here. Present example is a supertrend
         # based strategy.
 
@@ -243,16 +256,18 @@ class FreqaiExampleHybridStrategy(IStrategy):
         dataframe["rsi"] = ta.RSI(dataframe)
 
         # Bollinger Bands
-        bollinger = qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=2)
+        bollinger = qtpylib.bollinger_bands(
+            qtpylib.typical_price(dataframe), window=20, stds=2
+        )
         dataframe["bb_lowerband"] = bollinger["lower"]
         dataframe["bb_middleband"] = bollinger["mid"]
         dataframe["bb_upperband"] = bollinger["upper"]
         dataframe["bb_percent"] = (dataframe["close"] - dataframe["bb_lowerband"]) / (
             dataframe["bb_upperband"] - dataframe["bb_lowerband"]
         )
-        dataframe["bb_width"] = (dataframe["bb_upperband"] - dataframe["bb_lowerband"]) / dataframe[
-            "bb_middleband"
-        ]
+        dataframe["bb_width"] = (
+            dataframe["bb_upperband"] - dataframe["bb_lowerband"]
+        ) / dataframe["bb_middleband"]
 
         # TEMA - Triple Exponential Moving Average
         dataframe["tema"] = ta.TEMA(dataframe, timeperiod=9)
@@ -267,7 +282,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
                 & (df["tema"] <= df["bb_middleband"])  # Guard: tema below BB middle
                 & (df["tema"] > df["tema"].shift(1))  # Guard: tema is raising
                 & (df["volume"] > 0)  # Make sure Volume is not 0
-                & (df["do_predict"] == 1)  # Make sure Freqai is confident in the prediction
+                & (
+                    df["do_predict"] == 1
+                )  # Make sure Freqai is confident in the prediction
                 &
                 # Only enter trade if Freqai thinks the trend is in this direction
                 (df["&s-up_or_down"] == "up")
@@ -282,7 +299,9 @@ class FreqaiExampleHybridStrategy(IStrategy):
                 & (df["tema"] > df["bb_middleband"])  # Guard: tema above BB middle
                 & (df["tema"] < df["tema"].shift(1))  # Guard: tema is falling
                 & (df["volume"] > 0)  # Make sure Volume is not 0
-                & (df["do_predict"] == 1)  # Make sure Freqai is confident in the prediction
+                & (
+                    df["do_predict"] == 1
+                )  # Make sure Freqai is confident in the prediction
                 &
                 # Only enter trade if Freqai thinks the trend is in this direction
                 (df["&s-up_or_down"] == "down")

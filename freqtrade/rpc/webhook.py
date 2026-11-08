@@ -13,7 +13,6 @@ from freqtrade.enums import RPCMessageType
 from freqtrade.rpc import RPC, RPCHandler
 from freqtrade.rpc.rpc_types import RPCSendMsg
 
-
 logger = logging.getLogger(__name__)
 
 logger.debug("Included module rpc.webhook ...")
@@ -102,7 +101,9 @@ class Webhook(RPCHandler):
             valuedict = self._get_value_dict(msg)
 
             if not valuedict:
-                logger.debug("Message type '%s' not configured for webhooks", msg["type"])
+                logger.debug(
+                    "Message type '%s' not configured for webhooks", msg["type"]
+                )
                 return
 
             payload = self.recursive_format(valuedict, msg)

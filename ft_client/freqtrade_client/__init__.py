@@ -1,6 +1,5 @@
 from freqtrade_client.ft_rest_client import FtRestClient
 
-
 __version__ = "2026.11-dev"
 
 if "dev" in __version__:

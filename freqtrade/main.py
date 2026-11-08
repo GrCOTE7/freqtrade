@@ -7,7 +7,6 @@ Read the documentation to know what cli arguments you need.
 import logging
 import sys
 
-
 # check min. python version
 if sys.version_info < (3, 12):  # pragma: no cover  # noqa: UP036
     sys.exit("Freqtrade requires Python version >= 3.12")
@@ -15,7 +14,11 @@ if sys.version_info < (3, 12):  # pragma: no cover  # noqa: UP036
 from freqtrade import __version__
 from freqtrade.commands import Arguments
 from freqtrade.constants import DOCS_LINK
-from freqtrade.exceptions import ConfigurationError, FreqtradeException, OperationalException
+from freqtrade.exceptions import (
+    ConfigurationError,
+    FreqtradeException,
+    OperationalException,
+)
 from freqtrade.loggers import setup_logging_pre
 from freqtrade.system import (
     asyncio_setup,
@@ -23,7 +26,6 @@ from freqtrade.system import (
     print_version_info,
     set_mp_start_method,
 )
-
 
 logger = logging.getLogger("freqtrade")
 

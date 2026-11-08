@@ -20,7 +20,6 @@ from freqtrade.enums import CandleType
 from freqtrade.misc import chunks
 from freqtrade.util.datetime_helpers import dt_from_ts, dt_now
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -122,7 +121,9 @@ async def _download_archive_ohlcv(
         # the HTTP connections has been throttled by TCPConnector
         for dates in chunks(list(date_range(start, end)), 1000):
             tasks = [
-                asyncio.create_task(get_daily_ohlcv(symbol, timeframe, candle_type, date, session))
+                asyncio.create_task(
+                    get_daily_ohlcv(symbol, timeframe, candle_type, date, session)
+                )
                 for date in dates
             ]
             for task in tasks:
@@ -142,7 +143,11 @@ async def _download_archive_ohlcv(
                                 f"{e.url}. Falling back to the slower REST API, "
                                 "which may take more time."
                             )
-                            if pair in ["BTC/USDT:USDT", "ETH/USDT:USDT", "BCH/USDT:USDT"]:
+                            if pair in [
+                                "BTC/USDT:USDT",
+                                "ETH/USDT:USDT",
+                                "BCH/USDT:USDT",
+                            ]:
                                 logger.warning(
                                     f"To avoid the delay, you can first download {pair} using "
                                     "`--timerange <start date>-20200101`, and then download the "
@@ -213,7 +218,9 @@ def binance_vision_ohlcv_zip_url(
     return url
 
 
-def binance_vision_trades_zip_url(symbol: str, candle_type: CandleType, date: date) -> str:
+def binance_vision_trades_zip_url(
+    symbol: str, candle_type: CandleType, date: date
+) -> str:
     """
     example urls:
     https://data.binance.vision/data/spot/daily/aggTrades/BTCUSDT/BTCUSDT-aggTrades-2023-10-27.zip
@@ -280,11 +287,20 @@ async def get_daily_ohlcv(
                             df = pd.read_csv(
                                 csvf,
                                 usecols=[0, 1, 2, 3, 4, 5],
-                                names=["date", "open", "high", "low", "close", "volume"],
+                                names=[
+                                    "date",
+                                    "open",
+                                    "high",
+                                    "low",
+                                    "close",
+                                    "volume",
+                                ],
                                 header=header,
                             )
                             df["date"] = pd.to_datetime(
-                                np.where(df["date"] > 1e13, df["date"] // 1000, df["date"]),
+                                np.where(
+                                    df["date"] > 1e13, df["date"] // 1000, df["date"]
+                                ),
                                 unit="ms",
                                 utc=True,
                             ).as_unit("ms")
@@ -455,7 +471,9 @@ async def _download_archive_trades(
         # the HTTP connections has been throttled by TCPConnector
         for dates in chunks(list(date_range(start, end)), 30):
             tasks = [
-                asyncio.create_task(get_daily_trades(symbol, candle_type, date, session))
+                asyncio.create_task(
+                    get_daily_trades(symbol, candle_type, date, session)
+                )
                 for date in dates
             ]
             for task in tasks:
@@ -475,7 +493,11 @@ async def _download_archive_trades(
                                 f"{e.url}. Falling back to the slower REST API, "
                                 "which may take more time."
                             )
-                            if pair in ["BTC/USDT:USDT", "ETH/USDT:USDT", "BCH/USDT:USDT"]:
+                            if pair in [
+                                "BTC/USDT:USDT",
+                                "ETH/USDT:USDT",
+                                "BCH/USDT:USDT",
+                            ]:
                                 logger.warning(
                                     f"To avoid the delay, you can first download {pair} using "
                                     "`--timerange <start date>-20200101`, and then download the "

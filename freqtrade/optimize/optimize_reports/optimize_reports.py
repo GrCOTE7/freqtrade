@@ -28,8 +28,12 @@ from freqtrade.ft_types import (
     BacktestResultType,
     get_BacktestResultType_default,
 )
-from freqtrade.util import decimals_per_coin, fmt_coin, format_duration, get_dry_run_wallet
-
+from freqtrade.util import (
+    decimals_per_coin,
+    fmt_coin,
+    format_duration,
+    get_dry_run_wallet,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +97,9 @@ def generate_wallet_stats(wallet_df: DataFrame, stake_currency: str) -> dict[str
         "high_ts": int(high_date.timestamp() * 1000),
         # Drawdown metrics
         "max_drawdown_account": drawdown.relative_account_drawdown if drawdown else 0.0,
-        "max_relative_drawdown": underwater.relative_account_drawdown if underwater else 0.0,
+        "max_relative_drawdown": (
+            underwater.relative_account_drawdown if underwater else 0.0
+        ),
         "max_drawdown_abs": drawdown.drawdown_abs if drawdown else 0.0,
         "drawdown_start": (
             drawdown.high_date.strftime(DATETIME_PRINT_FORMAT)
@@ -123,7 +129,9 @@ def generate_wallet_stats(wallet_df: DataFrame, stake_currency: str) -> dict[str
 
 
 def generate_trade_signal_candles(
-    preprocessed_df: dict[str, DataFrame], bt_results: BacktestContentType, date_col: str
+    preprocessed_df: dict[str, DataFrame],
+    bt_results: BacktestContentType,
+    date_col: str,
 ) -> dict[str, DataFrame]:
     signal_candles_only = {}
     for pair, pairdf in preprocessed_df.items():
@@ -135,7 +143,9 @@ def generate_trade_signal_candles(
                 signal_candles_only[pair] = DataFrame()
                 continue
             # Last candle with date strictly before the trade date, for each trade.
-            candle_idx = pairdf["date"].searchsorted(pairresults[date_col], side="left") - 1
+            candle_idx = (
+                pairdf["date"].searchsorted(pairresults[date_col], side="left") - 1
+            )
             # Drop trades with no candle strictly before the trade date (idx < 0),
             candle_idx = candle_idx[candle_idx >= 0]
             signal_candles_only[pair] = pairdf.iloc[candle_idx].infer_objects()
@@ -214,7 +224,9 @@ def _generate_result_line(
         "wins": len(result[result["profit_abs"] > 0]),
         "draws": len(result[result["profit_abs"] == 0]),
         "losses": len(result[result["profit_abs"] < 0]),
-        "winrate": len(result[result["profit_abs"] > 0]) / len(result) if len(result) else 0.0,
+        "winrate": (
+            len(result[result["profit_abs"] > 0]) / len(result) if len(result) else 0.0
+        ),
         "cagr": calculate_cagr(backtest_days, starting_balance, final_balance),
         "expectancy": expectancy,
         "expectancy_ratio": expectancy_ratio,
@@ -233,7 +245,9 @@ def calculate_trade_volume(trades_dict: list[dict[str, Any]]) -> float:
     # Aggregate the total volume traded from orders.cost.
     # Orders is a nested dictionary within the trades list.
 
-    return sum(sum(order["cost"] for order in trade.get("orders", [])) for trade in trades_dict)
+    return sum(
+        sum(order["cost"] for order in trade.get("orders", [])) for trade in trades_dict
+    )
 
 
 def generate_pair_metrics(
@@ -267,7 +281,9 @@ def generate_pair_metrics(
         )
 
     # Sort by total profit %:
-    tabular_data = sorted(tabular_data, key=lambda k: k["profit_total_abs"], reverse=True)
+    tabular_data = sorted(
+        tabular_data, key=lambda k: k["profit_total_abs"], reverse=True
+    )
 
     # Append Total
     tabular_data.append(
@@ -278,7 +294,9 @@ def generate_pair_metrics(
 
 
 def generate_tag_metrics(
-    tag_type: Literal["enter_tag", "exit_reason"] | list[Literal["enter_tag", "exit_reason"]],
+    tag_type: (
+        Literal["enter_tag", "exit_reason"] | list[Literal["enter_tag", "exit_reason"]]
+    ),
     starting_balance: float,
     results: DataFrame,
     min_date: datetime,
@@ -296,7 +314,8 @@ def generate_tag_metrics(
     tabular_data = []
 
     if all(
-        tag in results.columns for tag in (tag_type if isinstance(tag_type, list) else [tag_type])
+        tag in results.columns
+        for tag in (tag_type if isinstance(tag_type, list) else [tag_type])
     ):
         for tags, group in results.groupby(tag_type):
             if skip_nan and group["profit_abs"].isnull().all():
@@ -307,11 +326,15 @@ def generate_tag_metrics(
             )
 
         # Sort by total profit %:
-        tabular_data = sorted(tabular_data, key=lambda k: k["profit_total_abs"], reverse=True)
+        tabular_data = sorted(
+            tabular_data, key=lambda k: k["profit_total_abs"], reverse=True
+        )
 
         # Append Total
         tabular_data.append(
-            _generate_result_line(results, min_date, max_date, starting_balance, "TOTAL")
+            _generate_result_line(
+                results, min_date, max_date, starting_balance, "TOTAL"
+            )
         )
         return tabular_data
     else:
@@ -376,14 +399,26 @@ def _calculate_stats_for_period(data: DataFrame) -> dict[str, Any]:
 def generate_periodic_breakdown_stats(
     trade_list: list | DataFrame, period: str
 ) -> list[dict[str, Any]]:
-    results = trade_list if not isinstance(trade_list, list) else DataFrame.from_records(trade_list)
+    results = (
+        trade_list
+        if not isinstance(trade_list, list)
+        else DataFrame.from_records(trade_list)
+    )
     if len(results) == 0:
         return []
 
     results["close_date"] = to_datetime(results["close_date"], utc=True)
 
     if period == "weekday":
-        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        day_names = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
         results["weekday"] = results["close_date"].dt.day_of_week
 
         stats = []
@@ -391,7 +426,9 @@ def generate_periodic_breakdown_stats(
             day_data = results[results["weekday"] == day_num]
             if len(day_data) > 0:
                 period_stats = _calculate_stats_for_period(day_data)
-                stats.append({"date": day_names[day_num], "date_ts": day_num, **period_stats})
+                stats.append(
+                    {"date": day_names[day_num], "date_ts": day_num, **period_stats}
+                )
     else:
         resample_period = _get_resample_from_period(period)
         resampled = results.resample(resample_period, on="close_date")
@@ -424,7 +461,9 @@ def calc_streak(dataframe: DataFrame) -> tuple[int, int]:
     :return: Tuple containing consecutive wins and losses
     """
 
-    df = Series(np.where(dataframe["profit_ratio"] > 0, "win", "loss")).to_frame("result")
+    df = Series(np.where(dataframe["profit_ratio"] > 0, "win", "loss")).to_frame(
+        "result"
+    )
     df["streaks"] = df["result"].ne(df["result"].shift()).cumsum().rename("streaks")
     df["counter"] = df["streaks"].groupby(df["streaks"]).cumcount() + 1
     res = df.groupby(df["result"]).max()
@@ -627,7 +666,9 @@ def generate_strategy_stats(
 
     periodic_breakdown = {}
     if not is_hyperopt:
-        periodic_breakdown = {"periodic_breakdown": generate_all_periodic_breakdown_stats(results)}
+        periodic_breakdown = {
+            "periodic_breakdown": generate_all_periodic_breakdown_stats(results)
+        }
 
     best_pair = (
         max(
@@ -670,8 +711,10 @@ def generate_strategy_stats(
         "profit_mean": results["profit_ratio"].mean() if len(results) > 0 else 0,
         "profit_median": results["profit_ratio"].median() if len(results) > 0 else 0,
         "profit_total": results["profit_abs"].sum() / start_balance,
-        "profit_total_long": results.loc[~results["is_short"], "profit_abs"].sum() / start_balance,
-        "profit_total_short": results.loc[results["is_short"], "profit_abs"].sum() / start_balance,
+        "profit_total_long": results.loc[~results["is_short"], "profit_abs"].sum()
+        / start_balance,
+        "profit_total_short": results.loc[results["is_short"], "profit_abs"].sum()
+        / start_balance,
         "profit_total_abs": results["profit_abs"].sum(),
         "profit_total_long_abs": results.loc[~results["is_short"], "profit_abs"].sum(),
         "profit_total_short_abs": results.loc[results["is_short"], "profit_abs"].sum(),
@@ -683,7 +726,9 @@ def generate_strategy_stats(
         "calmar": calculate_calmar(results, min_date, max_date, start_balance),
         "sqn": calculate_sqn(results, start_balance),
         "p_value": calculate_p_value(results, start_balance),
-        "wallet_stats": generate_wallet_stats(content.get("wallet_summary"), stake_currency),
+        "wallet_stats": generate_wallet_stats(
+            content.get("wallet_summary"), stake_currency
+        ),
         "profit_factor": profit_factor,
         "backtest_start": min_date.strftime(DATETIME_PRINT_FORMAT),
         "backtest_start_ts": int(min_date.timestamp() * 1000),
@@ -709,7 +754,9 @@ def generate_strategy_stats(
         "replaced_entry_orders": content["replaced_entry_orders"],
         "max_open_trades": max_open_trades,
         "max_open_trades_setting": (
-            config["max_open_trades"] if config["max_open_trades"] != float("inf") else -1
+            config["max_open_trades"]
+            if config["max_open_trades"] != float("inf")
+            else -1
         ),
         "timeframe": config["timeframe"],
         "timeframe_detail": config.get("timeframe_detail", ""),
@@ -722,8 +769,12 @@ def generate_strategy_stats(
         "stoploss": config["stoploss"],
         "trailing_stop": config.get("trailing_stop", False),
         "trailing_stop_positive": config.get("trailing_stop_positive"),
-        "trailing_stop_positive_offset": config.get("trailing_stop_positive_offset", 0.0),
-        "trailing_only_offset_is_reached": config.get("trailing_only_offset_is_reached", False),
+        "trailing_stop_positive_offset": config.get(
+            "trailing_stop_positive_offset", 0.0
+        ),
+        "trailing_only_offset_is_reached": config.get(
+            "trailing_only_offset_is_reached", False
+        ),
         "use_custom_stoploss": config.get("use_custom_stoploss", False),
         "minimal_roi": config["minimal_roi"],
         "use_exit_signal": config["use_exit_signal"],
@@ -743,7 +794,10 @@ def generate_strategy_stats(
         )
         # max_relative_drawdown = Underwater
         underwater = calculate_max_drawdown(
-            results, value_col="profit_abs", starting_balance=start_balance, relative=True
+            results,
+            value_col="profit_abs",
+            starting_balance=start_balance,
+            relative=True,
         )
         drawdown_duration = drawdown.low_date - drawdown.high_date
 

@@ -104,7 +104,9 @@ class ExternalMessageConsumer:
         self._running = True
         self._thread.start()
 
-        self._main_task = asyncio.run_coroutine_threadsafe(self._main(), loop=self._loop)
+        self._main_task = asyncio.run_coroutine_threadsafe(
+            self._main(), loop=self._loop
+        )
 
     def shutdown(self):
         """
@@ -189,14 +191,18 @@ class ExternalMessageConsumer:
                 async with websockets.connect(
                     ws_url, max_size=self.message_size_limit, ping_interval=None
                 ) as ws:
-                    async with create_channel(ws, channel_id=name, send_throttle=0.5) as channel:
+                    async with create_channel(
+                        ws, channel_id=name, send_throttle=0.5
+                    ) as channel:
                         # Create the message stream for this channel
                         self._channel_streams[name] = MessageStream()
 
                         # Run the channel tasks while connected
                         await channel.run_channel_tasks(
                             self._receive_messages(channel, producer, lock),
-                            self._send_requests(channel, self._channel_streams[name], producer),
+                            self._send_requests(
+                                channel, self._channel_streams[name], producer
+                            ),
                         )
 
             except (websockets.exceptions.InvalidURI, ValueError) as e:
@@ -241,11 +247,16 @@ class ExternalMessageConsumer:
         return [
             WSSubscribeRequest(data=[RPCMessageType.WHITELIST, df_topic]),
             WSWhitelistRequest(),
-            WSAnalyzedDFRequest(data={"limit": self.initial_candle_limit, "pair": None}),
+            WSAnalyzedDFRequest(
+                data={"limit": self.initial_candle_limit, "pair": None}
+            ),
         ]
 
     async def _send_requests(
-        self, channel: WebSocketChannel, channel_stream: MessageStream, producer: Producer
+        self,
+        channel: WebSocketChannel,
+        channel_stream: MessageStream,
+        producer: Producer,
     ):
         # Send the initial requests
         for init_request in self._get_initial_requests(producer):
@@ -269,7 +280,9 @@ class ExternalMessageConsumer:
         """
         while self._running:
             try:
-                message = await asyncio.wait_for(channel.recv(), timeout=self.wait_timeout)
+                message = await asyncio.wait_for(
+                    channel.recv(), timeout=self.wait_timeout
+                )
 
                 try:
                     async with lock:
@@ -283,18 +296,26 @@ class ExternalMessageConsumer:
                 try:
                     # ping
                     pong = await channel.ping()
-                    latency = await asyncio.wait_for(pong, timeout=self.ping_timeout) * 1000
+                    latency = (
+                        await asyncio.wait_for(pong, timeout=self.ping_timeout) * 1000
+                    )
 
-                    logger.info(f"Connection to {channel} still alive, latency: {latency}ms")
+                    logger.info(
+                        f"Connection to {channel} still alive, latency: {latency}ms"
+                    )
                     continue
 
                 except Exception as e:
                     # Just eat the error and continue reconnecting
-                    logger.warning(f"Ping error {channel} - {e} - retrying in {self.sleep_time}s")
+                    logger.warning(
+                        f"Ping error {channel} - {e} - retrying in {self.sleep_time}s"
+                    )
                     logger.debug(e, exc_info=e)
                     raise
 
-    def send_producer_request(self, producer_name: str, request: WSRequestSchema | dict[str, Any]):
+    def send_producer_request(
+        self, producer_name: str, request: WSRequestSchema | dict[str, Any]
+    ):
         """
         Publish a message to the producer's message stream to be
         sent by the channel task.
@@ -324,12 +345,16 @@ class ExternalMessageConsumer:
             logger.error(f"Empty message received from `{producer_name}`")
             return
 
-        logger.debug(f"Received message of type `{producer_message.type}` from `{producer_name}`")
+        logger.debug(
+            f"Received message of type `{producer_message.type}` from `{producer_name}`"
+        )
 
         message_handler = self._message_handlers.get(producer_message.type)
 
         if not message_handler:
-            logger.info(f"Received unhandled message: `{producer_message.data}`, ignoring...")
+            logger.info(
+                f"Received unhandled message: `{producer_message.data}`, ignoring..."
+            )
             return
 
         message_handler(producer_name, producer_message)
@@ -343,11 +368,17 @@ class ExternalMessageConsumer:
             return
 
         # Add the pairlist data to the DataProvider
-        self._dp._set_producer_pairs(whitelist_message.data, producer_name=producer_name)
+        self._dp._set_producer_pairs(
+            whitelist_message.data, producer_name=producer_name
+        )
 
-        logger.debug(f"Consumed message from `{producer_name}` of type `RPCMessageType.WHITELIST`")
+        logger.debug(
+            f"Consumed message from `{producer_name}` of type `RPCMessageType.WHITELIST`"
+        )
 
-    def _consume_analyzed_df_message(self, producer_name: str, message: WSMessageSchema):
+    def _consume_analyzed_df_message(
+        self, producer_name: str, message: WSMessageSchema
+    ):
         try:
             df_message = WSAnalyzedDFMessage.model_validate(message.model_dump())
         except ValidationError as e:
@@ -384,7 +415,9 @@ class ExternalMessageConsumer:
             n_missing += 1
             # Set to None for all candles if we missed a full df's worth of candles
             n_missing = (
-                n_missing if n_missing < FULL_DATAFRAME_THRESHOLD else self.initial_candle_limit
+                n_missing
+                if n_missing < FULL_DATAFRAME_THRESHOLD
+                else self.initial_candle_limit
             )
 
             logger.warning(
@@ -393,7 +426,8 @@ class ExternalMessageConsumer:
             )
 
             self.send_producer_request(
-                producer_name, WSAnalyzedDFRequest(data={"limit": n_missing, "pair": pair})
+                producer_name,
+                WSAnalyzedDFRequest(data={"limit": n_missing, "pair": pair}),
             )
             return
 

@@ -41,4 +41,8 @@ class RPCRequestType(StrEnum):
     ANALYZED_DF = "analyzed_df"
 
 
-NO_ECHO_MESSAGES = (RPCMessageType.ANALYZED_DF, RPCMessageType.WHITELIST, RPCMessageType.NEW_CANDLE)
+NO_ECHO_MESSAGES = (
+    RPCMessageType.ANALYZED_DF,
+    RPCMessageType.WHITELIST,
+    RPCMessageType.NEW_CANDLE,
+)

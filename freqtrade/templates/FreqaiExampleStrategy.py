@@ -7,7 +7,6 @@ from technical import qtpylib
 
 from freqtrade.strategy import IStrategy
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -91,7 +90,9 @@ class FreqaiExampleStrategy(IStrategy):
         dataframe["%-bb_width-period"] = (
             dataframe["bb_upperband-period"] - dataframe["bb_lowerband-period"]
         ) / dataframe["bb_middleband-period"]
-        dataframe["%-close-bb_lower-period"] = dataframe["close"] / dataframe["bb_lowerband-period"]
+        dataframe["%-close-bb_lower-period"] = (
+            dataframe["close"] / dataframe["bb_lowerband-period"]
+        )
 
         dataframe["%-roc-period"] = ta.ROC(dataframe, timeperiod=period)
 
@@ -171,7 +172,9 @@ class FreqaiExampleStrategy(IStrategy):
         dataframe["%-hour_of_day"] = dataframe["date"].dt.hour
         return dataframe
 
-    def set_freqai_targets(self, dataframe: DataFrame, metadata: dict, **kwargs) -> DataFrame:
+    def set_freqai_targets(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ) -> DataFrame:
         """
         *Only functional with FreqAI enabled strategies*
         Required function to set the targets for the model.
@@ -242,7 +245,8 @@ class FreqaiExampleStrategy(IStrategy):
 
         if enter_long_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_long_conditions), ["enter_long", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_long_conditions),
+                ["enter_long", "enter_tag"],
             ] = (1, "long")
 
         enter_short_conditions = [
@@ -252,7 +256,8 @@ class FreqaiExampleStrategy(IStrategy):
 
         if enter_short_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_short_conditions), ["enter_short", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_short_conditions),
+                ["enter_short", "enter_tag"],
             ] = (1, "short")
 
         return df

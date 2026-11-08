@@ -6,7 +6,6 @@ from xgboost import XGBRegressor
 from freqtrade.freqai.base_models.BaseRegressionModel import BaseRegressionModel
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +34,9 @@ class XGBoostRFRegressor(BaseRegressionModel):
             eval_set = None
             eval_weights = None
         else:
-            eval_set = [(data_dictionary["test_features"], data_dictionary["test_labels"])]
+            eval_set = [
+                (data_dictionary["test_features"], data_dictionary["test_labels"])
+            ]
             eval_weights = [data_dictionary["test_weights"]]
 
         sample_weight = data_dictionary["train_weights"]

@@ -9,9 +9,12 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from freqtrade.constants import DEFAULT_ORDERFLOW_COLUMNS, ORDERFLOW_ADDED_COLUMNS, Config
+from freqtrade.constants import (
+    DEFAULT_ORDERFLOW_COLUMNS,
+    ORDERFLOW_ADDED_COLUMNS,
+    Config,
+)
 from freqtrade.exceptions import DependencyException
-
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +113,9 @@ def populate_dataframe_with_trades(
         trades = trades.reset_index(drop=True)
 
         # group trades by candle start
-        trades_grouped_by_candle_start = trades.groupby("candle_start", group_keys=False)
+        trades_grouped_by_candle_start = trades.groupby(
+            "candle_start", group_keys=False
+        )
 
         candle_start: datetime
         for candle_start, trades_grouped_df in trades_grouped_by_candle_start:
@@ -124,7 +129,9 @@ def populate_dataframe_with_trades(
                         # Check if the trades are already in the cache
                         cache_idx = cached_grouped_trades.index[cached_trades_date][0]
                         for col in ORDERFLOW_ADDED_COLUMNS:
-                            dataframe.at[index, col] = cached_grouped_trades.at[cache_idx, col]
+                            dataframe.at[index, col] = cached_grouped_trades.at[
+                                cache_idx, col
+                            ]
                         continue
 
                 dataframe.at[index, "trades"] = trades_grouped_df.drop(
@@ -147,19 +154,27 @@ def populate_dataframe_with_trades(
 
                 stacked_imbalance_range = config_orderflow["stacked_imbalance_range"]
                 dataframe.at[index, "stacked_imbalances_bid"] = stacked_imbalance(
-                    imbalances, label="bid", stacked_imbalance_range=stacked_imbalance_range
+                    imbalances,
+                    label="bid",
+                    stacked_imbalance_range=stacked_imbalance_range,
                 )
 
                 dataframe.at[index, "stacked_imbalances_ask"] = stacked_imbalance(
-                    imbalances, label="ask", stacked_imbalance_range=stacked_imbalance_range
+                    imbalances,
+                    label="ask",
+                    stacked_imbalance_range=stacked_imbalance_range,
                 )
 
                 bid = np.where(
-                    trades_grouped_df["side"].str.contains("sell"), trades_grouped_df["amount"], 0
+                    trades_grouped_df["side"].str.contains("sell"),
+                    trades_grouped_df["amount"],
+                    0,
                 )
 
                 ask = np.where(
-                    trades_grouped_df["side"].str.contains("buy"), trades_grouped_df["amount"], 0
+                    trades_grouped_df["side"].str.contains("buy"),
+                    trades_grouped_df["amount"],
+                    0,
                 )
                 deltas_per_trade = ask - bid
                 deltas_per_trade_cumsum = deltas_per_trade.cumsum()
@@ -217,7 +232,9 @@ def trades_to_volumeprofile_with_total_delta_bid_ask(
     return df
 
 
-def trades_orderflow_to_imbalances(df: pd.DataFrame, imbalance_ratio: int, imbalance_volume: int):
+def trades_orderflow_to_imbalances(
+    df: pd.DataFrame, imbalance_ratio: int, imbalance_volume: int
+):
     """
     :param df: dataframes with bid and ask
     :param imbalance_ratio: imbalance_ratio e.g. 3
@@ -235,7 +252,10 @@ def trades_orderflow_to_imbalances(df: pd.DataFrame, imbalance_ratio: int, imbal
     # overwrite ask_imbalance with False if volume is not big enough
     ask_imbalance_filtered = np.where(volume_check_mask, False, ask_imbalance)
     dataframe = pd.DataFrame(
-        {"bid_imbalance": bid_imbalance_filtered, "ask_imbalance": ask_imbalance_filtered},
+        {
+            "bid_imbalance": bid_imbalance_filtered,
+            "ask_imbalance": ask_imbalance_filtered,
+        },
         index=df.index,
     )
 
@@ -260,6 +280,7 @@ def stacked_imbalance(df: pd.DataFrame, label: str, stacked_imbalance_range: int
     if not valid_indices.empty:
         # Get all prices from valid indices from beginning of the range
         stacked_imbalance_prices = [
-            imbalance.index.values[idx - (stacked_imbalance_range - 1)] for idx in valid_indices
+            imbalance.index.values[idx - (stacked_imbalance_range - 1)]
+            for idx in valid_indices
         ]
     return stacked_imbalance_prices

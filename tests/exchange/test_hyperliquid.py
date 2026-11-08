@@ -116,7 +116,9 @@ def markets_hip3():
 
 
 @pytest.mark.parametrize("margin_mode", ["isolated", "cross"])
-def test_hyperliquid_dry_run_liquidation_price(default_conf, markets_hip3, mocker, margin_mode):
+def test_hyperliquid_dry_run_liquidation_price(
+    default_conf, markets_hip3, mocker, margin_mode
+):
     # test if liq price calculated by dry_run_liquidation_price() is close to ccxt liq price
     # testing different pairs with large/small prices, different leverages, long, short
 
@@ -453,9 +455,17 @@ def test_hyperliquid_dry_run_liquidation_price(default_conf, markets_hip3, mocke
             # Assume full position size is the wallet balance
             # This
             if position["side"] == "long":
-                assert liq_price_returned > liq_price_calculated_cross < position["entryPrice"]
+                assert (
+                    liq_price_returned
+                    > liq_price_calculated_cross
+                    < position["entryPrice"]
+                )
             else:
-                assert liq_price_returned < liq_price_calculated_cross > position["entryPrice"]
+                assert (
+                    liq_price_returned
+                    < liq_price_calculated_cross
+                    > position["entryPrice"]
+                )
 
 
 def test_hyperliquid_get_funding_fees(default_conf, mocker):
@@ -523,7 +533,9 @@ def test_hyperliquid__lev_prep(default_conf, mocker):
     api_mock = MagicMock()
     api_mock.set_margin_mode = MagicMock()
     type(api_mock).has = PropertyMock(return_value={"setMarginMode": True})
-    exchange = get_patched_exchange(mocker, default_conf, api_mock, exchange="hyperliquid")
+    exchange = get_patched_exchange(
+        mocker, default_conf, api_mock, exchange="hyperliquid"
+    )
     exchange._lev_prep("BTC/USDC:USDC", 3.2, "buy")
 
     assert api_mock.set_margin_mode.call_count == 0
@@ -539,28 +551,38 @@ def test_hyperliquid__lev_prep(default_conf, mocker):
     # Mock validate_config to skip validation
     mocker.patch("freqtrade.exchange.hyperliquid.Hyperliquid.validate_config")
 
-    exchange = get_patched_exchange(mocker, default_conf, api_mock, exchange="hyperliquid")
+    exchange = get_patched_exchange(
+        mocker, default_conf, api_mock, exchange="hyperliquid"
+    )
 
     # Normal market
     exchange._lev_prep("BTC/USDC:USDC", 3.2, "buy")
     assert api_mock.set_margin_mode.call_count == 1
-    api_mock.set_margin_mode.assert_called_with("isolated", "BTC/USDC:USDC", {"leverage": 3})
+    api_mock.set_margin_mode.assert_called_with(
+        "isolated", "BTC/USDC:USDC", {"leverage": 3}
+    )
 
     api_mock.reset_mock()
     exchange._lev_prep("BTC/USDC:USDC", 19.99, "sell")
     assert api_mock.set_margin_mode.call_count == 1
-    api_mock.set_margin_mode.assert_called_with("isolated", "BTC/USDC:USDC", {"leverage": 19})
+    api_mock.set_margin_mode.assert_called_with(
+        "isolated", "BTC/USDC:USDC", {"leverage": 19}
+    )
 
     # HIP-3 XYZ market
     api_mock.reset_mock()
     exchange._lev_prep("XYZ-TSLA/USDC:USDC", 5.7, "buy")
     assert api_mock.set_margin_mode.call_count == 1
-    api_mock.set_margin_mode.assert_called_with("isolated", "XYZ-TSLA/USDC:USDC", {"leverage": 5})
+    api_mock.set_margin_mode.assert_called_with(
+        "isolated", "XYZ-TSLA/USDC:USDC", {"leverage": 5}
+    )
 
     api_mock.reset_mock()
     exchange._lev_prep("XYZ-TSLA/USDC:USDC", 10.0, "sell")
     assert api_mock.set_margin_mode.call_count == 1
-    api_mock.set_margin_mode.assert_called_with("isolated", "XYZ-TSLA/USDC:USDC", {"leverage": 10})
+    api_mock.set_margin_mode.assert_called_with(
+        "isolated", "XYZ-TSLA/USDC:USDC", {"leverage": 10}
+    )
 
     # HIP-3 VNTL market
     api_mock.reset_mock()
@@ -620,7 +642,11 @@ def test_hyperliquid_fetch_order(default_conf_usdt, mocker, markets_hip3):
     )
     mocker.patch("freqtrade.exchange.hyperliquid.Hyperliquid.validate_config")
     exchange = get_patched_exchange(
-        mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf_usdt,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
     o = exchange.fetch_order("12345", "ETH/USDC:USDC")
     # Uses weighted average
@@ -732,28 +758,45 @@ def test_hyperliquid_hip3_config_validation(default_conf_usdt, mocker, markets_h
     default_conf_copy["trading_mode"] = "futures"
     default_conf_copy["margin_mode"] = "isolated"
     exchange = get_patched_exchange(
-        mocker, default_conf_copy, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf_copy,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
     exchange.validate_config(default_conf_copy)
 
     # Not in futures mode - no dex configured - no error
     get_patched_exchange(
-        mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf_usdt,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
     # Not in futures mode
     default_conf_usdt["exchange"]["hip3_dexes"] = ["xyz"]
     with pytest.raises(
-        ConfigurationError, match=r"HIP-3 DEXes are only supported in FUTURES trading mode\."
+        ConfigurationError,
+        match=r"HIP-3 DEXes are only supported in FUTURES trading mode\.",
     ):
         get_patched_exchange(
-            mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+            mocker,
+            default_conf_usdt,
+            api_mock,
+            exchange="hyperliquid",
+            mock_markets=markets_hip3,
         )
     # Valid single DEX
     default_conf_usdt["trading_mode"] = "futures"
     default_conf_usdt["margin_mode"] = "isolated"
     default_conf_usdt["exchange"]["hip3_dexes"] = ["xyz"]
     exchange = get_patched_exchange(
-        mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf_usdt,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
     assert exchange._get_configured_hip3_dexes() == ["xyz"]
 
@@ -761,7 +804,11 @@ def test_hyperliquid_hip3_config_validation(default_conf_usdt, mocker, markets_h
     default_conf_usdt["exchange"]["hip3_dexes"] = ["invalid_dex"]
     with pytest.raises(ConfigurationError, match="Invalid HIP-3 DEXes configured"):
         exchange = get_patched_exchange(
-            mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+            mocker,
+            default_conf_usdt,
+            api_mock,
+            exchange="hyperliquid",
+            mock_markets=markets_hip3,
         )
         exchange.validate_config(default_conf_usdt)
 
@@ -769,14 +816,24 @@ def test_hyperliquid_hip3_config_validation(default_conf_usdt, mocker, markets_h
     default_conf_usdt["exchange"]["hip3_dexes"] = ["xyz", "invalid_dex"]
     with pytest.raises(ConfigurationError, match="Invalid HIP-3 DEXes configured"):
         exchange = get_patched_exchange(
-            mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+            mocker,
+            default_conf_usdt,
+            api_mock,
+            exchange="hyperliquid",
+            mock_markets=markets_hip3,
         )
         exchange.validate_config(default_conf_usdt)
 
     default_conf_usdt["margin_mode"] = "cross"
-    with pytest.raises(ConfigurationError, match="HIP-3 DEXes require 'isolated' margin mode"):
+    with pytest.raises(
+        ConfigurationError, match="HIP-3 DEXes require 'isolated' margin mode"
+    ):
         exchange = get_patched_exchange(
-            mocker, default_conf_usdt, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+            mocker,
+            default_conf_usdt,
+            api_mock,
+            exchange="hyperliquid",
+            mock_markets=markets_hip3,
         )
         exchange.validate_config(default_conf_usdt)
 
@@ -809,7 +866,11 @@ def test_hyperliquid_get_balances_hip3(default_conf, mocker, caplog, markets_hip
     default_conf["margin_mode"] = "isolated"
     mocker.patch("freqtrade.exchange.hyperliquid.Hyperliquid.validate_config")
     exchange = get_patched_exchange(
-        mocker, default_conf, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
 
     balances = exchange.get_balances()
@@ -852,7 +913,11 @@ def test_hyperliquid_fetch_positions_hip3(default_conf, mocker, caplog, markets_
 
     mocker.patch("freqtrade.exchange.hyperliquid.Hyperliquid.validate_config")
     exchange = get_patched_exchange(
-        mocker, default_conf, api_mock, exchange="hyperliquid", mock_markets=markets_hip3
+        mocker,
+        default_conf,
+        api_mock,
+        exchange="hyperliquid",
+        mock_markets=markets_hip3,
     )
 
     # Mock super().fetch_positions() to return default positions

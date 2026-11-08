@@ -25,8 +25,9 @@ from freqtrade.constants import (
 )
 from freqtrade.enums import RPCMessageType
 
-
-__MESSAGE_TYPE_DICT: dict[str, dict[str, str]] = {x: {"type": "object"} for x in RPCMessageType}
+__MESSAGE_TYPE_DICT: dict[str, dict[str, str]] = {
+    x: {"type": "object"} for x in RPCMessageType
+}
 
 __IN_STRATEGY = "\nUsually specified in the strategy and missing in the configuration."
 
@@ -526,7 +527,10 @@ CONF_SCHEMA = {
                     "type": "boolean",
                     "default": True,
                 },
-                "api_key": {"description": "API key for accessing CoinGecko.", "type": "string"},
+                "api_key": {
+                    "description": "API key for accessing CoinGecko.",
+                    "type": "string",
+                },
             },
             "required": ["is_demo", "api_key"],
         },
@@ -706,12 +710,19 @@ CONF_SCHEMA = {
             "description": "Webhook settings.",
             "type": "object",
             "properties": {
-                "enabled": {"description": "Enable webhook notifications.", "type": "boolean"},
+                "enabled": {
+                    "description": "Enable webhook notifications.",
+                    "type": "boolean",
+                },
                 "url": {
                     "description": f"Webhook URL. {__VIA_ENV} FREQTRADE__WEBHOOK__URL",
                     "type": "string",
                 },
-                "format": {"type": "string", "enum": WEBHOOK_FORMAT_OPTIONS, "default": "form"},
+                "format": {
+                    "type": "string",
+                    "enum": WEBHOOK_FORMAT_OPTIONS,
+                    "default": "form",
+                },
                 "retries": {"type": "integer", "minimum": 0},
                 "retry_delay": {"type": "number", "minimum": 0},
                 **__MESSAGE_TYPE_DICT,
@@ -770,7 +781,10 @@ CONF_SCHEMA = {
             "description": "API server settings.",
             "type": "object",
             "properties": {
-                "enabled": {"description": "Whether the API server is enabled.", "type": "boolean"},
+                "enabled": {
+                    "description": "Whether the API server is enabled.",
+                    "type": "boolean",
+                },
                 "listen_ip_address": {
                     "description": "IP address the API server listens on.",
                     "format": "ipv4",
@@ -1065,7 +1079,10 @@ CONF_SCHEMA = {
                     "type": "integer",
                     "default": 60,
                 },
-                "ccxt_config": {"description": "CCXT configuration settings.", "type": "object"},
+                "ccxt_config": {
+                    "description": "CCXT configuration settings.",
+                    "type": "object",
+                },
                 "ccxt_async_config": {
                     "description": (
                         "CCXT asynchronous configuration settings."
