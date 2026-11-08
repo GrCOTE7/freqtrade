@@ -12,7 +12,6 @@ from freqtrade.exchange import Exchange
 from freqtrade.exchange.common import retrier
 from freqtrade.exchange.exchange_types import CcxtBalances, FtHas
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -87,17 +86,24 @@ class Kraken(Exchange):
             order_list = [
                 (
                     x["symbol"].split("/")[0 if x["side"] == "sell" else 1],
-                    x["remaining"] if x["side"] == "sell" else x["remaining"] * x["price"],
+                    (
+                        x["remaining"]
+                        if x["side"] == "sell"
+                        else x["remaining"] * x["price"]
+                    ),
                     # Don't remove the below comment, this can be important for debugging
                     # x["side"], x["amount"],
                 )
                 for x in orders
-                if x["remaining"] is not None and (x["side"] == "sell" or x["price"] is not None)
+                if x["remaining"] is not None
+                and (x["side"] == "sell" or x["price"] is not None)
             ]
             for bal in balances:
                 if not isinstance(balances[bal], dict):
                     continue
-                balances[bal]["used"] = sum(order[1] for order in order_list if order[0] == bal)
+                balances[bal]["used"] = sum(
+                    order[1] for order in order_list if order[0] == bal
+                )
                 balances[bal]["free"] = balances[bal]["total"] - balances[bal]["used"]
 
             self._log_exchange_response("fetch_balance2", balances)
@@ -139,7 +145,10 @@ class Kraken(Exchange):
         Applies only to fetch_trade_history by id.
         """
         if len(trades) > 0:
-            if isinstance(trades[-1].get("info"), list) and len(trades[-1].get("info", [])) > 7:
+            if (
+                isinstance(trades[-1].get("info"), list)
+                and len(trades[-1].get("info", [])) > 7
+            ):
                 # Trade response's "last" value.
                 return trades[-1].get("info", [])[-1]
             # Fall back to timestamp if info is somehow empty.
@@ -155,5 +164,7 @@ class Kraken(Exchange):
         # If the id is smaller than 19 characters, it's not a valid timestamp.
         if len(from_id) >= 19:
             return True
-        logger.debug(f"{pair} - trade-pagination id is not valid. Fallback to timestamp.")
+        logger.debug(
+            f"{pair} - trade-pagination id is not valid. Fallback to timestamp."
+        )
         return False

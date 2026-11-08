@@ -34,23 +34,35 @@ class InformativeDecoratorCacheTest(IStrategy):
         return dataframe
 
     @informative("30m", "ETH/USDT", "{column}_{base}_{timeframe}")
-    def populate_indicators_30m_eth(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_30m_eth(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         self.informative_counter[metadata["pair"], metadata["timeframe"]] += 1
 
         return dataframe
 
     @informative(
-        "1h", "ETH/USDT:USDT", "{column}_{base}_{timeframe}_FR", candle_type="funding_rate"
+        "1h",
+        "ETH/USDT:USDT",
+        "{column}_{base}_{timeframe}_FR",
+        candle_type="funding_rate",
     )
-    def populate_indicators_funding_rate(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_funding_rate(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         self.informative_counter[metadata["pair"], metadata["timeframe"]] += 1
 
         return dataframe
 
     @informative(
-        "1h", "ADA/USDT:USDT", "{column}_{base}_{timeframe}_OI", candle_type="open_interest"
+        "1h",
+        "ADA/USDT:USDT",
+        "{column}_{base}_{timeframe}_OI",
+        candle_type="open_interest",
     )
-    def populate_indicators_open_interest(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_open_interest(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         self.informative_counter[metadata["pair"], metadata["timeframe"]] += 1
 
         return dataframe

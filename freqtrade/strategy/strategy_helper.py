@@ -56,7 +56,9 @@ def _prepare_informative_pair(
     # Rename columns to be unique
     date_merge = date_merge_column
     if suffix and append_timeframe:
-        raise ValueError("You can not specify `append_timeframe` as True and a `suffix`.")
+        raise ValueError(
+            "You can not specify `append_timeframe` as True and a `suffix`."
+        )
     elif append_timeframe:
         date_merge = f"{date_merge_column}_{timeframe_inf}"
         informative.columns = [f"{col}_{timeframe_inf}" for col in informative.columns]
@@ -91,7 +93,11 @@ def _merge_prepared_informative_pair(
             how="left",
         )
 
-        if len(dataframe) > 1 and len(informative) > 0 and pd.isnull(dataframe.at[0, date_merge]):
+        if (
+            len(dataframe) > 1
+            and len(informative) > 0
+            and pd.isnull(dataframe.at[0, date_merge])
+        ):
             # If the start dates of the dataframes are not aligned, the first rows will be NaN
             # We can fill these with the last available informative candle before the start date
             # while still avoiding lookahead bias - as only past data is used.
@@ -162,7 +168,10 @@ def merge_informative_pair(
 
 
 def stoploss_from_open(
-    open_relative_stop: float, current_profit: float, is_short: bool = False, leverage: float = 1.0
+    open_relative_stop: float,
+    current_profit: float,
+    is_short: bool = False,
+    leverage: float = 1.0,
 ) -> float:
     """
     Given the current profit, and a desired stop loss value relative to the trade entry price,

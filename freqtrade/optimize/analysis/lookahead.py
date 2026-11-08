@@ -17,7 +17,6 @@ from freqtrade.optimize.analysis.base_analysis import BaseAnalysis, VarHolder
 from freqtrade.optimize.backtesting import Backtesting
 from freqtrade.util import CustomProgress
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +62,9 @@ class LookaheadAnalysis(BaseAnalysis):
         return False
 
     # analyzes two data frames with processed indicators and shows differences between them.
-    def analyze_indicators(self, full_vars: VarHolder, cut_vars: VarHolder, current_pair: str):
+    def analyze_indicators(
+        self, full_vars: VarHolder, cut_vars: VarHolder, current_pair: str
+    ):
         # extract dataframes
         cut_df: DataFrame = cut_vars.indicators[current_pair]
         full_df: DataFrame = full_vars.indicators[current_pair]
@@ -85,7 +86,9 @@ class LookaheadAnalysis(BaseAnalysis):
                 # output differences
                 if (
                     self_value != other_value
-                    and not self.current_analysis.false_indicators.__contains__(col_name[0])
+                    and not self.current_analysis.false_indicators.__contains__(
+                        col_name[0]
+                    )
                 ):
                     self.current_analysis.false_indicators.append(col_name[0])
                     logger.info(
@@ -95,7 +98,10 @@ class LookaheadAnalysis(BaseAnalysis):
                     )
 
     def prepare_data(self, varholder: VarHolder, pairs_to_load: list[DataFrame]):
-        if "freqai" in self.local_config and "identifier" in self.local_config["freqai"]:
+        if (
+            "freqai" in self.local_config
+            and "identifier" in self.local_config["freqai"]
+        ):
             # purge previous data if the freqai model is defined
             # (to be sure nothing is carried over from older backtests)
             path_to_current_identifier = Path(
@@ -176,14 +182,18 @@ class LookaheadAnalysis(BaseAnalysis):
 
         # register if buy signal is broken
         if not self.report_signal(
-            self.entry_varHolders[idx].result, "open_date", self.entry_varHolders[idx].compared_dt
+            self.entry_varHolders[idx].result,
+            "open_date",
+            self.entry_varHolders[idx].compared_dt,
         ):
             self.current_analysis.false_entry_signals += 1
             entry_or_exit_biased = True
 
         # register if buy or sell signal is broken
         if not self.report_signal(
-            self.exit_varHolders[idx].result, "close_date", self.exit_varHolders[idx].compared_dt
+            self.exit_varHolders[idx].result,
+            "close_date",
+            self.exit_varHolders[idx].compared_dt,
         ):
             self.current_analysis.false_exit_signals += 1
             entry_or_exit_biased = True
@@ -197,8 +207,12 @@ class LookaheadAnalysis(BaseAnalysis):
             )
 
         # check if the indicators themselves contain biased data
-        self.analyze_indicators(self.full_varHolder, self.entry_varHolders[idx], result_row["pair"])
-        self.analyze_indicators(self.full_varHolder, self.exit_varHolders[idx], result_row["pair"])
+        self.analyze_indicators(
+            self.full_varHolder, self.entry_varHolders[idx], result_row["pair"]
+        )
+        self.analyze_indicators(
+            self.full_varHolder, self.exit_varHolders[idx], result_row["pair"]
+        )
 
     def start(self, progress: CustomProgress) -> None:
         self.fill_full_varholder()
@@ -212,7 +226,9 @@ class LookaheadAnalysis(BaseAnalysis):
                 f"Found {found_signals} trades, calculating {self.targeted_trade_amount} trades."
             )
         elif self.targeted_trade_amount >= found_signals >= self.minimum_trade_amount:
-            logger.info(f"Only found {found_signals} trades. Calculating all available trades.")
+            logger.info(
+                f"Only found {found_signals} trades. Calculating all available trades."
+            )
         else:
             logger.info(
                 f"found {found_signals} trades "
@@ -228,7 +244,9 @@ class LookaheadAnalysis(BaseAnalysis):
         )
         for idx, result_row in self.full_varHolder.result["results"].iterrows():
             if self.current_analysis.total_signals == self.targeted_trade_amount:
-                logger.info(f"Found targeted trade amount = {self.targeted_trade_amount} signals.")
+                logger.info(
+                    f"Found targeted trade amount = {self.targeted_trade_amount} signals."
+                )
                 break
             if found_signals < self.minimum_trade_amount:
                 logger.info(
@@ -265,7 +283,10 @@ class LookaheadAnalysis(BaseAnalysis):
         # Restore verbosity, so it's not too quiet for the next strategy
         restore_verbosity_for_bias_tester()
         # check and report signals
-        if self.current_analysis.total_signals < self.local_config["minimum_trade_amount"]:
+        if (
+            self.current_analysis.total_signals
+            < self.local_config["minimum_trade_amount"]
+        ):
             logger.info(
                 f" -> {self.local_config['strategy']} : too few trades. "
                 f"We only found {self.current_analysis.total_signals} trades. "

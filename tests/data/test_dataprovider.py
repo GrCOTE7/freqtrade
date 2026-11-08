@@ -29,10 +29,19 @@ def test_dp_ohlcv(mocker, default_conf, ohlcv_history, candle_type):
 
     dp = DataProvider(default_conf, exchange)
     assert dp.runmode == RunMode.DRY_RUN
-    assert ohlcv_history.equals(dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype))
-    assert isinstance(dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype), DataFrame)
-    assert dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype) is not ohlcv_history
-    assert dp.ohlcv("UNITTEST/BTC", timeframe, copy=False, candle_type=candletype) is ohlcv_history
+    assert ohlcv_history.equals(
+        dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype)
+    )
+    assert isinstance(
+        dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype), DataFrame
+    )
+    assert (
+        dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype) is not ohlcv_history
+    )
+    assert (
+        dp.ohlcv("UNITTEST/BTC", timeframe, copy=False, candle_type=candletype)
+        is ohlcv_history
+    )
     assert not dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candletype).empty
     assert dp.ohlcv("NONSENSE/AAA", timeframe, candle_type=candletype).empty
 
@@ -44,7 +53,9 @@ def test_dp_ohlcv(mocker, default_conf, ohlcv_history, candle_type):
     default_conf["runmode"] = RunMode.LIVE
     dp = DataProvider(default_conf, exchange)
     assert dp.runmode == RunMode.LIVE
-    assert isinstance(dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candle_type), DataFrame)
+    assert isinstance(
+        dp.ohlcv("UNITTEST/BTC", timeframe, candle_type=candle_type), DataFrame
+    )
 
     default_conf["runmode"] = RunMode.BACKTEST
     dp = DataProvider(default_conf, exchange)
@@ -72,7 +83,9 @@ def test_historic_trades(mocker, default_conf, trades_history_df):
 
     dp = DataProvider(default_conf, None)
     # Live mode..
-    with pytest.raises(OperationalException, match=r"Exchange is not available to DataProvider\."):
+    with pytest.raises(
+        OperationalException, match=r"Exchange is not available to DataProvider\."
+    ):
         dp.trades("UNITTEST/BTC", "5m")
 
     exchange = get_patched_exchange(mocker, default_conf)
@@ -148,27 +161,35 @@ def test_get_pair_dataframe(mocker, default_conf, ohlcv_history, candle_type):
         dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candletype)
     )
     assert isinstance(
-        dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type), DataFrame
+        dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type),
+        DataFrame,
     )
     assert (
         dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type)
         is not ohlcv_history
     )
-    assert not dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type).empty
-    assert dp.get_pair_dataframe("NONSENSE/AAA", timeframe, candle_type=candle_type).empty
+    assert not dp.get_pair_dataframe(
+        "UNITTEST/BTC", timeframe, candle_type=candle_type
+    ).empty
+    assert dp.get_pair_dataframe(
+        "NONSENSE/AAA", timeframe, candle_type=candle_type
+    ).empty
 
     # Test with and without parameter
-    assert dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type).equals(
-        dp.get_pair_dataframe("UNITTEST/BTC", candle_type=candle_type)
-    )
+    assert dp.get_pair_dataframe(
+        "UNITTEST/BTC", timeframe, candle_type=candle_type
+    ).equals(dp.get_pair_dataframe("UNITTEST/BTC", candle_type=candle_type))
 
     default_conf["runmode"] = RunMode.LIVE
     dp = DataProvider(default_conf, exchange)
     assert dp.runmode == RunMode.LIVE
     assert isinstance(
-        dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type), DataFrame
+        dp.get_pair_dataframe("UNITTEST/BTC", timeframe, candle_type=candle_type),
+        DataFrame,
     )
-    assert dp.get_pair_dataframe("NONSENSE/AAA", timeframe, candle_type=candle_type).empty
+    assert dp.get_pair_dataframe(
+        "NONSENSE/AAA", timeframe, candle_type=candle_type
+    ).empty
 
     historymock = MagicMock(return_value=ohlcv_history)
     mocker.patch("freqtrade.data.dataprovider.load_pair_history", historymock)
@@ -281,7 +302,9 @@ def test_get_producer_df(default_conf):
 def test_emit_df(mocker, default_conf, ohlcv_history):
     mocker.patch("freqtrade.rpc.rpc_manager.RPCManager.__init__", MagicMock())
     rpc_mock = mocker.patch("freqtrade.rpc.rpc_manager.RPCManager", MagicMock())
-    send_mock = mocker.patch("freqtrade.rpc.rpc_manager.RPCManager.send_msg", MagicMock())
+    send_mock = mocker.patch(
+        "freqtrade.rpc.rpc_manager.RPCManager.send_msg", MagicMock()
+    )
 
     dataprovider = DataProvider(default_conf, exchange=None, rpc=rpc_mock)
     dataprovider_no_rpc = DataProvider(default_conf, exchange=None)
@@ -395,7 +418,9 @@ def test_current_whitelist(mocker, default_conf, tickers):
     # patch default conf to volumepairlist
     default_conf["pairlists"][0] = {"method": "VolumePairList", "number_assets": 5}
 
-    mocker.patch.multiple(EXMS, exchange_has=MagicMock(return_value=True), get_tickers=tickers)
+    mocker.patch.multiple(
+        EXMS, exchange_has=MagicMock(return_value=True), get_tickers=tickers
+    )
     exchange = get_patched_exchange(mocker, default_conf)
 
     pairlist = PairListManager(exchange, default_conf)
@@ -541,7 +566,9 @@ def test_dp__add_external_df(default_conf_usdt):
     # Add a new day.
     df2 = generate_test_data(timeframe, 24, "2022-01-02 00:00:00+00:00")
 
-    res = dp._add_external_df("ETH/USDT", df2, last_analyzed, timeframe, CandleType.SPOT)
+    res = dp._add_external_df(
+        "ETH/USDT", df2, last_analyzed, timeframe, CandleType.SPOT
+    )
     assert res[0] is True
     assert isinstance(res[1], int)
     assert res[1] == 0
@@ -551,7 +578,9 @@ def test_dp__add_external_df(default_conf_usdt):
     # Add a dataframe with a 12 hour offset - so 12 candles are overlapping, and 12 valid.
     df3 = generate_test_data(timeframe, 24, "2022-01-02 12:00:00+00:00")
 
-    res = dp._add_external_df("ETH/USDT", df3, last_analyzed, timeframe, CandleType.SPOT)
+    res = dp._add_external_df(
+        "ETH/USDT", df3, last_analyzed, timeframe, CandleType.SPOT
+    )
     assert res[0] is True
     assert isinstance(res[1], int)
     assert res[1] == 0
@@ -563,7 +592,9 @@ def test_dp__add_external_df(default_conf_usdt):
 
     # Generate 1 new candle
     df4 = generate_test_data(timeframe, 1, "2022-01-03 12:00:00+00:00")
-    res = dp._add_external_df("ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT)
+    res = dp._add_external_df(
+        "ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT
+    )
     # assert res[0] is True
     # assert res[1] == 0
     df, _ = dp.get_producer_df("ETH/USDT", timeframe, CandleType.SPOT)
@@ -574,7 +605,9 @@ def test_dp__add_external_df(default_conf_usdt):
 
     # Gap in the data ...
     df4 = generate_test_data(timeframe, 1, "2022-01-05 00:00:00+00:00")
-    res = dp._add_external_df("ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT)
+    res = dp._add_external_df(
+        "ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT
+    )
     assert res[0] is False
     # 36 hours - from 2022-01-03 12:00:00+00:00 to 2022-01-05 00:00:00+00:00
     assert isinstance(res[1], int)
@@ -585,7 +618,9 @@ def test_dp__add_external_df(default_conf_usdt):
 
     # Empty dataframe
     df4 = generate_test_data(timeframe, 0, "2022-01-05 00:00:00+00:00")
-    res = dp._add_external_df("ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT)
+    res = dp._add_external_df(
+        "ETH/USDT", df4, last_analyzed, timeframe, CandleType.SPOT
+    )
     assert res[0] is False
     # 36 hours - from 2022-01-03 12:00:00+00:00 to 2022-01-05 00:00:00+00:00
     assert isinstance(res[1], int)
@@ -682,5 +717,7 @@ def test_get_funding_rate_timeframe(mocker, default_conf_usdt):
 def test_get_funding_rate_timeframe_no_exchange(default_conf_usdt):
     dp = DataProvider(default_conf_usdt, None)
 
-    with pytest.raises(OperationalException, match=r"Exchange is not available to DataProvider."):
+    with pytest.raises(
+        OperationalException, match=r"Exchange is not available to DataProvider."
+    ):
         dp.get_funding_rate_timeframe()

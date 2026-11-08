@@ -8,8 +8,9 @@ from stable_baselines3.common.callbacks import ProgressBarCallback
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.freqai.RL.Base5ActionRLEnv import Actions, Base5ActionRLEnv, Positions
 from freqtrade.freqai.RL.BaseEnvironment import BaseEnvironment
-from freqtrade.freqai.RL.BaseReinforcementLearningModel import BaseReinforcementLearningModel
-
+from freqtrade.freqai.RL.BaseReinforcementLearningModel import (
+    BaseReinforcementLearningModel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -133,9 +134,15 @@ class ReinforcementLearner(BaseReinforcementLearningModel):
             factor = 100.0
 
             # reward agent for entering trades
-            if action == Actions.Long_enter.value and self._position == Positions.Neutral:
+            if (
+                action == Actions.Long_enter.value
+                and self._position == Positions.Neutral
+            ):
                 return 25
-            if action == Actions.Short_enter.value and self._position == Positions.Neutral:
+            if (
+                action == Actions.Short_enter.value
+                and self._position == Positions.Neutral
+            ):
                 return 25
             # discourage agent from not entering trades
             if action == Actions.Neutral.value and self._position == Positions.Neutral:
@@ -159,13 +166,17 @@ class ReinforcementLearner(BaseReinforcementLearningModel):
             # close long
             if action == Actions.Long_exit.value and self._position == Positions.Long:
                 if pnl > self.profit_aim * self.rr:
-                    factor *= self.rl_config["model_reward_parameters"].get("win_reward_factor", 2)
+                    factor *= self.rl_config["model_reward_parameters"].get(
+                        "win_reward_factor", 2
+                    )
                 return float(pnl * factor)
 
             # close short
             if action == Actions.Short_exit.value and self._position == Positions.Short:
                 if pnl > self.profit_aim * self.rr:
-                    factor *= self.rl_config["model_reward_parameters"].get("win_reward_factor", 2)
+                    factor *= self.rl_config["model_reward_parameters"].get(
+                        "win_reward_factor", 2
+                    )
                 return float(pnl * factor)
 
             return 0.0

@@ -37,7 +37,6 @@ from freqtrade.rpc.api_server.api_schemas import (
 from freqtrade.rpc.api_server.deps import get_config, get_rpc
 from freqtrade.rpc.rpc import RPCException
 
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -72,14 +71,18 @@ def mix_tags(pair: str | None = None, rpc: RPC = Depends(get_rpc)):
     return rpc._rpc_mix_tag_performance(pair)
 
 
-@router.get("/performance", response_model=list[PerformanceEntry], tags=["Trading-info"])
+@router.get(
+    "/performance", response_model=list[PerformanceEntry], tags=["Trading-info"]
+)
 def performance(rpc: RPC = Depends(get_rpc)):
     return rpc._rpc_performance()
 
 
 @router.get("/profit", response_model=Profit, tags=["Trading-info"])
 def profit(rpc: RPC = Depends(get_rpc), config=Depends(get_config)):
-    return rpc._rpc_trade_statistics(config["stake_currency"], config.get("fiat_display_currency"))
+    return rpc._rpc_trade_statistics(
+        config["stake_currency"], config.get("fiat_display_currency")
+    )
 
 
 @router.get("/profit_all", response_model=ProfitAll, tags=["Trading-info"])
@@ -91,10 +94,14 @@ def profit_all(rpc: RPC = Depends(get_rpc), config=Depends(get_config)):
     }
     if config.get("trading_mode", TradingMode.SPOT) != TradingMode.SPOT:
         response["long"] = rpc._rpc_trade_statistics(
-            config["stake_currency"], config.get("fiat_display_currency"), direction="long"
+            config["stake_currency"],
+            config.get("fiat_display_currency"),
+            direction="long",
         )
         response["short"] = rpc._rpc_trade_statistics(
-            config["stake_currency"], config.get("fiat_display_currency"), direction="short"
+            config["stake_currency"],
+            config.get("fiat_display_currency"),
+            direction="short",
         )
 
     return response
@@ -139,7 +146,10 @@ def weekly(
     config=Depends(get_config),
 ):
     return rpc._rpc_timeunit_profit(
-        timescale, config["stake_currency"], config.get("fiat_display_currency", ""), "weeks"
+        timescale,
+        config["stake_currency"],
+        config.get("fiat_display_currency", ""),
+        "weeks",
     )
 
 
@@ -150,7 +160,10 @@ def monthly(
     config=Depends(get_config),
 ):
     return rpc._rpc_timeunit_profit(
-        timescale, config["stake_currency"], config.get("fiat_display_currency", ""), "months"
+        timescale,
+        config["stake_currency"],
+        config.get("fiat_display_currency", ""),
+        "months",
     )
 
 
@@ -166,10 +179,13 @@ def status(rpc: RPC = Depends(get_rpc)):
 # on big databases. Correct response model: response_model=TradeResponse,
 @router.get("/trades", tags=["Trading-info", "Trades"])
 def trades(
-    limit: int = Query(500, ge=1, description="Maximum number of different trades to return data"),
+    limit: int = Query(
+        500, ge=1, description="Maximum number of different trades to return data"
+    ),
     offset: int = Query(0, ge=0, description="Number of trades to skip for pagination"),
     order_by_id: bool = Query(
-        True, description="Sort trades by id (default: True). If False, sorts by latest timestamp"
+        True,
+        description="Sort trades by id (default: True). If False, sorts by latest timestamp",
     ),
     rpc: RPC = Depends(get_rpc),
 ):
@@ -189,22 +205,30 @@ def trades_delete(tradeid: int, rpc: RPC = Depends(get_rpc)):
     return rpc._rpc_delete(tradeid)
 
 
-@router.delete("/trades/{tradeid}/open-order", response_model=OpenTradeSchema, tags=["Trades"])
+@router.delete(
+    "/trades/{tradeid}/open-order", response_model=OpenTradeSchema, tags=["Trades"]
+)
 def trade_cancel_open_order(tradeid: int, rpc: RPC = Depends(get_rpc)):
     rpc._rpc_cancel_open_order(tradeid)
     return rpc._rpc_trade_status([tradeid])[0]
 
 
-@router.post("/trades/{tradeid}/reload", response_model=OpenTradeSchema, tags=["Trades"])
+@router.post(
+    "/trades/{tradeid}/reload", response_model=OpenTradeSchema, tags=["Trades"]
+)
 def trade_reload(tradeid: int, rpc: RPC = Depends(get_rpc)):
     rpc._rpc_reload_trade_from_exchange(tradeid)
     return rpc._rpc_trade_status([tradeid])[0]
 
 
-@router.get("/trades/open/custom-data", response_model=list[ListCustomData], tags=["Trades"])
+@router.get(
+    "/trades/open/custom-data", response_model=list[ListCustomData], tags=["Trades"]
+)
 def list_open_trades_custom_data(
     key: str | None = Query(None, description="Optional key to filter data"),
-    limit: int = Query(100, ge=1, description="Maximum number of different trades to return data"),
+    limit: int = Query(
+        100, ge=1, description="Maximum number of different trades to return data"
+    ),
     offset: int = Query(0, ge=0, description="Number of trades to skip for pagination"),
     rpc: RPC = Depends(get_rpc),
 ):
@@ -219,8 +243,14 @@ def list_open_trades_custom_data(
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/trades/{trade_id}/custom-data", response_model=list[ListCustomData], tags=["Trades"])
-def list_custom_data(trade_id: int, key: str | None = Query(None), rpc: RPC = Depends(get_rpc)):
+@router.get(
+    "/trades/{trade_id}/custom-data",
+    response_model=list[ListCustomData],
+    tags=["Trades"],
+)
+def list_custom_data(
+    trade_id: int, key: str | None = Query(None), rpc: RPC = Depends(get_rpc)
+):
     """
     Fetch custom data for a specific trade.
     If a key is provided, it will be used to filter data accordingly.
@@ -275,7 +305,9 @@ def forceexit(payload: ForceExitPayload, rpc: RPC = Depends(get_rpc)):
     )
 
 
-@router.get("/blacklist", response_model=BlacklistResponse, tags=["Trading-info", "Pairlist"])
+@router.get(
+    "/blacklist", response_model=BlacklistResponse, tags=["Trading-info", "Pairlist"]
+)
 def blacklist(rpc: RPC = Depends(get_rpc)):
     return rpc._rpc_blacklist()
 
@@ -286,13 +318,17 @@ def blacklist_post(payload: BlacklistPayload, rpc: RPC = Depends(get_rpc)):
 
 
 @router.delete("/blacklist", response_model=BlacklistResponse, tags=["Pairlist"])
-def blacklist_delete(pairs_to_delete: list[str] = Query([]), rpc: RPC = Depends(get_rpc)):
+def blacklist_delete(
+    pairs_to_delete: list[str] = Query([]), rpc: RPC = Depends(get_rpc)
+):
     """Provide a list of pairs to delete from the blacklist"""
 
     return rpc._rpc_blacklist_delete(pairs_to_delete)
 
 
-@router.get("/whitelist", response_model=WhitelistResponse, tags=["Trading-info", "Pairlist"])
+@router.get(
+    "/whitelist", response_model=WhitelistResponse, tags=["Trading-info", "Pairlist"]
+)
 def whitelist(rpc: RPC = Depends(get_rpc)):
     return rpc._rpc_whitelist()
 
@@ -342,7 +378,9 @@ def reload_config(rpc: RPC = Depends(get_rpc)):
 
 
 @router.get("/pair_candles", response_model=PairHistory, tags=["Candle data"])
-def pair_candles(pair: str, timeframe: str, limit: int | None = None, rpc: RPC = Depends(get_rpc)):
+def pair_candles(
+    pair: str, timeframe: str, limit: int | None = None, rpc: RPC = Depends(get_rpc)
+):
     return rpc._rpc_analysed_dataframe(pair, timeframe, limit, None)
 
 

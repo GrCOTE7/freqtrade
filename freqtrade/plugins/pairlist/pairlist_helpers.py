@@ -2,7 +2,6 @@ import re
 
 from freqtrade.constants import Config
 
-
 _VALID_PAIR_RE = re.compile(r"[\w:/-]+")
 
 
@@ -23,7 +22,9 @@ def expand_pairlist(
         for pair_wc in wildcardpl:
             try:
                 comp = re.compile(pair_wc, re.IGNORECASE)
-                result_partial = [pair for pair in available_pairs if comp.fullmatch(pair)]
+                result_partial = [
+                    pair for pair in available_pairs if comp.fullmatch(pair)
+                ]
                 # Add all matching pairs.
                 # If there are no matching pairs (Pair not on exchange) keep it.
                 result += result_partial or [pair_wc]
@@ -51,6 +52,8 @@ def dynamic_expand_pairlist(config: Config, markets: list[str]) -> list[str]:
     expanded_pairs = expand_pairlist(config["pairs"], markets)
     if config.get("freqai", {}).get("enabled", False):
         corr_pairlist = config["freqai"]["feature_parameters"]["include_corr_pairlist"]
-        expanded_pairs += [pair for pair in corr_pairlist if pair not in config["pairs"]]
+        expanded_pairs += [
+            pair for pair in corr_pairlist if pair not in config["pairs"]
+        ]
 
     return expanded_pairs

@@ -18,7 +18,9 @@ def test_additional_exchange_init_bybit(default_conf, mocker, caplog):
     api_mock.set_position_mode = MagicMock(return_value={"dualSidePosition": False})
     api_mock.is_unified_enabled = MagicMock(return_value=[False, False])
 
-    exchange = get_patched_exchange(mocker, default_conf, exchange="bybit", api_mock=api_mock)
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="bybit", api_mock=api_mock
+    )
     assert api_mock.set_position_mode.call_count == 1
     assert api_mock.is_unified_enabled.call_count == 1
     assert exchange.unified_account is False
@@ -27,14 +29,23 @@ def test_additional_exchange_init_bybit(default_conf, mocker, caplog):
 
     api_mock.set_position_mode.reset_mock()
     api_mock.is_unified_enabled = MagicMock(return_value=[False, True])
-    exchange = get_patched_exchange(mocker, default_conf, exchange="bybit", api_mock=api_mock)
-    assert log_has("Bybit: Unified account. Assuming dedicated subaccount for this bot.", caplog)
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="bybit", api_mock=api_mock
+    )
+    assert log_has(
+        "Bybit: Unified account. Assuming dedicated subaccount for this bot.", caplog
+    )
     assert api_mock.set_position_mode.call_count == 1
     assert api_mock.is_unified_enabled.call_count == 1
     assert exchange.unified_account is True
 
     ccxt_exceptionhandlers(
-        mocker, default_conf, api_mock, "bybit", "additional_exchange_init", "set_position_mode"
+        mocker,
+        default_conf,
+        api_mock,
+        "bybit",
+        "additional_exchange_init",
+        "set_position_mode",
     )
 
 
@@ -43,7 +54,9 @@ async def test_bybit_fetch_funding_rate(default_conf, mocker):
     default_conf["margin_mode"] = "isolated"
     api_mock = MagicMock()
     api_mock.fetch_funding_rate_history = AsyncMock(return_value=[])
-    exchange = get_patched_exchange(mocker, default_conf, exchange="bybit", api_mock=api_mock)
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="bybit", api_mock=api_mock
+    )
     limit = 200
     # Test fetch_funding_rate_history (current data)
     await exchange._fetch_funding_rate_history(
@@ -53,7 +66,9 @@ async def test_bybit_fetch_funding_rate(default_conf, mocker):
     )
 
     assert api_mock.fetch_funding_rate_history.call_count == 1
-    assert api_mock.fetch_funding_rate_history.call_args_list[0][0][0] == "BTC/USDT:USDT"
+    assert (
+        api_mock.fetch_funding_rate_history.call_args_list[0][0][0] == "BTC/USDT:USDT"
+    )
     kwargs = api_mock.fetch_funding_rate_history.call_args_list[0][1]
     assert kwargs["since"] is None
 
@@ -68,7 +83,9 @@ async def test_bybit_fetch_funding_rate(default_conf, mocker):
     )
 
     assert api_mock.fetch_funding_rate_history.call_count == 1
-    assert api_mock.fetch_funding_rate_history.call_args_list[0][0][0] == "BTC/USDT:USDT"
+    assert (
+        api_mock.fetch_funding_rate_history.call_args_list[0][0][0] == "BTC/USDT:USDT"
+    )
     kwargs = api_mock.fetch_funding_rate_history.call_args_list[0][1]
     assert kwargs["since"] == since_ms
 
@@ -149,7 +166,9 @@ def test_bybit_fetch_order_canceled_empty(default_conf_usdt, mocker):
     )
 
     mocker.patch(f"{EXMS}.exchange_has", return_value=True)
-    exchange = get_patched_exchange(mocker, default_conf_usdt, api_mock, exchange="bybit")
+    exchange = get_patched_exchange(
+        mocker, default_conf_usdt, api_mock, exchange="bybit"
+    )
 
     res = exchange.fetch_order("123", "BTC/USDT")
     assert res["remaining"] is None

@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 
 from freqtrade.persistence.models import Order, Trade
 
-
 MOCK_TRADE_COUNT = 6
 
 
@@ -69,7 +68,9 @@ def mock_trade_usdt_1(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_1(is_short), "LTC/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_1(is_short), "LTC/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     o = Order.parse_from_ccxt_object(
         mock_order_usdt_1_exit(is_short), "LTC/USDT", exit_side(is_short)
@@ -131,7 +132,9 @@ def mock_trade_usdt_2(fee, is_short: bool):
         close_date=datetime.now(tz=UTC) - timedelta(minutes=2),
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_2(is_short), "NEO/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_2(is_short), "NEO/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     o = Order.parse_from_ccxt_object(
         mock_order_usdt_2_exit(is_short), "NEO/USDT", exit_side(is_short)
@@ -194,7 +197,9 @@ def mock_trade_usdt_3(fee, is_short: bool):
         close_date=datetime.now(tz=UTC),
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_3(is_short), "XRP/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_3(is_short), "XRP/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     o = Order.parse_from_ccxt_object(
         mock_order_usdt_3_exit(is_short), "XRP/USDT", exit_side(is_short)
@@ -236,7 +241,9 @@ def mock_trade_usdt_4(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_4(is_short), "NEO/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_4(is_short), "NEO/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 
@@ -288,9 +295,13 @@ def mock_trade_usdt_5(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_5(is_short), "XRP/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_5(is_short), "XRP/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
-    o = Order.parse_from_ccxt_object(mock_order_usdt_5_stoploss(is_short), "XRP/USDT", "stoploss")
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_5_stoploss(is_short), "XRP/USDT", "stoploss"
+    )
     trade.orders.append(o)
     return trade
 
@@ -344,7 +355,9 @@ def mock_trade_usdt_6(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_6(is_short), "LTC/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_6(is_short), "LTC/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     o = Order.parse_from_ccxt_object(
         mock_order_usdt_6_exit(is_short), "LTC/USDT", exit_side(is_short)
@@ -383,6 +396,8 @@ def mock_trade_usdt_7(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_usdt_7(is_short), "ADA/USDT", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_usdt_7(is_short), "ADA/USDT", entry_side(is_short)
+    )
     trade.orders.append(o)
     return trade

@@ -4,8 +4,11 @@ import sys
 from typing import Any
 
 from freqtrade.enums import RunMode
-from freqtrade.exceptions import ConfigurationError, DependencyException, OperationalException
-
+from freqtrade.exceptions import (
+    ConfigurationError,
+    DependencyException,
+    OperationalException,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,9 @@ def start_list_exchanges(args: dict[str, Any]) -> None:
                 f"({len(available_exchanges)} exchanges):"
             )
         else:
-            available_exchanges = [e for e in available_exchanges if e["valid"] is not False]
+            available_exchanges = [
+                e for e in available_exchanges if e["valid"] is not False
+            ]
             title = f"Exchanges available for Freqtrade ({len(available_exchanges)} exchanges):"
         show_fut_reasons = args.get("list_exchanges_futures_options", False)
         table = Table(title=title)
@@ -110,9 +115,11 @@ def _print_objs_tabular(objs: list, print_colorized: bool) -> None:
             "status": (
                 Text("LOAD FAILED", style="bold red")
                 if s["class"] is None
-                else Text("OK", style="bold green")
-                if names.count(s["name"]) == 1
-                else Text("DUPLICATE NAME", style="bold yellow")
+                else (
+                    Text("OK", style="bold green")
+                    if names.count(s["name"]) == 1
+                    else Text("DUPLICATE NAME", style="bold yellow")
+                )
             ),
         }
         for s in objs
@@ -157,7 +164,9 @@ def start_list_strategies(args: dict[str, Any]) -> None:
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
     strategy_objs = StrategyResolver.search_all_objects(
-        config, not args["print_one_column"], config.get("recursive_strategy_search", False)
+        config,
+        not args["print_one_column"],
+        config.get("recursive_strategy_search", False),
     )
     if not strategy_objs:
         logger.warning("No strategies found.")
@@ -192,7 +201,9 @@ def start_list_freqAI_models(args: dict[str, Any]) -> None:
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
-    model_objs = FreqaiModelResolver.search_all_objects(config, not args["print_one_column"])
+    model_objs = FreqaiModelResolver.search_all_objects(
+        config, not args["print_one_column"]
+    )
     # Sort alphabetically
     model_objs = sorted(model_objs, key=lambda x: x["name"])
     if args["print_one_column"]:
@@ -210,7 +221,9 @@ def start_list_hyperopt_loss_functions(args: dict[str, Any]) -> None:
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
-    model_objs = HyperOptLossResolver.search_all_objects(config, not args["print_one_column"])
+    model_objs = HyperOptLossResolver.search_all_objects(
+        config, not args["print_one_column"]
+    )
     # Sort alphabetically
     model_objs = sorted(model_objs, key=lambda x: x["name"])
     if args["print_one_column"]:
@@ -326,7 +339,9 @@ def start_list_markets(args: dict[str, Any], pairs_only: bool = False) -> None:
             "Min Stake": round(
                 exchange.get_min_pair_stake_amount(
                     v["symbol"],
-                    safe_value_fallback(tickers.get(v["symbol"], {}), "last", "ask", 0.0),
+                    safe_value_fallback(
+                        tickers.get(v["symbol"], {}), "last", "ask", 0.0
+                    ),
                     0.0,
                 )
                 or 0.0,

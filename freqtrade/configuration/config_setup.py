@@ -6,7 +6,6 @@ from freqtrade.enums import RunMode
 from .config_validation import validate_config_consistency
 from .configuration import Configuration
 
-
 logger = logging.getLogger(__name__)
 
 

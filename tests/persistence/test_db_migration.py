@@ -34,8 +34,12 @@ def test_migrate_db_detail(mocker):
     mocker.patch.object(_CustomData, "session", custom_data_session, create=True)
     mocker.patch.object(WalletHistory, "session", wallet_history_session, create=True)
 
-    make_transient_mock = mocker.patch("freqtrade.persistence.db_migration.make_transient")
-    set_sequence_ids_mock = mocker.patch("freqtrade.persistence.db_migration.set_sequence_ids")
+    make_transient_mock = mocker.patch(
+        "freqtrade.persistence.db_migration.make_transient"
+    )
+    set_sequence_ids_mock = mocker.patch(
+        "freqtrade.persistence.db_migration.set_sequence_ids"
+    )
 
     # max ids for Trade, Order, PairLock, KeyValueStore, CustomData, WalletHistory
     session_target.scalar.side_effect = [10, 11, 12, 13, 14, 15]

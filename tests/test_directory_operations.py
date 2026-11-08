@@ -66,7 +66,9 @@ def test_create_userdata_dir_exists_exception(mocker, tmp_path) -> None:
     mocker.patch.object(Path, "is_dir", MagicMock(return_value=False))
     md = mocker.patch.object(Path, "mkdir", MagicMock())
 
-    with pytest.raises(OperationalException, match=r"Directory `.*.{1,2}bar` does not exist.*"):
+    with pytest.raises(
+        OperationalException, match=r"Directory `.*.{1,2}bar` does not exist.*"
+    ):
         create_userdata_dir(f"{tmp_path}/bar", create_dir=False)
     assert md.call_count == 0
 
@@ -78,7 +80,9 @@ def test_copy_sample_files(mocker, tmp_path) -> None:
 
     copy_sample_files(Path(f"{tmp_path}/bar"))
     assert copymock.call_count == 3
-    assert copymock.call_args_list[0][0][1] == str(tmp_path / "bar/strategies/sample_strategy.py")
+    assert copymock.call_args_list[0][0][1] == str(
+        tmp_path / "bar/strategies/sample_strategy.py"
+    )
     assert copymock.call_args_list[1][0][1] == str(
         tmp_path / "bar/hyperopts/sample_hyperopt_loss.py"
     )
@@ -91,7 +95,9 @@ def test_copy_sample_files_errors(mocker, tmp_path, caplog) -> None:
     mocker.patch.object(Path, "is_dir", MagicMock(return_value=False))
     mocker.patch.object(Path, "exists", MagicMock(return_value=False))
     mocker.patch("shutil.copy", MagicMock())
-    with pytest.raises(OperationalException, match=r"Directory `.*.{1,2}bar` does not exist\."):
+    with pytest.raises(
+        OperationalException, match=r"Directory `.*.{1,2}bar` does not exist\."
+    ):
         copy_sample_files(Path(f"{tmp_path}/bar"))
 
     mocker.patch.object(Path, "is_dir", MagicMock(side_effect=[True, False]))

@@ -106,12 +106,17 @@ def test_is_file_in_dir(tmp_path):
 def test_is_path_in_dir(tmp_path):
     # Neither path has to exist
     assert is_path_in_dir(tmp_path / "models" / "an-id", tmp_path / "models") is True
-    assert is_path_in_dir(tmp_path / "models" / "sub" / "id", tmp_path / "models") is True
+    assert (
+        is_path_in_dir(tmp_path / "models" / "sub" / "id", tmp_path / "models") is True
+    )
     # The directory itself counts as within
     assert is_path_in_dir(tmp_path / "models", tmp_path / "models") is True
 
     assert is_path_in_dir(tmp_path / "models" / "..", tmp_path / "models") is False
-    assert is_path_in_dir(tmp_path / "models" / "../../escaped", tmp_path / "models") is False
+    assert (
+        is_path_in_dir(tmp_path / "models" / "../../escaped", tmp_path / "models")
+        is False
+    )
     assert is_path_in_dir(Path("/etc/passwd"), tmp_path / "models") is False
 
 
@@ -155,13 +160,22 @@ def test_safe_value_nested():
     assert safe_value_nested(dict1, "first.rows.fail", default_value="cat") == "cat"
     assert safe_value_nested(dict1, "first") == dict1["first"]
     assert safe_value_nested(dict1, "second.rows.pass") is None
-    assert safe_value_nested(dict1, "second.rows.pass", default_value="fallback") == "fallback"
-    assert safe_value_nested(dict1, "third.rows.pass", default_value="fallback") == "fallback"
+    assert (
+        safe_value_nested(dict1, "second.rows.pass", default_value="fallback")
+        == "fallback"
+    )
+    assert (
+        safe_value_nested(dict1, "third.rows.pass", default_value="fallback")
+        == "fallback"
+    )
     assert safe_value_nested(dict1, "third.rows.pass") is None
     assert safe_value_nested(dict1, "fourth.rows.pass") is None
     assert safe_value_nested(dict1, "fourth") == 15
     assert safe_value_nested(dict1, "fourth", default_value="fallback") == 15
-    assert safe_value_nested(dict1, "fourth.rows.pass", default_value="fallback") == "fallback"
+    assert (
+        safe_value_nested(dict1, "fourth.rows.pass", default_value="fallback")
+        == "fallback"
+    )
 
 
 def test_safe_value_fallback():
@@ -287,8 +301,12 @@ def test_parse_db_uri_for_logging(conn_url, expected) -> None:
 def test_deep_merge_dicts():
     a = {"first": {"rows": {"pass": "dog", "number": "1", "test": None}}}
     b = {"first": {"rows": {"fail": "cat", "number": "5", "test": "asdf"}}}
-    res = {"first": {"rows": {"pass": "dog", "fail": "cat", "number": "5", "test": "asdf"}}}
-    res2 = {"first": {"rows": {"pass": "dog", "fail": "cat", "number": "1", "test": None}}}
+    res = {
+        "first": {"rows": {"pass": "dog", "fail": "cat", "number": "5", "test": "asdf"}}
+    }
+    res2 = {
+        "first": {"rows": {"pass": "dog", "fail": "cat", "number": "1", "test": None}}
+    }
     assert deep_merge_dicts(b, deepcopy(a)) == res
 
     assert deep_merge_dicts(a, deepcopy(b)) == res2

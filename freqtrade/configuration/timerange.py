@@ -11,7 +11,6 @@ from freqtrade.constants import DATETIME_PRINT_FORMAT
 from freqtrade.exceptions import ConfigurationError
 from freqtrade.util import dt_from_ts
 
-
 logger = logging.getLogger(__name__)
 
 # Supported formats for one side of a timerange.
@@ -146,10 +145,13 @@ class TimeRange:
                          has to be moved
         :return: None (Modifies the object in place)
         """
-        if not self.starttype or (startup_candles and min_date.timestamp() >= self.startts):
+        if not self.starttype or (
+            startup_candles and min_date.timestamp() >= self.startts
+        ):
             # If no startts was defined, or backtest-data starts at the defined backtest-date
             logger.warning(
-                "Moving start-date by %s candles to account for startup time.", startup_candles
+                "Moving start-date by %s candles to account for startup time.",
+                startup_candles,
             )
             self.startts = int(min_date.timestamp() + timeframe_secs * startup_candles)
             self.starttype = "date"
@@ -195,5 +197,7 @@ class TimeRange:
             raise ConfigurationError(f'Incorrect syntax for timerange "{text}"') from e
 
         if start > stop > 0:
-            raise ConfigurationError(f'Start date is after stop date for timerange "{text}"')
+            raise ConfigurationError(
+                f'Start date is after stop date for timerange "{text}"'
+            )
         return cls("date" if starts else None, "date" if stops else None, start, stop)

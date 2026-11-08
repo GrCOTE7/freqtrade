@@ -19,7 +19,6 @@ from freqtrade.exceptions import OperationalException, TemporaryError
 from freqtrade.exchange import timeframe_to_next_date
 from freqtrade.freqtradebot import FreqtradeBot
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +54,9 @@ class Worker:
         self.freqtrade = FreqtradeBot(self._config)
 
         internals_config = self._config.get("internals", {})
-        self._throttle_secs = internals_config.get("process_throttle_secs", PROCESS_THROTTLE_SECS)
+        self._throttle_secs = internals_config.get(
+            "process_throttle_secs", PROCESS_THROTTLE_SECS
+        )
         self._heartbeat_interval = internals_config.get("heartbeat_interval", 60)
 
         self._sd_notify = (
@@ -113,7 +114,9 @@ class Worker:
             # Ping systemd watchdog before sleeping in the stopped state
             self._notify("WATCHDOG=1\nSTATUS=State: STOPPED.")
 
-            self._throttle(func=self._process_stopped, throttle_secs=self._throttle_secs)
+            self._throttle(
+                func=self._process_stopped, throttle_secs=self._throttle_secs
+            )
 
         elif state in (State.RUNNING, State.PAUSED):
             state_str = "RUNNING" if state == State.RUNNING else "PAUSED"
@@ -205,7 +208,8 @@ class Worker:
             hint = "Issue `/start` if you think it is safe to restart."
 
             self.freqtrade.notify_status(
-                f"*OperationalException:*\n```\n{tb}```\n {hint}", msg_type=RPCMessageType.EXCEPTION
+                f"*OperationalException:*\n```\n{tb}```\n {hint}",
+                msg_type=RPCMessageType.EXCEPTION,
             )
 
             logger.exception("OperationalException. Stopping trader ...")
@@ -225,7 +229,9 @@ class Worker:
         # Load and validate config and create new instance of the bot
         self._init(True)
 
-        self.freqtrade.notify_status(f"{State(self.freqtrade.state)} after config reloaded")
+        self.freqtrade.notify_status(
+            f"{State(self.freqtrade.state)} after config reloaded"
+        )
 
         # Tell systemd that we completed reconfiguration
         self._notify("READY=1")

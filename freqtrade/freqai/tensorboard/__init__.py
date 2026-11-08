@@ -1,7 +1,12 @@
 # ensure users can still use a non-torch freqai version
 try:
-    from freqtrade.freqai.tensorboard.lightgbm_callback import LightGBMTensorboardCallback
-    from freqtrade.freqai.tensorboard.tensorboard import TensorBoardCallback, TensorboardLogger
+    from freqtrade.freqai.tensorboard.lightgbm_callback import (
+        LightGBMTensorboardCallback,
+    )
+    from freqtrade.freqai.tensorboard.tensorboard import (
+        TensorBoardCallback,
+        TensorboardLogger,
+    )
 
     TBLogger = TensorboardLogger
     TBCallback = TensorBoardCallback

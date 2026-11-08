@@ -791,10 +791,16 @@ AVAILABLE_CLI_OPTIONS = {
         default=[],
     ),
     "entry_only": Arg(
-        "--entry-only", help=("Only analyze entry signals."), action="store_true", default=False
+        "--entry-only",
+        help=("Only analyze entry signals."),
+        action="store_true",
+        default=False,
     ),
     "exit_only": Arg(
-        "--exit-only", help=("Only analyze exit signals."), action="store_true", default=False
+        "--exit-only",
+        help=("Only analyze exit signals."),
+        action="store_true",
+        default=False,
     ),
     "analysis_rejected": Arg(
         "--rejected-signals",
@@ -824,7 +830,9 @@ AVAILABLE_CLI_OPTIONS = {
         metavar="PATH",
     ),
     "freqai_backtest_live_models": Arg(
-        "--freqai-backtest-live-models", help="Run backtest with ready models.", action="store_true"
+        "--freqai-backtest-live-models",
+        help="Run backtest with ready models.",
+        action="store_true",
     ),
     "minimum_trade_amount": Arg(
         "--minimum-trade-amount",

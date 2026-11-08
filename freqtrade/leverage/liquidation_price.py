@@ -6,7 +6,6 @@ from freqtrade.exchange import Exchange
 from freqtrade.persistence import LocalTrade, Trade
 from freqtrade.wallets import Wallets
 
-
 logger = logging.getLogger(__name__)
 
 

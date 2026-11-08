@@ -5,7 +5,6 @@ import numpy as np
 from freqtrade.freqai.prediction_models.ReinforcementLearner import ReinforcementLearner
 from freqtrade.freqai.RL.Base4ActionRLEnv import Actions, Base4ActionRLEnv, Positions
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,13 +61,17 @@ class ReinforcementLearner_test_4ac(ReinforcementLearner):
             # close long
             if action == Actions.Exit.value and self._position == Positions.Long:
                 if pnl > self.profit_aim * self.rr:
-                    factor *= self.rl_config["model_reward_parameters"].get("win_reward_factor", 2)
+                    factor *= self.rl_config["model_reward_parameters"].get(
+                        "win_reward_factor", 2
+                    )
                 return float(rew * factor)
 
             # close short
             if action == Actions.Exit.value and self._position == Positions.Short:
                 if pnl > self.profit_aim * self.rr:
-                    factor *= self.rl_config["model_reward_parameters"].get("win_reward_factor", 2)
+                    factor *= self.rl_config["model_reward_parameters"].get(
+                        "win_reward_factor", 2
+                    )
                 return float(rew * factor)
 
             return 0.0

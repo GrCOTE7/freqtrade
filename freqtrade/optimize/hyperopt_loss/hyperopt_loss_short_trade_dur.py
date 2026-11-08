@@ -10,7 +10,6 @@ from pandas import DataFrame
 
 from freqtrade.optimize.hyperopt import IHyperOptLoss
 
-
 # Set TARGET_TRADES to suit your number concurrent trades so its realistic
 # to the number of days
 TARGET_TRADES = 600
@@ -33,7 +32,9 @@ class ShortTradeDurHyperOptLoss(IHyperOptLoss):
     """
 
     @staticmethod
-    def hyperopt_loss_function(results: DataFrame, trade_count: int, *args, **kwargs) -> float:
+    def hyperopt_loss_function(
+        results: DataFrame, trade_count: int, *args, **kwargs
+    ) -> float:
         """
         Objective function, returns smaller number for better results
         This is the Default algorithm

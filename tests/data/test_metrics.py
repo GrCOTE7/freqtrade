@@ -99,10 +99,15 @@ def test_create_cum_profit(testdatadir):
     bt_data = load_backtest_data(filename)
     timerange = TimeRange.parse_timerange("20180110-20180112")
 
-    df = load_pair_history(pair="TRX/BTC", timeframe="5m", datadir=testdatadir, timerange=timerange)
+    df = load_pair_history(
+        pair="TRX/BTC", timeframe="5m", datadir=testdatadir, timerange=timerange
+    )
 
     cum_profits = create_cum_profit(
-        df.set_index("date"), bt_data[bt_data["pair"] == "TRX/BTC"], "cum_profits", timeframe="5m"
+        df.set_index("date"),
+        bt_data[bt_data["pair"] == "TRX/BTC"],
+        "cum_profits",
+        timeframe="5m",
     )
     assert "cum_profits" in cum_profits.columns
     assert cum_profits.iloc[0]["cum_profits"] == 0
@@ -116,10 +121,15 @@ def test_create_cum_profit1(testdatadir):
     bt_data["close_date"] = bt_data.loc[:, "close_date"] + DateOffset(seconds=20)
     timerange = TimeRange.parse_timerange("20180110-20180112")
 
-    df = load_pair_history(pair="TRX/BTC", timeframe="5m", datadir=testdatadir, timerange=timerange)
+    df = load_pair_history(
+        pair="TRX/BTC", timeframe="5m", datadir=testdatadir, timerange=timerange
+    )
 
     cum_profits = create_cum_profit(
-        df.set_index("date"), bt_data[bt_data["pair"] == "TRX/BTC"], "cum_profits", timeframe="5m"
+        df.set_index("date"),
+        bt_data[bt_data["pair"] == "TRX/BTC"],
+        "cum_profits",
+        timeframe="5m",
     )
     assert "cum_profits" in cum_profits.columns
     assert cum_profits.iloc[0]["cum_profits"] == 0
@@ -276,7 +286,9 @@ def test_calculate_sortino_from_balance():
 
     sortino = calculate_sortino_from_balance(balance_history)
     expected_returns = np.array([0.1, -0.05, 0.2, -0.1])
-    expected_sortino = expected_returns.mean() / np.std(expected_returns[expected_returns < 0])
+    expected_sortino = expected_returns.mean() / np.std(
+        expected_returns[expected_returns < 0]
+    )
     expected_sortino *= np.sqrt(365)
 
     assert isinstance(sortino, float)
@@ -434,7 +446,12 @@ def test_calculate_sqn(testdatadir):
 @pytest.mark.parametrize(
     "profits,starting_balance,expected_sqn,description",
     [
-        ([1.0, -0.5, 2.0, -1.0, 0.5, 1.5, -0.5, 1.0], 100, 1.3229, "Mixed profits/losses"),
+        (
+            [1.0, -0.5, 2.0, -1.0, 0.5, 1.5, -0.5, 1.0],
+            100,
+            1.3229,
+            "Mixed profits/losses",
+        ),
         ([], 100, 0.0, "Empty dataframe"),
         ([1.0, 0.5, 2.0, 1.5, 0.8], 100, 4.3657, "All winning trades"),
         ([-1.0, -0.5, -2.0, -1.5, -0.8], 100, -4.3657, "All losing trades"),
@@ -573,7 +590,9 @@ def test_calculate_max_drawdown2():
     assert drawdown.drawdown_abs == 0.091755
     assert pytest.approx(drawdown.relative_account_drawdown) == 0.32129575
 
-    df = DataFrame(zip(values[:5], dates[:5], strict=False), columns=["profit", "open_date"])
+    df = DataFrame(
+        zip(values[:5], dates[:5], strict=False), columns=["profit", "open_date"]
+    )
     # No losing trade ...
     drawdown = calculate_max_drawdown(df, date_col="open_date", value_col="profit")
     assert drawdown.drawdown_abs == 0.0
@@ -581,7 +600,9 @@ def test_calculate_max_drawdown2():
     assert drawdown.current_high_value >= 0.0
     assert drawdown.current_drawdown_abs == 0.0
 
-    df1 = DataFrame(zip(values[:5], dates[:5], strict=False), columns=["profit", "open_date"])
+    df1 = DataFrame(
+        zip(values[:5], dates[:5], strict=False), columns=["profit", "open_date"]
+    )
     df1.loc[:, "profit"] = df1["profit"] * -1
     # No winning trade ...
     drawdown = calculate_max_drawdown(df1, date_col="open_date", value_col="profit")
@@ -598,7 +619,9 @@ def test_calculate_max_drawdown2():
         ([0.0, -500.0, 500.0, 10000.0, -1000.0], True, 0, 1, 500.0, 0.5),
     ],
 )
-def test_calculate_max_drawdown_abs(profits, relative, highd, lowdays, result, result_rel):
+def test_calculate_max_drawdown_abs(
+    profits, relative, highd, lowdays, result, result_rel
+):
     """
     Test case from issue https://github.com/freqtrade/freqtrade/issues/6655
     [1000, 500,  1000, 11000, 10000] # absolute results
@@ -606,7 +629,9 @@ def test_calculate_max_drawdown_abs(profits, relative, highd, lowdays, result, r
     """
     init_date = datetime(2020, 1, 1, tzinfo=UTC)
     dates = [init_date + timedelta(days=i) for i in range(len(profits))]
-    df = DataFrame(zip(profits, dates, strict=False), columns=["profit_abs", "open_date"])
+    df = DataFrame(
+        zip(profits, dates, strict=False), columns=["profit_abs", "open_date"]
+    )
     # sort by profit and reset index
     df = df.sort_values("profit_abs").reset_index(drop=True)
     df1 = df.copy()

@@ -17,7 +17,9 @@ def test_download_data_main_no_markets(mocker, caplog):
     patch_exchange(mocker, exchange="binance")
     mocker.patch(f"{EXMS}.get_markets", return_value={})
     config = setup_utils_configuration({"exchange": "binance"}, RunMode.UTIL_EXCHANGE)
-    config.update({"days": 20, "pairs": ["ETH/BTC", "XRP/BTC"], "timeframes": ["5m", "1h"]})
+    config.update(
+        {"days": 20, "pairs": ["ETH/BTC", "XRP/BTC"], "timeframes": ["5m", "1h"]}
+    )
     download_data_main(config)
     assert dl_mock.call_count == 0
     assert log_has_re("No pairs available for download..*", caplog)
@@ -40,7 +42,9 @@ def test_download_data_main_all_pairs(mocker, markets):
 
     dl_mock.reset_mock()
 
-    config.update({"pairs": [".*/USDT"], "timeframes": ["5m", "1h"], "include_inactive": True})
+    config.update(
+        {"pairs": [".*/USDT"], "timeframes": ["5m", "1h"], "include_inactive": True}
+    )
     download_data_main(config)
     expected = {"BTC/USDT", "ETH/USDT", "LTC/USDT", "XRP/USDT", "NEO/USDT", "TKN/USDT"}
     assert set(dl_mock.call_args_list[0][1]["pairs"]) == expected
@@ -52,7 +56,8 @@ def test_download_data_main_trades(mocker):
         MagicMock(return_value=[]),
     )
     convert_mock = mocker.patch(
-        "freqtrade.data.history.history_utils.convert_trades_to_ohlcv", MagicMock(return_value=[])
+        "freqtrade.data.history.history_utils.convert_trades_to_ohlcv",
+        MagicMock(return_value=[]),
     )
     patch_exchange(mocker)
     mocker.patch(f"{EXMS}.get_markets", return_value={"ETH/BTC": {}, "XRP/BTC": {}})
@@ -85,7 +90,9 @@ def test_download_data_main_trades(mocker):
 
     # Exchange that doesn't support historic downloads
     config["exchange"]["name"] = "bybit"
-    with pytest.raises(OperationalException, match=r"Trade history not available for .*"):
+    with pytest.raises(
+        OperationalException, match=r"Trade history not available for .*"
+    ):
         download_data_main(config)
 
 
@@ -100,12 +107,16 @@ def test_download_data_main_data_invalid(mocker):
             "timeframes": ["5m", "1h"],
         }
     )
-    with pytest.raises(OperationalException, match=r"Historic klines not available for .*"):
+    with pytest.raises(
+        OperationalException, match=r"Historic klines not available for .*"
+    ):
         download_data_main(config)
 
     patch_exchange(mocker, exchange="hyperliquid")
     mocker.patch(f"{EXMS}.get_markets", return_value={"ETH/USDC": {}})
-    config2 = setup_utils_configuration({"exchange": "hyperliquid"}, RunMode.UTIL_EXCHANGE)
+    config2 = setup_utils_configuration(
+        {"exchange": "hyperliquid"}, RunMode.UTIL_EXCHANGE
+    )
     config2.update(
         {
             "days": 20,
@@ -113,5 +124,7 @@ def test_download_data_main_data_invalid(mocker):
             "timeframes": ["5m", "1h"],
         }
     )
-    with pytest.raises(OperationalException, match=r"Historic data not available for .*"):
+    with pytest.raises(
+        OperationalException, match=r"Historic data not available for .*"
+    ):
         download_data_main(config2)

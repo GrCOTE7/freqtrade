@@ -9,7 +9,6 @@ import warnings
 
 from technical.qtpylib import *  # noqa: F403
 
-
 warnings.warn(
     "'freqtrade.vendor.qtpylib.indicators' is deprecated and will be removed in a future "
     "release. Import from technical instead - either the module "

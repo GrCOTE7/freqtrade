@@ -6,8 +6,11 @@ import logging
 
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +66,8 @@ class OffsetFilter(IPairList):
         """
         if self._offset > len(pairlist):
             self.log_once(
-                f"Offset of {self._offset} is larger than " + f"pair count of {len(pairlist)}",
+                f"Offset of {self._offset} is larger than "
+                + f"pair count of {len(pairlist)}",
                 logger.warning,
             )
         pairs = pairlist[self._offset :]

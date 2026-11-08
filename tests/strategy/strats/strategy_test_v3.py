@@ -128,7 +128,9 @@ class StrategyTestV3(IStrategy):
         dataframe["fastk"] = stoch_fast["fastk"]
 
         # Bollinger bands
-        bollinger = qtpylib.bollinger_bands(qtpylib.typical_price(dataframe), window=20, stds=2)
+        bollinger = qtpylib.bollinger_bands(
+            qtpylib.typical_price(dataframe), window=20, stds=2
+        )
         dataframe["bb_lowerband"] = bollinger["lower"]
         dataframe["bb_middleband"] = bollinger["mid"]
         dataframe["bb_upperband"] = bollinger["upper"]
@@ -146,7 +148,9 @@ class StrategyTestV3(IStrategy):
                 & (dataframe["adx"] > 30)
                 & (dataframe["plus_di"] > self.buy_plusdi.value)
             )
-            | ((dataframe["adx"] > 65) & (dataframe["plus_di"] > self.buy_plusdi.value)),
+            | (
+                (dataframe["adx"] > 65) & (dataframe["plus_di"] > self.buy_plusdi.value)
+            ),
             "enter_long",
         ] = 1
         dataframe.loc[
@@ -166,7 +170,10 @@ class StrategyTestV3(IStrategy):
                 & (dataframe["adx"] > 10)
                 & (dataframe["minus_di"] > 0)
             )
-            | ((dataframe["adx"] > 70) & (dataframe["minus_di"] > self.sell_minusdi.value)),
+            | (
+                (dataframe["adx"] > 70)
+                & (dataframe["minus_di"] > self.sell_minusdi.value)
+            ),
             "exit_long",
         ] = 1
 

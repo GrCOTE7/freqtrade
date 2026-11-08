@@ -5,7 +5,11 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 
 from freqtrade.enums import CandleType, MarginMode, RunMode, TradingMode
-from freqtrade.exceptions import InvalidOrderException, OperationalException, RetryableOrderError
+from freqtrade.exceptions import (
+    InvalidOrderException,
+    OperationalException,
+    RetryableOrderError,
+)
 from freqtrade.exchange.common import API_RETRY_COUNT
 from freqtrade.util import dt_now, dt_ts, dt_utc
 from tests.conftest import EXMS, get_patched_exchange
@@ -34,7 +38,9 @@ def test_fetch_stoploss_order_bitget(default_conf, mocker):
     api_mock.fetch_canceled_and_closed_orders = MagicMock(
         return_value=[{"id": "1234", "status": "closed", "clientOrderId": "123455"}]
     )
-    api_mock.fetch_open_orders = MagicMock(return_value=[{"id": "50110", "clientOrderId": "1234"}])
+    api_mock.fetch_open_orders = MagicMock(
+        return_value=[{"id": "50110", "clientOrderId": "1234"}]
+    )
 
     resp = exchange.fetch_stoploss_order("1234", "ETH/BTC")
     assert api_mock.fetch_open_orders.call_count == 2
@@ -46,7 +52,9 @@ def test_fetch_stoploss_order_bitget(default_conf, mocker):
 
     default_conf["dry_run"] = True
     exchange = get_patched_exchange(mocker, default_conf, api_mock, exchange="bitget")
-    dro_mock = mocker.patch(f"{EXMS}.fetch_dry_run_order", MagicMock(return_value={"id": "123455"}))
+    dro_mock = mocker.patch(
+        f"{EXMS}.fetch_dry_run_order", MagicMock(return_value={"id": "123455"})
+    )
 
     api_mock.fetch_open_orders.reset_mock()
     api_mock.fetch_canceled_and_closed_orders.reset_mock()
@@ -82,7 +90,9 @@ def test_cancel_stoploss_order_bitget(default_conf_usdt, mocker):
     default_conf_usdt["dry_run"] = False
     api_mock = MagicMock()
 
-    exchange = get_patched_exchange(mocker, default_conf_usdt, api_mock, exchange="bitget")
+    exchange = get_patched_exchange(
+        mocker, default_conf_usdt, api_mock, exchange="bitget"
+    )
 
     # Spot scenario
     exchange.cancel_order = MagicMock(return_value={"id": "1234"})
@@ -93,7 +103,9 @@ def test_cancel_stoploss_order_bitget(default_conf_usdt, mocker):
     # Futures scenario
     default_conf_usdt["trading_mode"] = TradingMode.FUTURES
     default_conf_usdt["margin_mode"] = MarginMode.ISOLATED
-    exchange = get_patched_exchange(mocker, default_conf_usdt, api_mock, exchange="bitget")
+    exchange = get_patched_exchange(
+        mocker, default_conf_usdt, api_mock, exchange="bitget"
+    )
     exchange.cancel_order = MagicMock(return_value={"id": "1234"})
     assert exchange.cancel_stoploss_order("1234", "ETH/USDT:USDT", {}) == {"id": "1234"}
     assert exchange.cancel_order.call_count == 1
@@ -140,22 +152,37 @@ def test_bitget_ohlcv_candle_limit(mocker, default_conf_usdt):
 
         start_time = dt_ts(dt_now() - timedelta(days=17))
         assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == 1000
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == 1000
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == 1000
+        )
         assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == 1000
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+            == 200
+        )
         start_time = dt_ts(dt_now() - timedelta(days=48))
         length = 200 if timeframe in ("1m", "5m") else 1000
         assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == length
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
+        )
         assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == length
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+            == 200
+        )
 
         start_time = dt_ts(dt_now() - timedelta(days=61))
         length = 200
         assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == length
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
+        )
         assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == length
-        assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+        assert (
+            exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+            == 200
+        )
 
 
 def test_additional_exchange_init_bitget(default_conf, mocker):
@@ -169,7 +196,12 @@ def test_additional_exchange_init_bitget(default_conf, mocker):
     assert api_mock.set_position_mode.call_count == 1
 
     ccxt_exceptionhandlers(
-        mocker, default_conf, api_mock, "bitget", "additional_exchange_init", "set_position_mode"
+        mocker,
+        default_conf,
+        api_mock,
+        "bitget",
+        "additional_exchange_init",
+        "set_position_mode",
     )
 
 
@@ -178,11 +210,16 @@ def test_dry_run_liquidation_price_cross_bitget(default_conf, mocker):
     default_conf["trading_mode"] = TradingMode.FUTURES
     default_conf["margin_mode"] = MarginMode.CROSS
     api_mock = MagicMock()
-    mocker.patch(f"{EXMS}.get_maintenance_ratio_and_amt", MagicMock(return_value=(0.005, 0.0)))
-    exchange = get_patched_exchange(mocker, default_conf, exchange="bitget", api_mock=api_mock)
+    mocker.patch(
+        f"{EXMS}.get_maintenance_ratio_and_amt", MagicMock(return_value=(0.005, 0.0))
+    )
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="bitget", api_mock=api_mock
+    )
 
     with pytest.raises(
-        OperationalException, match="Freqtrade currently only supports isolated futures for bitget"
+        OperationalException,
+        match="Freqtrade currently only supports isolated futures for bitget",
     ):
         exchange.dry_run_liquidation_price(
             "ETH/USDT:USDT",
@@ -200,7 +237,9 @@ def test__lev_prep_bitget(default_conf, mocker):
     api_mock = MagicMock()
     api_mock.set_margin_mode = MagicMock()
     api_mock.set_leverage = MagicMock()
-    type(api_mock).has = PropertyMock(return_value={"setMarginMode": True, "setLeverage": True})
+    type(api_mock).has = PropertyMock(
+        return_value={"setMarginMode": True, "setLeverage": True}
+    )
     exchange = get_patched_exchange(mocker, default_conf, api_mock, exchange="bitget")
     exchange._lev_prep("BTC/USDC:USDC", 3.2, "buy")
 

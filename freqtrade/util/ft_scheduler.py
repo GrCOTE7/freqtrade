@@ -5,7 +5,6 @@ from schedule import Job, Scheduler
 
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,5 +22,7 @@ class FtScheduler(Scheduler):
             logger.exception(f"Error in scheduled job {job}.")
             # Job.run() only reschedules after the job returned.
             # Reschedule manually, otherwise the job stays due and re-runs on every iteration.
-            job.last_run = datetime.now()  # noqa: DTZ005 - schedule uses naive local time
+            job.last_run = (
+                datetime.now()
+            )  # noqa: DTZ005 - schedule uses naive local time
             job._schedule_next_run()

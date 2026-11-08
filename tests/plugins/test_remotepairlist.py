@@ -26,13 +26,18 @@ def rpl_config(default_conf):
 def test_gen_pairlist_with_local_file(mocker, rpl_config):
     mock_file = MagicMock()
     mock_file.read.return_value = '{"pairs": ["TKN/USDT","ETH/USDT","NANO/USDT"]}'
-    mocker.patch("freqtrade.plugins.pairlist.RemotePairList.open", return_value=mock_file)
+    mocker.patch(
+        "freqtrade.plugins.pairlist.RemotePairList.open", return_value=mock_file
+    )
 
     mock_file_path = mocker.patch("freqtrade.plugins.pairlist.RemotePairList.Path")
     mock_file_path.exists.return_value = True
 
     jsonparse = json.loads(mock_file.read.return_value)
-    mocker.patch("freqtrade.plugins.pairlist.RemotePairList.rapidjson.load", return_value=jsonparse)
+    mocker.patch(
+        "freqtrade.plugins.pairlist.RemotePairList.rapidjson.load",
+        return_value=jsonparse,
+    )
 
     rpl_config["pairlists"] = [
         {
@@ -76,13 +81,16 @@ def test_fetch_pairlist_mock_response_html(mocker, rpl_config):
     pairlistmanager = PairListManager(exchange, rpl_config)
 
     mocker.patch(
-        "freqtrade.plugins.pairlist.RemotePairList.requests.get", return_value=mock_response
+        "freqtrade.plugins.pairlist.RemotePairList.requests.get",
+        return_value=mock_response,
     )
     remote_pairlist = RemotePairList(
         exchange, pairlistmanager, rpl_config, rpl_config["pairlists"][0], 0
     )
 
-    with pytest.raises(OperationalException, match=r"RemotePairList is not of type JSON\."):
+    with pytest.raises(
+        OperationalException, match=r"RemotePairList is not of type JSON\."
+    ):
         remote_pairlist.fetch_pairlist()
 
 
@@ -114,7 +122,9 @@ def test_fetch_pairlist_timeout_keep_last_pairlist(mocker, rpl_config, caplog):
     pairlist_url = rpl_config["pairlists"][0]["pairlist_url"]
     pairs, _time_elapsed = remote_pairlist.fetch_pairlist()
 
-    assert log_has(f"Error: Was not able to fetch pairlist from: {pairlist_url}", caplog)
+    assert log_has(
+        f"Error: Was not able to fetch pairlist from: {pairlist_url}", caplog
+    )
     assert log_has("Keeping last fetched pairlist", caplog)
     assert pairs == ["BTC/USDT", "ETH/USDT", "LTC/USDT"]
 
@@ -160,7 +170,8 @@ def test_fetch_pairlist_mock_response_valid(mocker, rpl_config):
 
     mock_response.elapsed.total_seconds.return_value = 0.4
     mocker.patch(
-        "freqtrade.plugins.pairlist.RemotePairList.requests.get", return_value=mock_response
+        "freqtrade.plugins.pairlist.RemotePairList.requests.get",
+        return_value=mock_response,
     )
 
     exchange = get_patched_exchange(mocker, rpl_config)
@@ -258,7 +269,8 @@ def test_remote_pairlist_blacklist(mocker, rpl_config, caplog, markets, tickers)
     )
 
     mocker.patch(
-        "freqtrade.plugins.pairlist.RemotePairList.requests.get", return_value=mock_response
+        "freqtrade.plugins.pairlist.RemotePairList.requests.get",
+        return_value=mock_response,
     )
 
     exchange = get_patched_exchange(mocker, rpl_config)
@@ -273,14 +285,18 @@ def test_remote_pairlist_blacklist(mocker, rpl_config, caplog, markets, tickers)
 
     assert pairs == ["XRP/USDT"]
 
-    whitelist = remote_pairlist.filter_pairlist(rpl_config["exchange"]["pair_whitelist"], {})
+    whitelist = remote_pairlist.filter_pairlist(
+        rpl_config["exchange"]["pair_whitelist"], {}
+    )
     assert whitelist == ["ETH/USDT"]
 
     assert log_has(f"Blacklist - Filtered out pairs: {pairs}", caplog)
 
 
 @pytest.mark.parametrize("processing_mode", ["filter", "append"])
-def test_remote_pairlist_whitelist(mocker, rpl_config, processing_mode, markets, tickers):
+def test_remote_pairlist_whitelist(
+    mocker, rpl_config, processing_mode, markets, tickers
+):
     mock_response = MagicMock()
 
     mock_response.json.return_value = {"pairs": ["XRP/USDT"], "refresh_period": 60}
@@ -308,7 +324,8 @@ def test_remote_pairlist_whitelist(mocker, rpl_config, processing_mode, markets,
     )
 
     mocker.patch(
-        "freqtrade.plugins.pairlist.RemotePairList.requests.get", return_value=mock_response
+        "freqtrade.plugins.pairlist.RemotePairList.requests.get",
+        return_value=mock_response,
     )
 
     exchange = get_patched_exchange(mocker, rpl_config)
@@ -323,8 +340,12 @@ def test_remote_pairlist_whitelist(mocker, rpl_config, processing_mode, markets,
 
     assert pairs == ["XRP/USDT"]
 
-    whitelist = remote_pairlist.filter_pairlist(rpl_config["exchange"]["pair_whitelist"], {})
-    assert whitelist == (["XRP/USDT"] if processing_mode == "filter" else ["ETH/USDT", "XRP/USDT"])
+    whitelist = remote_pairlist.filter_pairlist(
+        rpl_config["exchange"]["pair_whitelist"], {}
+    )
+    assert whitelist == (
+        ["XRP/USDT"] if processing_mode == "filter" else ["ETH/USDT", "XRP/USDT"]
+    )
 
 
 @pytest.mark.parametrize(
@@ -365,7 +386,8 @@ def test_remote_pairlist_whitelist_number_assets(
     )
 
     mocker.patch(
-        "freqtrade.plugins.pairlist.RemotePairList.requests.get", return_value=mock_response
+        "freqtrade.plugins.pairlist.RemotePairList.requests.get",
+        return_value=mock_response,
     )
 
     exchange = get_patched_exchange(mocker, rpl_config)
@@ -380,5 +402,7 @@ def test_remote_pairlist_whitelist_number_assets(
 
     assert pairs == ["ETH/USDT", "XRP/USDT", "TKN/USDT"]
 
-    whitelist = remote_pairlist.filter_pairlist(rpl_config["exchange"]["pair_whitelist"], {})
+    whitelist = remote_pairlist.filter_pairlist(
+        rpl_config["exchange"]["pair_whitelist"], {}
+    )
     assert whitelist == result

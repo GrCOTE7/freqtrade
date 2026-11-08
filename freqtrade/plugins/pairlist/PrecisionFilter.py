@@ -9,7 +9,6 @@ from freqtrade.exchange import ROUND_UP
 from freqtrade.exchange.exchange_types import Ticker
 from freqtrade.plugins.pairlist.IPairList import IPairList, SupportsBacktesting
 
-
 logger = logging.getLogger(__name__)
 
 

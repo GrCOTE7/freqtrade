@@ -16,7 +16,10 @@ from freqtrade.configuration import TimeRange
 from freqtrade.constants import DATETIME_PRINT_FORMAT
 from freqtrade.data.converter import ohlcv_to_dataframe
 from freqtrade.data.history import get_datahandler
-from freqtrade.data.history.datahandlers.jsondatahandler import JsonDataHandler, JsonGzDataHandler
+from freqtrade.data.history.datahandlers.jsondatahandler import (
+    JsonDataHandler,
+    JsonGzDataHandler,
+)
 from freqtrade.data.history.history_utils import (
     _download_all_pairs_history_parallel,
     _download_pair_history,
@@ -87,14 +90,17 @@ def test_load_data_1min_timeframe(ohlcv_history, mocker, caplog, testdatadir) ->
     load_data(datadir=testdatadir, timeframe="1m", pairs=["UNITTEST/BTC"])
     assert file.is_file()
     assert not log_has(
-        'Download history data for pair: "UNITTEST/BTC", interval: 1m and store in None.', caplog
+        'Download history data for pair: "UNITTEST/BTC", interval: 1m and store in None.',
+        caplog,
     )
 
 
 def test_load_data_mark(ohlcv_history, mocker, caplog, testdatadir) -> None:
     mocker.patch(f"{EXMS}.get_historic_ohlcv", return_value=ohlcv_history)
     file = testdatadir / "futures/UNITTEST_USDT_USDT-1h-mark.feather"
-    load_data(datadir=testdatadir, timeframe="1h", pairs=["UNITTEST/BTC"], candle_type="mark")
+    load_data(
+        datadir=testdatadir, timeframe="1h", pairs=["UNITTEST/BTC"], candle_type="mark"
+    )
     assert file.is_file()
     assert not log_has(
         'Download history data for pair: "UNITTEST/USDT:USDT", interval: 1m and store in None.',
@@ -119,7 +125,9 @@ def test_load_data_startup_candles(mocker, testdatadir) -> None:
     assert ltfmock.call_count == 1
     assert ltfmock.call_args_list[0][1]["timerange"] != timerange
     # startts is 20 minutes earlier
-    assert ltfmock.call_args_list[0][1]["timerange"].startts == timerange.startts - 20 * 60
+    assert (
+        ltfmock.call_args_list[0][1]["timerange"].startts == timerange.startts - 20 * 60
+    )
 
 
 @pytest.mark.parametrize("candle_type", ["mark", ""])
@@ -134,7 +142,9 @@ def test_load_data_with_new_pair_1min(
     file = tmp_path / "MEME_BTC-1m.feather"
 
     # do not download a new pair if refresh_pairs isn't set
-    load_pair_history(datadir=tmp_path, timeframe="1m", pair="MEME/BTC", candle_type=candle_type)
+    load_pair_history(
+        datadir=tmp_path, timeframe="1m", pair="MEME/BTC", candle_type=candle_type
+    )
     assert not file.is_file()
     assert log_has(
         f"No history for MEME/BTC, {candle_type}, 1m found. "
@@ -150,9 +160,13 @@ def test_load_data_with_new_pair_1min(
         exchange=exchange,
         candle_type=CandleType.SPOT,
     )
-    load_pair_history(datadir=tmp_path, timeframe="1m", pair="MEME/BTC", candle_type=candle_type)
+    load_pair_history(
+        datadir=tmp_path, timeframe="1m", pair="MEME/BTC", candle_type=candle_type
+    )
     assert file.is_file()
-    assert log_has_re(r'Download history data for "MEME/BTC", 1m, ' r"spot and store in .*", caplog)
+    assert log_has_re(
+        r'Download history data for "MEME/BTC", 1m, ' r"spot and store in .*", caplog
+    )
 
 
 def test_testdata_path(testdatadir) -> None:
@@ -164,18 +178,31 @@ def test_testdata_path(testdatadir) -> None:
     [
         ("ETH/BTC", "5m", "freqtrade/hello/world/ETH_BTC-5m.json", ""),
         ("ETH/USDT", "1M", "freqtrade/hello/world/ETH_USDT-1Mo.json", ""),
-        ("Fabric Token/ETH", "5m", "freqtrade/hello/world/Fabric_Token_ETH-5m.json", ""),
+        (
+            "Fabric Token/ETH",
+            "5m",
+            "freqtrade/hello/world/Fabric_Token_ETH-5m.json",
+            "",
+        ),
         ("ETHH20", "5m", "freqtrade/hello/world/ETHH20-5m.json", ""),
         (".XBTBON2H", "5m", "freqtrade/hello/world/_XBTBON2H-5m.json", ""),
         ("ETHUSD.d", "5m", "freqtrade/hello/world/ETHUSD_d-5m.json", ""),
         ("ACC_OLD/BTC", "5m", "freqtrade/hello/world/ACC_OLD_BTC-5m.json", ""),
         ("ETH/BTC", "5m", "freqtrade/hello/world/futures/ETH_BTC-5m-mark.json", "mark"),
-        ("ACC_OLD/BTC", "5m", "freqtrade/hello/world/futures/ACC_OLD_BTC-5m-index.json", "index"),
+        (
+            "ACC_OLD/BTC",
+            "5m",
+            "freqtrade/hello/world/futures/ACC_OLD_BTC-5m-index.json",
+            "index",
+        ),
     ],
 )
 def test_json_pair_data_filename(pair, timeframe, expected_result, candle_type):
     fn = JsonDataHandler._pair_data_filename(
-        Path("freqtrade/hello/world"), pair, timeframe, CandleType.from_string(candle_type)
+        Path("freqtrade/hello/world"),
+        pair,
+        timeframe,
+        CandleType.from_string(candle_type),
     )
     assert isinstance(fn, Path)
     assert fn == Path(expected_result)
@@ -193,7 +220,11 @@ def test_json_pair_data_filename(pair, timeframe, expected_result, candle_type):
     "pair,trading_mode,expected_result",
     [
         ("ETH/BTC", "", "freqtrade/hello/world/ETH_BTC-trades.json"),
-        ("ETH/USDT:USDT", "futures", "freqtrade/hello/world/futures/ETH_USDT_USDT-trades.json"),
+        (
+            "ETH/USDT:USDT",
+            "futures",
+            "freqtrade/hello/world/futures/ETH_USDT_USDT-trades.json",
+        ),
         ("Fabric Token/ETH", "", "freqtrade/hello/world/Fabric_Token_ETH-trades.json"),
         ("ETHH20", "", "freqtrade/hello/world/ETHH20-trades.json"),
         (".XBTBON2H", "", "freqtrade/hello/world/_XBTBON2H-trades.json"),
@@ -202,11 +233,15 @@ def test_json_pair_data_filename(pair, timeframe, expected_result, candle_type):
     ],
 )
 def test_json_pair_trades_filename(pair, trading_mode, expected_result):
-    fn = JsonDataHandler._pair_trades_filename(Path("freqtrade/hello/world"), pair, trading_mode)
+    fn = JsonDataHandler._pair_trades_filename(
+        Path("freqtrade/hello/world"), pair, trading_mode
+    )
     assert isinstance(fn, Path)
     assert fn == Path(expected_result)
 
-    fn = JsonGzDataHandler._pair_trades_filename(Path("freqtrade/hello/world"), pair, trading_mode)
+    fn = JsonGzDataHandler._pair_trades_filename(
+        Path("freqtrade/hello/world"), pair, trading_mode
+    )
     assert isinstance(fn, Path)
     assert fn == Path(expected_result + ".gz")
 
@@ -325,7 +360,11 @@ def test_download_pair_history(
         candle_type=candle_type,
     )
     assert _download_pair_history(
-        datadir=tmp_path, exchange=exchange, pair="CFI/BTC", timeframe="1m", candle_type=candle_type
+        datadir=tmp_path,
+        exchange=exchange,
+        pair="CFI/BTC",
+        timeframe="1m",
+        candle_type=candle_type,
     )
     assert not exchange._pairs_last_refresh_time
     assert file1_1.is_file()
@@ -346,14 +385,20 @@ def test_download_pair_history(
         candle_type=candle_type,
     )
     assert _download_pair_history(
-        datadir=tmp_path, exchange=exchange, pair="CFI/BTC", timeframe="5m", candle_type=candle_type
+        datadir=tmp_path,
+        exchange=exchange,
+        pair="CFI/BTC",
+        timeframe="5m",
+        candle_type=candle_type,
     )
     assert not exchange._pairs_last_refresh_time
     assert file1_5.is_file()
     assert file2_5.is_file()
 
 
-def test_download_pair_history2(mocker, default_conf, testdatadir, ohlcv_history) -> None:
+def test_download_pair_history2(
+    mocker, default_conf, testdatadir, ohlcv_history
+) -> None:
     json_dump_mock = mocker.patch(
         "freqtrade.data.history.datahandlers.featherdatahandler.FeatherDataHandler.ohlcv_store",
         return_value=None,
@@ -384,14 +429,22 @@ def test_download_pair_history2(mocker, default_conf, testdatadir, ohlcv_history
     assert json_dump_mock.call_count == 3
 
 
-def test_download_backtesting_data_exception(mocker, caplog, default_conf, tmp_path) -> None:
+def test_download_backtesting_data_exception(
+    mocker, caplog, default_conf, tmp_path
+) -> None:
     mocker.patch(f"{EXMS}.get_historic_ohlcv", side_effect=Exception("File Error"))
     exchange = get_patched_exchange(mocker, default_conf)
 
     assert not _download_pair_history(
-        datadir=tmp_path, exchange=exchange, pair="MEME/BTC", timeframe="1m", candle_type="spot"
+        datadir=tmp_path,
+        exchange=exchange,
+        pair="MEME/BTC",
+        timeframe="1m",
+        candle_type="spot",
     )
-    assert log_has('Failed to download history data for pair: "MEME/BTC", timeframe: 1m.', caplog)
+    assert log_has(
+        'Failed to download history data for pair: "MEME/BTC", timeframe: 1m.', caplog
+    )
 
 
 def test_load_partial_missing(testdatadir, caplog) -> None:
@@ -438,7 +491,9 @@ def test_load_partial_missing(testdatadir, caplog) -> None:
 
 
 def test_init(default_conf) -> None:
-    assert {} == load_data(datadir=Path(), pairs=[], timeframe=default_conf["timeframe"])
+    assert {} == load_data(
+        datadir=Path(), pairs=[], timeframe=default_conf["timeframe"]
+    )
 
 
 def test_init_with_refresh(default_conf, mocker) -> None:
@@ -450,7 +505,9 @@ def test_init_with_refresh(default_conf, mocker) -> None:
         exchange=exchange,
         candle_type=CandleType.SPOT,
     )
-    assert {} == load_data(datadir=Path(), pairs=[], timeframe=default_conf["timeframe"])
+    assert {} == load_data(
+        datadir=Path(), pairs=[], timeframe=default_conf["timeframe"]
+    )
 
 
 def test_file_dump_json_tofile(testdatadir) -> None:
@@ -499,13 +556,20 @@ def test_validate_backtest_data_warn(default_conf, mocker, caplog, testdatadir) 
 
     data = strategy.advise_all_indicators(
         load_data(
-            datadir=testdatadir, timeframe="1m", pairs=["UNITTEST/BTC"], fill_up_missing=False
+            datadir=testdatadir,
+            timeframe="1m",
+            pairs=["UNITTEST/BTC"],
+            fill_up_missing=False,
         )
     )
     min_date, max_date = get_timerange(data)
     caplog.clear()
     assert validate_backtest_data(
-        data["UNITTEST/BTC"], "UNITTEST/BTC", min_date, max_date, timeframe_to_minutes("1m")
+        data["UNITTEST/BTC"],
+        "UNITTEST/BTC",
+        min_date,
+        max_date,
+        timeframe_to_minutes("1m"),
     )
     assert len(caplog.record_tuples) == 1
     assert log_has(
@@ -522,13 +586,22 @@ def test_validate_backtest_data(default_conf, mocker, caplog, testdatadir) -> No
 
     timerange = TimeRange()
     data = strategy.advise_all_indicators(
-        load_data(datadir=testdatadir, timeframe="5m", pairs=["UNITTEST/BTC"], timerange=timerange)
+        load_data(
+            datadir=testdatadir,
+            timeframe="5m",
+            pairs=["UNITTEST/BTC"],
+            timerange=timerange,
+        )
     )
 
     min_date, max_date = get_timerange(data)
     caplog.clear()
     assert not validate_backtest_data(
-        data["UNITTEST/BTC"], "UNITTEST/BTC", min_date, max_date, timeframe_to_minutes("5m")
+        data["UNITTEST/BTC"],
+        "UNITTEST/BTC",
+        min_date,
+        max_date,
+        timeframe_to_minutes("5m"),
     )
     assert len(caplog.record_tuples) == 0
 
@@ -538,14 +611,27 @@ def test_validate_backtest_data(default_conf, mocker, caplog, testdatadir) -> No
     [
         ("spot", 4, 2),
         ("margin", 4, 2),
-        ("futures", 8, 4),  # Called 8 times - 4 normal, 2 funding and 2 mark/index calls
+        (
+            "futures",
+            8,
+            4,
+        ),  # Called 8 times - 4 normal, 2 funding and 2 mark/index calls
     ],
 )
 def test_refresh_backtest_ohlcv_data(
-    mocker, default_conf, markets, caplog, testdatadir, trademode, callcount, callcount_parallel
+    mocker,
+    default_conf,
+    markets,
+    caplog,
+    testdatadir,
+    trademode,
+    callcount,
+    callcount_parallel,
 ):
     caplog.set_level(logging.DEBUG)
-    dl_mock = mocker.patch("freqtrade.data.history.history_utils._download_pair_history")
+    dl_mock = mocker.patch(
+        "freqtrade.data.history.history_utils._download_pair_history"
+    )
     mocker.patch(f"{EXMS}.verify_candle_type_support", MagicMock())
 
     def parallel_mock(pairs, timeframe, candle_type, **kwargs):
@@ -581,7 +667,9 @@ def test_refresh_backtest_ohlcv_data(
 
     assert log_has_re(r"Downloading pair ETH/BTC, .* interval 1m\.", caplog)
     if trademode == "futures":
-        assert log_has_re(r"Downloading pair ETH/BTC, funding_rate, interval 1h\.", caplog)
+        assert log_has_re(
+            r"Downloading pair ETH/BTC, funding_rate, interval 1h\.", caplog
+        )
         assert log_has_re(r"Downloading pair ETH/BTC, mark, interval 1h\.", caplog)
 
     # Test with only one pair - no parallel download should happen 1 pair/timeframe combination
@@ -655,7 +743,9 @@ def test_refresh_backtest_ohlcv_data(
             trading_mode=trademode,
             no_parallel_download=True,
         )
-        assert CandleType.OPEN_INTEREST not in [c[1]["candle_type"] for c in dl_mock.call_args_list]
+        assert CandleType.OPEN_INTEREST not in [
+            c[1]["candle_type"] for c in dl_mock.call_args_list
+        ]
 
 
 def test_download_data_no_markets(mocker, default_conf, caplog, testdatadir):
@@ -682,7 +772,9 @@ def test_download_data_no_markets(mocker, default_conf, caplog, testdatadir):
     assert log_has("Skipping pair BTT/BTC...", caplog)
 
 
-def test_refresh_backtest_trades_data(mocker, default_conf, markets, caplog, testdatadir):
+def test_refresh_backtest_trades_data(
+    mocker, default_conf, markets, caplog, testdatadir
+):
     dl_mock = mocker.patch(
         "freqtrade.data.history.history_utils._download_trades_history", MagicMock()
     )
@@ -715,7 +807,9 @@ def test_download_trades_history(
     start_dt = dt_utc(2023, 1, 1)
     time_machine.move_to(start_dt, tick=False)
 
-    ght_mock = MagicMock(side_effect=lambda pair, *args, **kwargs: (pair, trades_history))
+    ght_mock = MagicMock(
+        side_effect=lambda pair, *args, **kwargs: (pair, trades_history)
+    )
     mocker.patch(f"{EXMS}.get_historic_trades", ght_mock)
     exchange = get_patched_exchange(mocker, default_conf)
     file1 = tmp_path / "ETH_BTC-trades.json.gz"
@@ -724,13 +818,18 @@ def test_download_trades_history(
     assert not file1.is_file()
 
     assert _download_trades_history(
-        data_handler=data_handler, exchange=exchange, pair="ETH/BTC", trading_mode=TradingMode.SPOT
+        data_handler=data_handler,
+        exchange=exchange,
+        pair="ETH/BTC",
+        trading_mode=TradingMode.SPOT,
     )
     assert log_has("Current Amount of trades: 0", caplog)
     assert log_has("New Amount of trades: 6", caplog)
     assert ght_mock.call_count == 1
     # Default "since" - 30 days before current day.
-    assert ght_mock.call_args_list[0][1]["since"] == dt_ts(start_dt - timedelta(days=30))
+    assert ght_mock.call_args_list[0][1]["since"] == dt_ts(
+        start_dt - timedelta(days=30)
+    )
     assert file1.is_file()
     caplog.clear()
 
@@ -753,7 +852,9 @@ def test_download_trades_history(
 
     file1.unlink()
 
-    mocker.patch(f"{EXMS}.get_historic_trades", MagicMock(side_effect=ValueError("he ho!")))
+    mocker.patch(
+        f"{EXMS}.get_historic_trades", MagicMock(side_effect=ValueError("he ho!"))
+    )
     caplog.clear()
 
     with pytest.raises(ValueError, match="he ho!"):
@@ -867,7 +968,9 @@ def test_download_all_pairs_history_parallel(mocker, default_conf_usdt):
     assert exchange.refresh_latest_ohlcv.call_count == 1
 
 
-def test_download_pair_history_with_pair_candles(mocker, default_conf, tmp_path, caplog) -> None:
+def test_download_pair_history_with_pair_candles(
+    mocker, default_conf, tmp_path, caplog
+) -> None:
     """
     Test _download_pair_history with pair_candles parameter (parallel method).
     """
@@ -907,7 +1010,8 @@ def test_download_pair_history_with_pair_candles(mocker, default_conf, tmp_path,
     data_handler_mock.ohlcv_load.return_value = existing_data
     data_handler_mock.ohlcv_store = MagicMock()
     mocker.patch(
-        "freqtrade.data.history.history_utils.get_datahandler", return_value=data_handler_mock
+        "freqtrade.data.history.history_utils.get_datahandler",
+        return_value=data_handler_mock,
     )
 
     # Mock _load_cached_data_for_updating to return existing data and since_ms
@@ -954,7 +1058,9 @@ def test_download_pair_history_with_pair_candles(mocker, default_conf, tmp_path,
     assert get_historic_ohlcv_mock.call_count == 0
 
     # Verify the log message indicating parallel method was used (line 315-316)
-    assert log_has("Downloaded data for TEST/BTC, 5m, spot with length 3. Parallel Method.", caplog)
+    assert log_has(
+        "Downloaded data for TEST/BTC, 5m, spot with length 3. Parallel Method.", caplog
+    )
 
     # Verify data was stored
     assert data_handler_mock.ohlcv_store.call_count == 1
@@ -1002,7 +1108,8 @@ def test_download_pair_history_with_pair_candles_no_overlap(
     data_handler_mock.ohlcv_load.return_value = existing_data
     data_handler_mock.ohlcv_store = MagicMock()
     mocker.patch(
-        "freqtrade.data.history.history_utils.get_datahandler", return_value=data_handler_mock
+        "freqtrade.data.history.history_utils.get_datahandler",
+        return_value=data_handler_mock,
     )
 
     # Mock _load_cached_data_for_updating to return existing data and since_ms

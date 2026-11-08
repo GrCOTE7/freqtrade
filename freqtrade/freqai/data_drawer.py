@@ -27,7 +27,6 @@ from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.strategy.interface import IStrategy
 from freqtrade.util import dt_from_ts
 
-
 logger = logging.getLogger(__name__)
 
 FEATURE_PIPELINE = "feature_pipeline"
@@ -82,7 +81,9 @@ class FreqaiDataDrawer:
         self.historic_data: dict[str, dict[str, DataFrame]] = {}
         self.historic_predictions: dict[str, DataFrame] = {}
         self.full_path = full_path
-        self.historic_predictions_path = Path(self.full_path / "historic_predictions.pkl")
+        self.historic_predictions_path = Path(
+            self.full_path / "historic_predictions.pkl"
+        )
         self.historic_predictions_bkp_path = Path(
             self.full_path / "historic_predictions.backup.pkl"
         )
@@ -166,10 +167,14 @@ class FreqaiDataDrawer:
             exists = self.metric_tracker_path.is_file()
             if exists:
                 with self.metric_tracker_path.open("r") as fp:
-                    self.metric_tracker = rapidjson.load(fp, number_mode=rapidjson.NM_NATIVE)
+                    self.metric_tracker = rapidjson.load(
+                        fp, number_mode=rapidjson.NM_NATIVE
+                    )
                 logger.info("Loading existing metric tracker from disk.")
             else:
-                logger.info("Could not find existing metric tracker, starting from scratch")
+                logger.info(
+                    "Could not find existing metric tracker, starting from scratch"
+                )
 
     def load_historic_predictions_from_disk(self):
         """
@@ -192,13 +197,19 @@ class FreqaiDataDrawer:
                 )
                 with self.historic_predictions_bkp_path.open("rb") as fp:
                     self.historic_predictions = cloudpickle.load(fp)
-                logger.warning("FreqAI successfully loaded the backup historical predictions file.")
+                logger.warning(
+                    "FreqAI successfully loaded the backup historical predictions file."
+                )
 
             for pair, pair_df in self.historic_predictions.items():
-                self.historic_predictions[pair] = self._repair_historic_predictions(pair, pair_df)
+                self.historic_predictions[pair] = self._repair_historic_predictions(
+                    pair, pair_df
+                )
 
         else:
-            logger.info("Could not find existing historic_predictions, starting from scratch")
+            logger.info(
+                "Could not find existing historic_predictions, starting from scratch"
+            )
 
         return exists
 
@@ -227,7 +238,9 @@ class FreqaiDataDrawer:
         object_cols = [col for col in pair_df.columns if pair_df[col].dtype == "object"]
         if object_cols:
             inferred = pair_df[object_cols].infer_objects()
-            numeric_cols = [col for col in object_cols if is_numeric_dtype(inferred[col])]
+            numeric_cols = [
+                col for col in object_cols if is_numeric_dtype(inferred[col])
+            ]
             if numeric_cols:
                 logger.info(
                     f"Converting {len(numeric_cols)} object dtype column(s) in the historic "
@@ -256,7 +269,9 @@ class FreqaiDataDrawer:
         Save historic predictions pickle to disk
         """
         with self.historic_predictions_path.open("wb") as fp:
-            cloudpickle.dump(self.historic_predictions, fp, protocol=cloudpickle.DEFAULT_PROTOCOL)
+            cloudpickle.dump(
+                self.historic_predictions, fp, protocol=cloudpickle.DEFAULT_PROTOCOL
+            )
 
         # create a backup
         shutil.copy(self.historic_predictions_path, self.historic_predictions_bkp_path)
@@ -281,7 +296,10 @@ class FreqaiDataDrawer:
         with self.save_lock:
             with self.pair_dictionary_path.open("w") as fp:
                 rapidjson.dump(
-                    self.pair_dict, fp, default=self.np_encoder, number_mode=rapidjson.NM_NATIVE
+                    self.pair_dict,
+                    fp,
+                    default=self.np_encoder,
+                    number_mode=rapidjson.NM_NATIVE,
                 )
 
     def save_global_metadata_to_disk(self, metadata: dict[str, Any]):
@@ -291,7 +309,10 @@ class FreqaiDataDrawer:
         with self.save_lock:
             with self.global_metadata_path.open("w") as fp:
                 rapidjson.dump(
-                    metadata, fp, default=self.np_encoder, number_mode=rapidjson.NM_NATIVE
+                    metadata,
+                    fp,
+                    default=self.np_encoder,
+                    number_mode=rapidjson.NM_NATIVE,
                 )
 
     def np_encoder(self, obj):
@@ -364,7 +385,10 @@ class FreqaiDataDrawer:
         # and cut off the new_pred dataframe at that date
         last_hist_date = hist_preds["date_pred"].max()
         if not new_pred.empty:
-            if pd.isna(last_hist_date) or last_hist_date < new_pred["date_pred"].iloc[0]:
+            if (
+                pd.isna(last_hist_date)
+                or last_hist_date < new_pred["date_pred"].iloc[0]
+            ):
                 logger.warning(
                     "No common dates found between new predictions and historic "
                     "predictions. You likely left your FreqAI instance offline "
@@ -385,7 +409,9 @@ class FreqaiDataDrawer:
         # downtime in FreqUI
         df_concat = df_concat.fillna(0)
         self.historic_predictions[pair] = df_concat
-        self.model_return_values[pair] = df_concat.tail(len(dataframe.index)).reset_index(drop=True)
+        self.model_return_values[pair] = df_concat.tail(
+            len(dataframe.index)
+        ).reset_index(drop=True)
 
     def append_model_predictions(
         self,
@@ -428,7 +454,9 @@ class FreqaiDataDrawer:
                     f"Last candle for {pair} ({strat_df['date'].iloc[-1]}) predates the "
                     f"last stored prediction ({last_date}) - keeping the stored predictions."
                 )
-                self.model_return_values[pair] = hist_preds.tail(len_df).reset_index(drop=True)
+                self.model_return_values[pair] = hist_preds.tail(len_df).reset_index(
+                    drop=True
+                )
                 return
 
         if not new_dates.empty:
@@ -442,7 +470,9 @@ class FreqaiDataDrawer:
                     f"({new_dates.iloc[0]} - {new_dates.iloc[-2]}), filling them with zeros. "
                     "The bot was either stopped, or a full iteration took longer than one candle."
                 )
-            zeros_df = pd.DataFrame(np.zeros((len(new_dates), len(columns))), columns=columns)
+            zeros_df = pd.DataFrame(
+                np.zeros((len(new_dates), len(columns))), columns=columns
+            )
             # A numeric 0 placeholder would degrade the date column to object dtype
             # but we want to keep the date column as datetime type.
             zeros_df["date_pred"] = new_dates.reset_index(drop=True)
@@ -508,7 +538,12 @@ class FreqaiDataDrawer:
         # Merge on the candle date (not on the index) to ensure alignment in case of bad
         # strategy handling like dropping candles or reindexing.
         dataframe_new = pd.merge(
-            dataframe[to_keep], df, how="left", left_on="date", right_on="date_pred", validate="m:1"
+            dataframe[to_keep],
+            df,
+            how="left",
+            left_on="date",
+            right_on="date_pred",
+            validate="m:1",
         )
         unmatched = int(dataframe_new["date_pred"].isna().sum())
         if unmatched:
@@ -519,7 +554,9 @@ class FreqaiDataDrawer:
             )
         return dataframe_new
 
-    def return_null_values_to_strategy(self, dataframe: DataFrame, dk: FreqaiDataKitchen) -> None:
+    def return_null_values_to_strategy(
+        self, dataframe: DataFrame, dk: FreqaiDataKitchen
+    ) -> None:
         """
         Build 0 filled dataframe to return to strategy
         """
@@ -604,7 +641,9 @@ class FreqaiDataDrawer:
         dk.data["label_list"] = dk.label_list
 
         with (save_path / f"{dk.model_filename}_{METADATA}.json").open("w") as fp:
-            rapidjson.dump(dk.data, fp, default=self.np_encoder, number_mode=METADATA_NUMBER_MODE)
+            rapidjson.dump(
+                dk.data, fp, default=self.np_encoder, number_mode=METADATA_NUMBER_MODE
+            )
 
     def save_data(self, model: Any, coin: str, dk: FreqaiDataKitchen) -> None:
         """
@@ -633,10 +672,14 @@ class FreqaiDataDrawer:
         dk.data["label_list"] = dk.label_list
         # store the metadata
         with (save_path / f"{dk.model_filename}_{METADATA}.json").open("w") as fp:
-            rapidjson.dump(dk.data, fp, default=self.np_encoder, number_mode=METADATA_NUMBER_MODE)
+            rapidjson.dump(
+                dk.data, fp, default=self.np_encoder, number_mode=METADATA_NUMBER_MODE
+            )
 
         # save the pipelines to pickle files
-        with (save_path / f"{dk.model_filename}_{FEATURE_PIPELINE}.pkl").open("wb") as fp:
+        with (save_path / f"{dk.model_filename}_{FEATURE_PIPELINE}.pkl").open(
+            "wb"
+        ) as fp:
             cloudpickle.dump(dk.feature_pipeline, fp)
 
         with (save_path / f"{dk.model_filename}_{LABEL_PIPELINE}.pkl").open("wb") as fp:
@@ -691,12 +734,18 @@ class FreqaiDataDrawer:
             dk.feature_pipeline = self.meta_data_dictionary[coin][FEATURE_PIPELINE]
             dk.label_pipeline = self.meta_data_dictionary[coin][LABEL_PIPELINE]
         else:
-            with (dk.data_path / f"{dk.model_filename}_{METADATA}.json").open("r") as fp:
+            with (dk.data_path / f"{dk.model_filename}_{METADATA}.json").open(
+                "r"
+            ) as fp:
                 dk.data = rapidjson.load(fp, number_mode=METADATA_NUMBER_MODE)
 
-            with (dk.data_path / f"{dk.model_filename}_{FEATURE_PIPELINE}.pkl").open("rb") as fp:
+            with (dk.data_path / f"{dk.model_filename}_{FEATURE_PIPELINE}.pkl").open(
+                "rb"
+            ) as fp:
                 dk.feature_pipeline = cloudpickle.load(fp)
-            with (dk.data_path / f"{dk.model_filename}_{LABEL_PIPELINE}.pkl").open("rb") as fp:
+            with (dk.data_path / f"{dk.model_filename}_{LABEL_PIPELINE}.pkl").open(
+                "rb"
+            ) as fp:
                 dk.label_pipeline = cloudpickle.load(fp)
 
         dk.training_features_list = dk.data["training_features_list"]
@@ -754,11 +803,18 @@ class FreqaiDataDrawer:
                     df_dp = strategy.dp.get_pair_dataframe(pair, tf)
                     if len(df_dp.index) == 0:
                         continue
-                    if str(hist_df.iloc[-1]["date"]) == str(df_dp.iloc[-1:]["date"].iloc[-1]):
+                    if str(hist_df.iloc[-1]["date"]) == str(
+                        df_dp.iloc[-1:]["date"].iloc[-1]
+                    ):
                         continue
 
                     try:
-                        index = df_dp.loc[df_dp["date"] == hist_df.iloc[-1]["date"]].index[0] + 1
+                        index = (
+                            df_dp.loc[df_dp["date"] == hist_df.iloc[-1]["date"]].index[
+                                0
+                            ]
+                            + 1
+                        )
                     except IndexError:
                         if hist_df.iloc[-1]["date"] < df_dp["date"].iloc[0]:
                             raise OperationalException(
@@ -787,9 +843,13 @@ class FreqaiDataDrawer:
                         axis=0,
                     )
 
-            self.current_candle = history_data[dk.pair][self.config["timeframe"]].iloc[-1]["date"]
+            self.current_candle = history_data[dk.pair][self.config["timeframe"]].iloc[
+                -1
+            ]["date"]
 
-    def load_all_pair_histories(self, timerange: TimeRange, dk: FreqaiDataKitchen) -> None:
+    def load_all_pair_histories(
+        self, timerange: TimeRange, dk: FreqaiDataKitchen
+    ) -> None:
         """
         Load pair histories for all whitelist and corr_pairlist pairs.
         Only called once upon startup of bot.
@@ -825,7 +885,9 @@ class FreqaiDataDrawer:
             corr_dataframes: dict[Any, Any] = {}
             base_dataframes: dict[Any, Any] = {}
             historic_data = self.historic_data
-            pairs = self.freqai_info["feature_parameters"].get("include_corr_pairlist", [])
+            pairs = self.freqai_info["feature_parameters"].get(
+                "include_corr_pairlist", []
+            )
 
             for tf in self.freqai_info["feature_parameters"].get("include_timeframes"):
                 base_dataframes[tf] = dk.slice_dataframe(

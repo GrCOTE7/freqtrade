@@ -42,12 +42,20 @@ def test_validate_is_int():
 )
 @pytest.mark.parametrize(
     "credential",
-    ["sampleKey", 'quoted"secret', r"backslash\new", "line\nbreak", "secret\u79d8\u5bc6"],
+    [
+        "sampleKey",
+        'quoted"secret',
+        r"backslash\new",
+        "line\nbreak",
+        "secret\u79d8\u5bc6",
+    ],
 )
 def test_start_new_config(mocker, caplog, tmp_path, exchange, credential):
     config_path = tmp_path / "config.json"
     config_path.write_text('{"dry_run": false}')
-    mocker.patch("freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=True)
+    mocker.patch(
+        "freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=True
+    )
 
     sample_selections = {
         "max_open_trades": 3,
@@ -73,7 +81,8 @@ def test_start_new_config(mocker, caplog, tmp_path, exchange, credential):
         "api_server_ws_token": credential,
     }
     mocker.patch(
-        "freqtrade.configuration.deploy_config.ask_user_config", return_value=sample_selections
+        "freqtrade.configuration.deploy_config.ask_user_config",
+        return_value=sample_selections,
     )
     args = ["new-config", "--config", str(config_path)]
     start_new_config(get_args(args))
@@ -156,7 +165,13 @@ def test_deploy_new_config_optional_credentials(tmp_path, exchange, has_password
 
 @pytest.mark.parametrize(
     "exchange,expected",
-    [("okx", True), ("okxus", True), ("bitget", True), ("binance", False), ("doesnotexist", False)],
+    [
+        ("okx", True),
+        ("okxus", True),
+        ("bitget", True),
+        ("binance", False),
+        ("doesnotexist", False),
+    ],
 )
 def test_exchange_requires_password(exchange, expected):
     assert exchange_requires_password(exchange) is expected
@@ -164,9 +179,13 @@ def test_exchange_requires_password(exchange, expected):
 
 def test_start_new_config_exists(mocker, caplog):
     mocker.patch.object(Path, "exists", MagicMock(return_value=True))
-    mocker.patch("freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=False)
+    mocker.patch(
+        "freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=False
+    )
     args = ["new-config", "--config", "coolconfig.json"]
-    with pytest.raises(OperationalException, match=r"Configuration .* already exists\."):
+    with pytest.raises(
+        OperationalException, match=r"Configuration .* already exists\."
+    ):
         start_new_config(get_args(args))
 
 
@@ -174,13 +193,17 @@ def test_start_new_config_cancelled_overwrite(mocker, tmp_path):
     config_path = tmp_path / "config.json"
     original_config = '{"dry_run": true}'
     config_path.write_text(original_config)
-    mocker.patch("freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=True)
+    mocker.patch(
+        "freqtrade.configuration.deploy_config.ask_user_overwrite", return_value=True
+    )
     mocker.patch(
         "freqtrade.configuration.deploy_config.ask_user_config",
         side_effect=OperationalException("User interrupted interactive questions."),
     )
 
-    with pytest.raises(OperationalException, match="User interrupted interactive questions"):
+    with pytest.raises(
+        OperationalException, match="User interrupted interactive questions"
+    ):
         start_new_config(get_args(["new-config", "--config", str(config_path)]))
 
     assert config_path.read_text() == original_config
@@ -191,7 +214,8 @@ def test_ask_user_overwrite(mocker):
     Once https://github.com/tmbo/questionary/issues/35 is implemented, improve this test.
     """
     prompt_mock = mocker.patch(
-        "freqtrade.configuration.deploy_config.prompt", return_value={"overwrite": False}
+        "freqtrade.configuration.deploy_config.prompt",
+        return_value={"overwrite": False},
     )
     assert not ask_user_overwrite(Path("test.json"))
     assert prompt_mock.call_count == 1
@@ -209,7 +233,8 @@ def test_ask_user_config(mocker):
     Once https://github.com/tmbo/questionary/issues/35 is implemented, improve this test.
     """
     prompt_mock = mocker.patch(
-        "freqtrade.configuration.deploy_config.prompt", return_value={"overwrite": False}
+        "freqtrade.configuration.deploy_config.prompt",
+        return_value={"overwrite": False},
     )
     answers = ask_user_config()
     assert isinstance(answers, dict)
@@ -222,7 +247,11 @@ def test_ask_user_config(mocker):
     assert questions["stake_amount"]["filter"]("0.5") == 0.5
     assert questions["max_open_trades"]["filter"]("-1") == -1
 
-    prompt_mock = mocker.patch("freqtrade.configuration.deploy_config.prompt", return_value={})
+    prompt_mock = mocker.patch(
+        "freqtrade.configuration.deploy_config.prompt", return_value={}
+    )
 
-    with pytest.raises(OperationalException, match=r"User interrupted interactive questions\."):
+    with pytest.raises(
+        OperationalException, match=r"User interrupted interactive questions\."
+    ):
         ask_user_config()

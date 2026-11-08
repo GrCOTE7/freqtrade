@@ -7,7 +7,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from freqtrade.persistence.base import ModelBase, SessionType
 
-
 ValueTypes = str | datetime | float | int
 
 
@@ -188,7 +187,8 @@ class KeyValueStore:
         kv = (
             _KeyValueStoreModel.session.query(_KeyValueStoreModel)
             .filter(
-                _KeyValueStoreModel.key == key, _KeyValueStoreModel.value_type == ValueTypesEnum.INT
+                _KeyValueStoreModel.key == key,
+                _KeyValueStoreModel.value_type == ValueTypesEnum.INT,
             )
             .first()
         )

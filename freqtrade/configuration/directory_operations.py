@@ -13,7 +13,6 @@ from freqtrade.constants import (
 )
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -39,7 +38,9 @@ def chown_user_directory(directory: Path) -> None:
         try:
             import subprocess  # noqa: S404, RUF100
 
-            subprocess.check_output(["sudo", "chown", "-R", "ftuser:", str(directory.resolve())])
+            subprocess.check_output(
+                ["sudo", "chown", "-R", "ftuser:", str(directory.resolve())]
+            )
         except Exception:
             logger.warning(f"Could not chown {directory}")
 
@@ -106,7 +107,9 @@ def copy_sample_files(directory: Path, overwrite: bool = False) -> None:
         targetfile = targetdir / source
         if targetfile.exists():
             if not overwrite:
-                logger.warning(f"File `{targetfile}` exists already, not deploying sample file.")
+                logger.warning(
+                    f"File `{targetfile}` exists already, not deploying sample file."
+                )
                 continue
             logger.warning(f"File `{targetfile}` exists already, overwriting.")
         shutil.copy(str(sourcedir / source), str(targetfile))

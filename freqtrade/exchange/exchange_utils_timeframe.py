@@ -76,7 +76,9 @@ def timeframe_to_prev_date(timeframe: str, date: datetime | None = None) -> date
     if not date:
         date = datetime.now(UTC)
 
-    new_timestamp = ccxt.Exchange.round_timeframe(timeframe, dt_ts(date), ROUND_DOWN) // 1000
+    new_timestamp = (
+        ccxt.Exchange.round_timeframe(timeframe, dt_ts(date), ROUND_DOWN) // 1000
+    )
     return dt_from_ts(new_timestamp)
 
 
@@ -89,5 +91,7 @@ def timeframe_to_next_date(timeframe: str, date: datetime | None = None) -> date
     """
     if not date:
         date = datetime.now(UTC)
-    new_timestamp = ccxt.Exchange.round_timeframe(timeframe, dt_ts(date), ROUND_UP) // 1000
+    new_timestamp = (
+        ccxt.Exchange.round_timeframe(timeframe, dt_ts(date), ROUND_UP) // 1000
+    )
     return dt_from_ts(new_timestamp)

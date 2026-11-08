@@ -40,7 +40,8 @@ def test_check_exchange(default_conf, caplog) -> None:
     default_conf.get("exchange").update({"name": "BINANCE"})
     assert check_exchange(default_conf)
     assert log_has_re(
-        r"Exchange .* is officially supported by the Freqtrade development team\.", caplog
+        r"Exchange .* is officially supported by the Freqtrade development team\.",
+        caplog,
     )
     caplog.clear()
 
@@ -48,7 +49,8 @@ def test_check_exchange(default_conf, caplog) -> None:
     default_conf.get("exchange").update({"name": "binance"})
     assert check_exchange(default_conf)
     assert log_has_re(
-        r"Exchange \"binance\" is officially supported by the Freqtrade development team\.", caplog
+        r"Exchange \"binance\" is officially supported by the Freqtrade development team\.",
+        caplog,
     )
     caplog.clear()
 
@@ -65,7 +67,8 @@ def test_check_exchange(default_conf, caplog) -> None:
     default_conf.get("exchange").update({"name": "okx"})
     assert check_exchange(default_conf)
     assert log_has_re(
-        r"Exchange \"okx\" is officially supported by the Freqtrade development team\.", caplog
+        r"Exchange \"okx\" is officially supported by the Freqtrade development team\.",
+        caplog,
     )
     caplog.clear()
     # Test an available exchange, supported by ccxt
@@ -81,7 +84,9 @@ def test_check_exchange(default_conf, caplog) -> None:
 
     # Test a 'bad' exchange, which known to have serious problems
     default_conf.get("exchange").update({"name": "poloniex"})
-    with pytest.raises(OperationalException, match=r"Exchange .* will not work with Freqtrade\..*"):
+    with pytest.raises(
+        OperationalException, match=r"Exchange .* will not work with Freqtrade\..*"
+    ):
         check_exchange(default_conf)
     caplog.clear()
 
@@ -126,7 +131,9 @@ def test_date_minus_candles():
     assert date_minus_candles("5m", 5, date) == date - timedelta(minutes=25)
     assert date_minus_candles("1m", 6, date) == date - timedelta(minutes=6)
     assert date_minus_candles("1h", 3, date) == date - timedelta(hours=3, minutes=25)
-    assert date_minus_candles("1h", 3) == timeframe_to_prev_date("1h") - timedelta(hours=3)
+    assert date_minus_candles("1h", 3) == timeframe_to_prev_date("1h") - timedelta(
+        hours=3
+    )
 
 
 def test_timeframe_to_minutes():
@@ -378,7 +385,9 @@ def test_amount_to_precision(
     ],
 )
 def test_price_to_precision(price, precision_mode, precision, expected, rounding_mode):
-    result = price_to_precision(price, precision, precision_mode, rounding_mode=rounding_mode)
+    result = price_to_precision(
+        price, precision, precision_mode, rounding_mode=rounding_mode
+    )
     if not isnan(expected):
         assert result == expected
     else:

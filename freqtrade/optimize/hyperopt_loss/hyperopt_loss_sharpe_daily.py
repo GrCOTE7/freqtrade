@@ -46,7 +46,9 @@ class SharpeHyperOptLossDaily(IHyperOptLoss):
         )
 
         # create the index within the min_date and end max_date
-        t_index = date_range(start=min_date, end=max_date, freq=resample_freq, normalize=True)
+        t_index = date_range(
+            start=min_date, end=max_date, freq=resample_freq, normalize=True
+        )
 
         sum_daily = (
             results.resample(resample_freq, on="close_date")

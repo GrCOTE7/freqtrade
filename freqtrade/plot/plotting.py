@@ -31,7 +31,6 @@ from freqtrade.strategy import IStrategy
 from freqtrade.strategy.strategy_wrapper import strategy_safe_wrapper
 from freqtrade.util import get_dry_run_wallet
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,7 +39,9 @@ try:
     from plotly.offline import plot
     from plotly.subplots import make_subplots
 except ImportError:
-    logger.exception("Module plotly not found \n Please install using `pip3 install plotly`")
+    logger.exception(
+        "Module plotly not found \n Please install using `pip3 install plotly`"
+    )
     sys.exit(1)
 
 
@@ -105,7 +106,9 @@ def init_plotscript(config, markets: list, startup_candles: int = 0):
     }
 
 
-def add_indicators(fig, row, indicators: dict[str, dict], data: pd.DataFrame) -> make_subplots:
+def add_indicators(
+    fig, row, indicators: dict[str, dict], data: pd.DataFrame
+) -> make_subplots:
     """
     Generate all the indicators selected by the user for a specific row, based on the configuration
     :param fig: Plot figure to append to
@@ -175,7 +178,12 @@ def add_profit(fig, row, data: pd.DataFrame, column: str, name: str) -> make_sub
 
 
 def add_max_drawdown(
-    fig, row, trades: pd.DataFrame, df_comb: pd.DataFrame, timeframe: str, starting_balance: float
+    fig,
+    row,
+    trades: pd.DataFrame,
+    df_comb: pd.DataFrame,
+    timeframe: str,
+    starting_balance: float,
 ) -> make_subplots:
     """
     Add scatter points indicating max drawdown
@@ -186,13 +194,22 @@ def add_max_drawdown(
         drawdown = go.Scatter(
             x=[drawdown.high_date, drawdown.low_date],
             y=[
-                df_comb.loc[timeframe_to_prev_date(timeframe, drawdown.high_date), "cum_profit"],
-                df_comb.loc[timeframe_to_prev_date(timeframe, drawdown.low_date), "cum_profit"],
+                df_comb.loc[
+                    timeframe_to_prev_date(timeframe, drawdown.high_date), "cum_profit"
+                ],
+                df_comb.loc[
+                    timeframe_to_prev_date(timeframe, drawdown.low_date), "cum_profit"
+                ],
             ],
             mode="markers",
             name=f"Max drawdown {drawdown.relative_account_drawdown:.2%}",
             text=f"Max drawdown {drawdown.relative_account_drawdown:.2%}",
-            marker={"symbol": "square-open", "size": 9, "line": {"width": 2}, "color": "green"},
+            marker={
+                "symbol": "square-open",
+                "size": 9,
+                "line": {"width": 2},
+                "color": "green",
+            },
         )
         fig.add_trace(drawdown, row, 1)
     except ValueError:
@@ -200,7 +217,9 @@ def add_max_drawdown(
     return fig
 
 
-def add_underwater(fig, row, trades: pd.DataFrame, starting_balance: float) -> make_subplots:
+def add_underwater(
+    fig, row, trades: pd.DataFrame, starting_balance: float
+) -> make_subplots:
     """
     Add underwater plots
     """
@@ -277,7 +296,12 @@ def plot_trades(fig, trades: pd.DataFrame) -> make_subplots:
             mode="markers",
             name="Trade entry",
             text=trades["desc"],
-            marker={"symbol": "circle-open", "size": 11, "line": {"width": 2}, "color": "cyan"},
+            marker={
+                "symbol": "circle-open",
+                "size": 11,
+                "line": {"width": 2},
+                "color": "cyan",
+            },
         )
 
         trade_exits = go.Scatter(
@@ -286,7 +310,12 @@ def plot_trades(fig, trades: pd.DataFrame) -> make_subplots:
             text=trades.loc[trades["profit_ratio"] > 0, "desc"],
             mode="markers",
             name="Exit - Profit",
-            marker={"symbol": "square-open", "size": 11, "line": {"width": 2}, "color": "green"},
+            marker={
+                "symbol": "square-open",
+                "size": 11,
+                "line": {"width": 2},
+                "color": "green",
+            },
         )
         trade_exits_loss = go.Scatter(
             x=trades.loc[trades["profit_ratio"] <= 0, "close_date"],
@@ -294,7 +323,12 @@ def plot_trades(fig, trades: pd.DataFrame) -> make_subplots:
             text=trades.loc[trades["profit_ratio"] <= 0, "desc"],
             mode="markers",
             name="Exit - Loss",
-            marker={"symbol": "square-open", "size": 11, "line": {"width": 2}, "color": "red"},
+            marker={
+                "symbol": "square-open",
+                "size": 11,
+                "line": {"width": 2},
+                "color": "red",
+            },
         )
         fig.add_trace(trade_entries, 1, 1)
         fig.add_trace(trade_exits, 1, 1)
@@ -364,7 +398,9 @@ def plot_area(
         # make lines invisible to get the area plotted, only.
         line = {"color": "rgba(255,255,255,0)"}
         # TODO: Figure out why scattergl causes problems plotly/plotly.js#2284
-        trace_a = go.Scatter(x=data.date, y=data[indicator_a], showlegend=False, line=line)
+        trace_a = go.Scatter(
+            x=data.date, y=data[indicator_a], showlegend=False, line=line
+        )
         trace_b = go.Scatter(
             x=data.date,
             y=data[indicator_b],
@@ -394,7 +430,13 @@ def add_areas(fig, row: int, data: pd.DataFrame, indicators) -> make_subplots:
                 label = ind_conf.get("fill_label", f"{indicator}<>{indicator_b}")
                 fill_color = ind_conf.get("fill_color", "rgba(0,176,246,0.2)")
                 fig = plot_area(
-                    fig, row, data, indicator, indicator_b, label=label, fill_color=fill_color
+                    fig,
+                    row,
+                    data,
+                    indicator,
+                    indicator_b,
+                    label=label,
+                    fill_color=fill_color,
                 )
             elif indicator not in data:
                 logger.info(
@@ -477,7 +519,12 @@ def generate_candlestick_graph(
 
     # Common information
     candles = go.Candlestick(
-        x=data.date, open=data.open, high=data.high, low=data.low, close=data.close, name="Price"
+        x=data.date,
+        open=data.open,
+        high=data.high,
+        low=data.low,
+        close=data.close,
+        name="Price",
     )
     fig.add_trace(candles, 1, 1)
 
@@ -491,7 +538,9 @@ def generate_candlestick_graph(
             fig.add_trace(scatter, 1, 1)
 
     # Add Bollinger Bands
-    fig = plot_area(fig, 1, data, "bb_lowerband", "bb_upperband", label="Bollinger Band")
+    fig = plot_area(
+        fig, 1, data, "bb_lowerband", "bb_upperband", label="Bollinger Band"
+    )
     # prevent bb_lower and bb_upper from plotting
     try:
         del plot_config["main_plot"]["bb_lowerband"]
@@ -575,7 +624,9 @@ def generate_profit_graph(
     fig["layout"]["yaxis3"].update(title=f"Profit {stake_currency}")
     fig["layout"]["yaxis4"].update(title="Trade count")
     fig["layout"]["yaxis5"].update(title="Underwater Plot")
-    fig["layout"]["yaxis6"].update(title="Underwater Plot Relative (%)", tickformat=",.2%")
+    fig["layout"]["yaxis6"].update(
+        title="Underwater Plot Relative (%)", tickformat=",.2%"
+    )
     fig["layout"]["xaxis"]["rangeslider"].update(visible=False)
     fig.update_layout(modebar_add=["v1hovermode", "toggleSpikeLines"])
 
@@ -610,7 +661,9 @@ def generate_plot_filename(pair: str, timeframe: str) -> str:
     return file_name
 
 
-def store_plot_file(fig, filename: str, directory: Path, auto_open: bool = False) -> None:
+def store_plot_file(
+    fig, filename: str, directory: Path, auto_open: bool = False
+) -> None:
     """
     Generate a plot html file from pre populated fig plotly object
     :param fig: Plotly Figure to plot
@@ -643,7 +696,9 @@ def load_and_plot_trades(config: Config):
     IStrategy.dp = DataProvider(config, exchange)
     strategy.ft_bot_start()
     strategy_safe_wrapper(strategy.bot_loop_start)(current_time=datetime.now(UTC))
-    plot_elements = init_plotscript(config, list(exchange.markets), strategy.startup_candle_count)
+    plot_elements = init_plotscript(
+        config, list(exchange.markets), strategy.startup_candle_count
+    )
     timerange = plot_elements["timerange"]
     trades = plot_elements["trades"]
     pair_counter = 0
@@ -665,7 +720,9 @@ def load_and_plot_trades(config: Config):
             trades=trades_pair,
             indicators1=config.get("indicators1", []),
             indicators2=config.get("indicators2", []),
-            plot_config=strategy.plot_config if hasattr(strategy, "plot_config") else {},
+            plot_config=(
+                strategy.plot_config if hasattr(strategy, "plot_config") else {}
+            ),
         )
 
         store_plot_file(
@@ -685,7 +742,9 @@ def plot_profit(config: Config) -> None:
     in helping out to find a good algorithm.
     """
     if "timeframe" not in config:
-        raise OperationalException("Timeframe must be set in either config or via --timeframe.")
+        raise OperationalException(
+            "Timeframe must be set in either config or via --timeframe."
+        )
 
     exchange = ExchangeResolver.load_exchange(config)
     plot_elements = init_plotscript(config, list(exchange.markets))

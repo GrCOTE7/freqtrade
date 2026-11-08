@@ -10,7 +10,6 @@ from sklearn.preprocessing import LabelEncoder
 from freqtrade.freqai.base_models.BaseClassifierModel import BaseClassifierModel
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -70,7 +69,7 @@ class SKLearnRandomForestClassifier(BaseClassifierModel):
         data (NaNs) or felt uncertain about data (PCA and DI index)
         """
 
-        (pred_df, dk.do_predict) = super().predict(unfiltered_df, dk, **kwargs)
+        pred_df, dk.do_predict = super().predict(unfiltered_df, dk, **kwargs)
 
         le = LabelEncoder()
         label = dk.label_list[0]
@@ -78,7 +77,9 @@ class SKLearnRandomForestClassifier(BaseClassifierModel):
         labels_after = le.fit_transform(labels_before).tolist()
         pred_df[label] = le.inverse_transform(pred_df[label])
         pred_df = pred_df.rename(
-            columns={labels_after[i]: labels_before[i] for i in range(len(labels_before))}
+            columns={
+                labels_after[i]: labels_before[i] for i in range(len(labels_before))
+            }
         )
 
         return (pred_df, dk.do_predict)

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import ccxt
 
-
 key = os.environ.get("FREQTRADE__EXCHANGE__KEY")
 secret = os.environ.get("FREQTRADE__EXCHANGE__SECRET")
 

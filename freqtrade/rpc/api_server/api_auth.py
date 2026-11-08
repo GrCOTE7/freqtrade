@@ -11,7 +11,6 @@ from fastapi.security.http import HTTPBasic, HTTPBasicCredentials
 from freqtrade.rpc.api_server.api_schemas import AccessAndRefreshToken, AccessToken
 from freqtrade.rpc.api_server.deps import get_api_config
 
-
 logger = logging.getLogger(__name__)
 
 ALGORITHM = "HS256"
@@ -21,9 +20,9 @@ router_login = APIRouter()
 
 def verify_auth(api_config, username: str, password: str):
     """Verify username/password"""
-    return secrets.compare_digest(username, api_config.get("username")) and secrets.compare_digest(
-        password, api_config.get("password")
-    )
+    return secrets.compare_digest(
+        username, api_config.get("username")
+    ) and secrets.compare_digest(password, api_config.get("password"))
 
 
 httpbasic = HTTPBasic(auto_error=False)
@@ -31,7 +30,9 @@ security = HTTPBasic()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
-def get_user_from_token(token, secret_key: str, token_type: str = "access") -> str:  # noqa: S107
+def get_user_from_token(
+    token, secret_key: str, token_type: str = "access"
+) -> str:  # noqa: S107
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -68,7 +69,8 @@ async def validate_ws_token(
             is_valid_ws_token = secrets.compare_digest(secret_ws_token, ws_token)
         elif isinstance(secret_ws_token, list):
             is_valid_ws_token = any(
-                secrets.compare_digest(potential, ws_token) for potential in secret_ws_token
+                secrets.compare_digest(potential, ws_token)
+                for potential in secret_ws_token
             )
 
         if is_valid_ws_token:
@@ -86,7 +88,9 @@ async def validate_ws_token(
     await ws.close(code=status.WS_1008_POLICY_VIOLATION)
 
 
-def create_token(data: dict, secret_key: str, token_type: str = "access") -> str:  # noqa: S107
+def create_token(
+    data: dict, secret_key: str, token_type: str = "access"
+) -> str:  # noqa: S107
     to_encode = data.copy()
     if token_type == "access":  # noqa: S105
         expire = datetime.now(UTC) + timedelta(minutes=15)
@@ -123,7 +127,8 @@ def http_basic_or_jwt_token(
 
 @router_login.post("/token/login", response_model=AccessAndRefreshToken)
 def token_login(
-    form_data: HTTPBasicCredentials = Depends(security), api_config=Depends(get_api_config)
+    form_data: HTTPBasicCredentials = Depends(security),
+    api_config=Depends(get_api_config),
 ):
     if verify_auth(api_config, form_data.username, form_data.password):
         token_data = {"identity": {"u": form_data.username}}
@@ -149,7 +154,9 @@ def token_login(
 
 
 @router_login.post("/token/refresh", response_model=AccessToken)
-def token_refresh(token: str = Depends(oauth2_scheme), api_config=Depends(get_api_config)):
+def token_refresh(
+    token: str = Depends(oauth2_scheme), api_config=Depends(get_api_config)
+):
     # Refresh token
     u = get_user_from_token(token, api_config["jwt_secret_key"], "refresh")
     token_data = {"identity": {"u": u}}

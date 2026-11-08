@@ -22,7 +22,6 @@ from freqtrade.misc import file_dump_json, json_load
 from freqtrade.optimize.backtest_caching import get_backtest_metadata_filename
 from freqtrade.persistence import LocalTrade, Trade, init_db
 
-
 logger = logging.getLogger(__name__)
 
 # Newest format
@@ -119,7 +118,9 @@ def get_latest_hyperopt_filename(directory: Path | str) -> str:
         return "hyperopt_results.pickle"
 
 
-def get_latest_hyperopt_file(directory: Path | str, predef_filename: str | None = None) -> Path:
+def get_latest_hyperopt_file(
+    directory: Path | str, predef_filename: str | None = None
+) -> Path:
     """
     Get latest hyperopt export based on '.last_result.json'.
     :param directory: Directory to search for last result
@@ -154,7 +155,9 @@ def load_backtest_metadata(filename: Path | str) -> dict[str, Any]:
     except FileNotFoundError:
         return {}
     except Exception as e:
-        raise OperationalException("Unexpected error while loading backtest metadata.") from e
+        raise OperationalException(
+            "Unexpected error while loading backtest metadata."
+        ) from e
 
 
 def get_backtest_filename(
@@ -201,7 +204,9 @@ def load_backtest_stats(
 
     if fn.suffix == ".zip":
         data = json_load(
-            StringIO(load_file_from_zip(fn, fn.with_suffix(".json").name).decode("utf-8"))
+            StringIO(
+                load_file_from_zip(fn, fn.with_suffix(".json").name).decode("utf-8")
+            )
         )
     else:
         with fn.open() as file:
@@ -213,7 +218,9 @@ def load_backtest_stats(
     return data
 
 
-def load_and_merge_backtest_result(strategy_name: str, filename: Path, results: dict[str, Any]):
+def load_and_merge_backtest_result(
+    strategy_name: str, filename: Path, results: dict[str, Any]
+):
     """
     Load one strategy from multi-strategy result and merge it with results
     :param strategy_name: Name of the strategy contained in the result
@@ -318,7 +325,9 @@ def get_backtest_market_change(filename: Path, include_ts: bool = True) -> pd.Da
     return df
 
 
-def get_backtest_wallet_change(filename: Path, strategy_name: str) -> pd.DataFrame | None:
+def get_backtest_wallet_change(
+    filename: Path, strategy_name: str
+) -> pd.DataFrame | None:
     """
     Read backtest wallet change file.
     :param filename: Path to the backtest result zip file
@@ -329,7 +338,9 @@ def get_backtest_wallet_change(filename: Path, strategy_name: str) -> pd.DataFra
         return None
 
     try:
-        data = load_file_from_zip(filename, f"{filename.stem}_{strategy_name}_wallet.feather")
+        data = load_file_from_zip(
+            filename, f"{filename.stem}_{strategy_name}_wallet.feather"
+        )
         df = pd.read_feather(BytesIO(data))
 
         df.loc[:, "__date_ts"] = df.loc[:, "date"].dt.as_unit("ms").astype("int64")
@@ -386,7 +397,9 @@ def backtest_strategy_dir(filename: Path, strategy_name: str) -> Iterator[Path]:
         (directory / strategy_file).write_bytes(strategy_code)
         try:
             params_file = f"{filename.stem}_{strategy_name}.json"
-            (directory / params_file).write_bytes(load_file_from_zip(filename, params_file))
+            (directory / params_file).write_bytes(
+                load_file_from_zip(filename, params_file)
+            )
         except ValueError:
             logger.info(f"No parameters stored for {strategy_name} in {filename}.")
 
@@ -394,7 +407,9 @@ def backtest_strategy_dir(filename: Path, strategy_name: str) -> Iterator[Path]:
 
 
 def find_existing_backtest_stats(
-    dirname: Path | str, run_ids: dict[str, str], min_backtest_date: datetime | None = None
+    dirname: Path | str,
+    run_ids: dict[str, str],
+    min_backtest_date: datetime | None = None,
 ) -> dict[str, Any]:
     """
     Find existing backtest stats that match specified run IDs and load them.
@@ -466,7 +481,9 @@ def _load_backtest_data_df_compatibility(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_backtest_data(
-    file_or_directory: Path | str, strategy: str | None = None, filename: Path | str | None = None
+    file_or_directory: Path | str,
+    strategy: str | None = None,
+    filename: Path | str | None = None,
 ) -> pd.DataFrame:
     """
     Load backtest data file, returns a dataframe with the individual trades.
@@ -530,7 +547,9 @@ def load_file_from_zip(zip_path: Path, filename: str) -> bytes:
                     return file.read()
             except KeyError:
                 # Not logged - callers decide whether a missing file is an error.
-                raise ValueError(f"File {filename} not found in zip: {zip_path}") from None
+                raise ValueError(
+                    f"File {filename} not found in zip: {zip_path}"
+                ) from None
     except FileNotFoundError:
         raise ValueError(f"Zip file {zip_path} not found.")
     except zipfile.BadZipFile:
@@ -572,7 +591,9 @@ def load_backtest_analysis_data(
         if file_or_directory.is_dir():
             scpf = Path(file_or_directory, f"{zip_path.stem}_{name}.pkl")
         else:
-            scpf = Path(file_or_directory.parent / f"{file_or_directory.stem}_{name}.pkl")
+            scpf = Path(
+                file_or_directory.parent / f"{file_or_directory.stem}_{name}.pkl"
+            )
 
         try:
             with scpf.open("rb") as scp:
@@ -593,12 +614,16 @@ def trade_list_to_dataframe(
     :param minified: Whether to use minified version of trade JSON
     :return: Dataframe with BT_DATA_COLUMNS
     """
-    df = pd.DataFrame.from_records([t.to_json(minified) for t in trades], columns=BT_DATA_COLUMNS)
+    df = pd.DataFrame.from_records(
+        [t.to_json(minified) for t in trades], columns=BT_DATA_COLUMNS
+    )
     if len(df) > 0:
-        df["close_date"] = pd.to_datetime(df["close_timestamp"], unit="ms", utc=True).dt.as_unit(
-            "ms"
-        )
-        df["open_date"] = pd.to_datetime(df["open_timestamp"], unit="ms", utc=True).dt.as_unit("ms")
+        df["close_date"] = pd.to_datetime(
+            df["close_timestamp"], unit="ms", utc=True
+        ).dt.as_unit("ms")
+        df["open_date"] = pd.to_datetime(
+            df["open_timestamp"], unit="ms", utc=True
+        ).dt.as_unit("ms")
         df["close_rate"] = df["close_rate"].astype("float64")
     return df
 

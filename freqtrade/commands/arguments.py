@@ -11,7 +11,6 @@ from typing import Any
 from freqtrade.commands.cli_options import AVAILABLE_CLI_OPTIONS
 from freqtrade.constants import DEFAULT_CONFIG
 
-
 ARGS_COMMON = [
     "verbosity",
     "print_colorized",
@@ -144,9 +143,20 @@ ARGS_SHOW_CONFIG = ["user_data_dir", "config", "show_sensitive"]
 
 ARGS_BUILD_STRATEGY = ["user_data_dir", "strategy", "strategy_path", "template"]
 
-ARGS_CONVERT_DATA_TRADES = ["pairs", "format_from_trades", "format_to", "erase", "exchange"]
+ARGS_CONVERT_DATA_TRADES = [
+    "pairs",
+    "format_from_trades",
+    "format_to",
+    "erase",
+    "exchange",
+]
 ARGS_CONVERT_DATA = ["pairs", "format_from", "format_to", "erase", "exchange"]
-ARGS_CONVERT_DATA_OHLCV = [*ARGS_CONVERT_DATA, "timeframes", "trading_mode", "candle_types"]
+ARGS_CONVERT_DATA_OHLCV = [
+    *ARGS_CONVERT_DATA,
+    "timeframes",
+    "trading_mode",
+    "candle_types",
+]
 
 ARGS_CONVERT_TRADES = [
     "pairs",
@@ -269,7 +279,13 @@ ARGS_STRATEGY_UPDATER = ["strategy_list", "strategy_path", "recursive_strategy_s
 ARGS_LOOKAHEAD_ANALYSIS = [
     a
     for a in ARGS_BACKTEST
-    if a not in ("position_stacking", "backtest_cache", "backtest_breakdown", "backtest_notes")
+    if a
+    not in (
+        "position_stacking",
+        "backtest_cache",
+        "backtest_breakdown",
+        "backtest_notes",
+    )
 ] + [
     "minimum_trade_amount",
     "targeted_trade_amount",
@@ -277,7 +293,13 @@ ARGS_LOOKAHEAD_ANALYSIS = [
     "lookahead_allow_limit_orders",
 ]
 
-ARGS_RECURSIVE_ANALYSIS = ["timeframe", "timerange", "dataformat_ohlcv", "pairs", "startup_candle"]
+ARGS_RECURSIVE_ANALYSIS = [
+    "timeframe",
+    "timerange",
+    "dataformat_ohlcv",
+    "pairs",
+    "startup_candle",
+]
 
 # Command level configs - keep at the bottom of the above definitions
 NO_CONF_REQUIRED = [
@@ -348,14 +370,18 @@ class Arguments:
             else:
                 # Else use "config.json".
                 cfgfile = Path.cwd() / DEFAULT_CONFIG
-                conf_optional = "command" in parsed_arg and parsed_arg.command in NO_CONF_REQUIRED
+                conf_optional = (
+                    "command" in parsed_arg and parsed_arg.command in NO_CONF_REQUIRED
+                )
                 if cfgfile.is_file() or not conf_optional:
                     # Only inject config if the file exists, or if the config is required
                     parsed_arg.config = [DEFAULT_CONFIG]
 
         return parsed_arg
 
-    def _build_args(self, optionlist: list[str], parser: ArgumentParser | _ArgumentGroup) -> None:
+    def _build_args(
+        self, optionlist: list[str], parser: ArgumentParser | _ArgumentGroup
+    ) -> None:
         for val in optionlist:
             opt = AVAILABLE_CLI_OPTIONS[val]
             options = deepcopy(opt.kwargs)
@@ -489,8 +515,12 @@ class Arguments:
             help="Convert trade data from one format to another.",
             parents=[_common_parser],
         )
-        convert_trade_data_cmd.set_defaults(func=partial(start_convert_data, ohlcv=False))
-        self._build_args(optionlist=ARGS_CONVERT_DATA_TRADES, parser=convert_trade_data_cmd)
+        convert_trade_data_cmd.set_defaults(
+            func=partial(start_convert_data, ohlcv=False)
+        )
+        self._build_args(
+            optionlist=ARGS_CONVERT_DATA_TRADES, parser=convert_trade_data_cmd
+        )
 
         # Add trades-to-ohlcv subcommand
         convert_trade_data_cmd = subparsers.add_parser(
@@ -512,7 +542,9 @@ class Arguments:
 
         # Add backtesting subcommand
         backtesting_cmd = subparsers.add_parser(
-            "backtesting", help="Backtesting module.", parents=[_common_parser, _strategy_parser]
+            "backtesting",
+            help="Backtesting module.",
+            parents=[_common_parser, _strategy_parser],
         )
         backtesting_cmd.set_defaults(func=start_backtesting)
         self._build_args(optionlist=ARGS_BACKTEST, parser=backtesting_cmd)
@@ -528,7 +560,9 @@ class Arguments:
 
         # Add backtesting analysis subcommand
         analysis_cmd = subparsers.add_parser(
-            "backtesting-analysis", help="Backtest Analysis module.", parents=[_common_parser]
+            "backtesting-analysis",
+            help="Backtest Analysis module.",
+            parents=[_common_parser],
         )
         analysis_cmd.set_defaults(func=start_analysis_entries_exits)
         self._build_args(optionlist=ARGS_ANALYZE_ENTRIES_EXITS, parser=analysis_cmd)
@@ -584,7 +618,9 @@ class Arguments:
             help="Print markets on exchange.",
             parents=[_common_parser],
         )
-        list_markets_cmd.set_defaults(func=partial(start_list_markets, pairs_only=False))
+        list_markets_cmd.set_defaults(
+            func=partial(start_list_markets, pairs_only=False)
+        )
         self._build_args(optionlist=ARGS_LIST_PAIRS, parser=list_markets_cmd)
 
         # Add list-pairs subcommand
@@ -621,7 +657,9 @@ class Arguments:
             parents=[_common_parser],
         )
         list_freqaimodels_cmd.set_defaults(func=start_list_freqAI_models)
-        self._build_args(optionlist=ARGS_LIST_FREQAIMODELS, parser=list_freqaimodels_cmd)
+        self._build_args(
+            optionlist=ARGS_LIST_FREQAIMODELS, parser=list_freqaimodels_cmd
+        )
 
         # Add list-timeframes subcommand
         list_timeframes_cmd = subparsers.add_parser(
@@ -707,7 +745,9 @@ class Arguments:
         )
         lookahead_analayis_cmd.set_defaults(func=start_lookahead_analysis)
 
-        self._build_args(optionlist=ARGS_LOOKAHEAD_ANALYSIS, parser=lookahead_analayis_cmd)
+        self._build_args(
+            optionlist=ARGS_LOOKAHEAD_ANALYSIS, parser=lookahead_analayis_cmd
+        )
 
         # Add recursive_analysis subcommand
         recursive_analayis_cmd = subparsers.add_parser(
@@ -717,4 +757,6 @@ class Arguments:
         )
         recursive_analayis_cmd.set_defaults(func=start_recursive_analysis)
 
-        self._build_args(optionlist=ARGS_RECURSIVE_ANALYSIS, parser=recursive_analayis_cmd)
+        self._build_args(
+            optionlist=ARGS_RECURSIVE_ANALYSIS, parser=recursive_analayis_cmd
+        )

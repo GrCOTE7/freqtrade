@@ -9,7 +9,11 @@ import pytest
 
 from freqtrade.data.converter.trade_converter import trades_dict_to_list
 from freqtrade.enums import CandleType, MarginMode, RunMode, TradingMode
-from freqtrade.exceptions import DependencyException, InvalidOrderException, OperationalException
+from freqtrade.exceptions import (
+    DependencyException,
+    InvalidOrderException,
+    OperationalException,
+)
 from freqtrade.exchange.exchange_utils_timeframe import timeframe_to_seconds
 from freqtrade.persistence import Trade
 from freqtrade.util.datetime_helpers import dt_from_ts, dt_ts, dt_utc
@@ -28,7 +32,9 @@ from tests.exchange.test_exchange import ccxt_exceptionhandlers
         ("sell", "market", "PO", {}),
     ],
 )
-def test__get_params_binance(default_conf, mocker, side, order_type, time_in_force, expected):
+def test__get_params_binance(
+    default_conf, mocker, side, order_type, time_in_force, expected
+):
     exchange = get_patched_exchange(mocker, default_conf, exchange="binance")
     assert exchange._get_params(side, order_type, 1, False, time_in_force) == expected
 
@@ -45,12 +51,16 @@ def test__get_params_binance(default_conf, mocker, side, order_type, time_in_for
         (0.98, 220 * 1.02, "buy"),
     ],
 )
-def test_create_stoploss_order_binance(default_conf, mocker, limitratio, expected, side, trademode):
+def test_create_stoploss_order_binance(
+    default_conf, mocker, limitratio, expected, side, trademode
+):
     api_mock = MagicMock()
     order_id = f"test_prod_buy_{randint(0, 10**6)}"
     order_type = "stop_loss_limit" if trademode == TradingMode.SPOT else "stop"
 
-    api_mock.create_order = MagicMock(return_value={"id": order_id, "info": {"foo": "bar"}})
+    api_mock.create_order = MagicMock(
+        return_value={"id": order_id, "info": {"foo": "bar"}}
+    )
     default_conf["dry_run"] = False
     default_conf["margin_mode"] = MarginMode.ISOLATED
     default_conf["trading_mode"] = trademode
@@ -75,7 +85,12 @@ def test_create_stoploss_order_binance(default_conf, mocker, limitratio, expecte
         order_types.update({"stoploss_on_exchange_limit_ratio": limitratio})
 
     order = exchange.create_stoploss(
-        pair="ETH/BTC", amount=1, stop_price=220, order_types=order_types, side=side, leverage=1.0
+        pair="ETH/BTC",
+        amount=1,
+        stop_price=220,
+        order_types=order_types,
+        side=side,
+        leverage=1.0,
     )
 
     assert "id" in order
@@ -90,15 +105,26 @@ def test_create_stoploss_order_binance(default_conf, mocker, limitratio, expecte
     if trademode == TradingMode.SPOT:
         params_dict = {"stopPrice": 220}
     else:
-        params_dict = {"stopPrice": 220, "reduceOnly": True, "workingType": "MARK_PRICE"}
+        params_dict = {
+            "stopPrice": 220,
+            "reduceOnly": True,
+            "workingType": "MARK_PRICE",
+        }
     assert api_mock.create_order.call_args_list[0][1]["params"] == params_dict
 
     # test exception handling
     with pytest.raises(DependencyException):
-        api_mock.create_order = MagicMock(side_effect=ccxt.InsufficientFunds("0 balance"))
+        api_mock.create_order = MagicMock(
+            side_effect=ccxt.InsufficientFunds("0 balance")
+        )
         exchange = get_patched_exchange(mocker, default_conf, api_mock, "binance")
         exchange.create_stoploss(
-            pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side=side, leverage=1.0
+            pair="ETH/BTC",
+            amount=1,
+            stop_price=220,
+            order_types={},
+            side=side,
+            leverage=1.0,
         )
 
     with pytest.raises(InvalidOrderException):
@@ -107,7 +133,12 @@ def test_create_stoploss_order_binance(default_conf, mocker, limitratio, expecte
         )
         exchange = get_patched_exchange(mocker, default_conf, api_mock, "binance")
         exchange.create_stoploss(
-            pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side=side, leverage=1.0
+            pair="ETH/BTC",
+            amount=1,
+            stop_price=220,
+            order_types={},
+            side=side,
+            leverage=1.0,
         )
 
     ccxt_exceptionhandlers(
@@ -149,7 +180,12 @@ def test_create_stoploss_order_dry_run_binance(default_conf, mocker):
     api_mock.create_order.reset_mock()
 
     order = exchange.create_stoploss(
-        pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side="sell", leverage=1.0
+        pair="ETH/BTC",
+        amount=1,
+        stop_price=220,
+        order_types={},
+        side="sell",
+        leverage=1.0,
     )
 
     assert "id" in order
@@ -687,8 +723,12 @@ def test_fill_leverage_tiers_binance_dryrun(default_conf, mocker, leverage_tiers
 
 def test_additional_exchange_init_binance(default_conf, mocker):
     api_mock = MagicMock()
-    api_mock.fapiPrivateGetPositionSideDual = MagicMock(return_value={"dualSidePosition": True})
-    api_mock.fapiPrivateGetMultiAssetsMargin = MagicMock(return_value={"multiAssetsMargin": True})
+    api_mock.fapiPrivateGetPositionSideDual = MagicMock(
+        return_value={"dualSidePosition": True}
+    )
+    api_mock.fapiPrivateGetMultiAssetsMargin = MagicMock(
+        return_value={"multiAssetsMargin": True}
+    )
     default_conf["dry_run"] = False
     default_conf["trading_mode"] = TradingMode.FUTURES
     default_conf["margin_mode"] = MarginMode.ISOLATED
@@ -696,10 +736,18 @@ def test_additional_exchange_init_binance(default_conf, mocker):
         OperationalException,
         match=r"Hedge Mode is not supported.*\nMulti-Asset Mode is not supported.*",
     ):
-        get_patched_exchange(mocker, default_conf, exchange="binance", api_mock=api_mock)
-    api_mock.fapiPrivateGetPositionSideDual = MagicMock(return_value={"dualSidePosition": False})
-    api_mock.fapiPrivateGetMultiAssetsMargin = MagicMock(return_value={"multiAssetsMargin": False})
-    exchange = get_patched_exchange(mocker, default_conf, exchange="binance", api_mock=api_mock)
+        get_patched_exchange(
+            mocker, default_conf, exchange="binance", api_mock=api_mock
+        )
+    api_mock.fapiPrivateGetPositionSideDual = MagicMock(
+        return_value={"dualSidePosition": False}
+    )
+    api_mock.fapiPrivateGetMultiAssetsMargin = MagicMock(
+        return_value={"multiAssetsMargin": False}
+    )
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="binance", api_mock=api_mock
+    )
     assert exchange
     ccxt_exceptionhandlers(
         mocker,
@@ -764,7 +812,9 @@ def patch_binance_vision_ohlcv(mocker, start, archive_end, api_end, timeframe):
     ):
         since = dt_from_ts(since_ms)
         until = dt_from_ts(until_ms) if until_ms else api_end + timedelta(seconds=1)
-        return api_storage.loc[(api_storage["date"] >= since) & (api_storage["date"] < until)]
+        return api_storage.loc[
+            (api_storage["date"] >= since) & (api_storage["date"] < until)
+        ]
 
     async def download_archive_ohlcv(
         candle_type,
@@ -783,10 +833,15 @@ def patch_binance_vision_ohlcv(mocker, start, archive_end, api_end, timeframe):
             (archive_storage["date"] >= since) & (archive_storage["date"] < until)
         ]
 
-    candle_mock = mocker.patch(f"{EXMS}._async_get_candle_history", return_value=candle_history)
-    api_mock = mocker.patch(f"{EXMS}.get_historic_ohlcv", side_effect=get_historic_ohlcv)
+    candle_mock = mocker.patch(
+        f"{EXMS}._async_get_candle_history", return_value=candle_history
+    )
+    api_mock = mocker.patch(
+        f"{EXMS}.get_historic_ohlcv", side_effect=get_historic_ohlcv
+    )
     archive_mock = mocker.patch(
-        "freqtrade.exchange.binance.download_archive_ohlcv", side_effect=download_archive_ohlcv
+        "freqtrade.exchange.binance.download_archive_ohlcv",
+        side_effect=download_archive_ohlcv,
     )
     return candle_mock, api_mock, archive_mock
 
@@ -948,7 +1003,11 @@ def test_get_historic_ohlcv_binance(
     archive_end = dt_utc(2020, 1, 2)
     api_end = dt_utc(2020, 1, 3)
     candle_mock, api_mock, archive_mock = patch_binance_vision_ohlcv(
-        mocker, start=start, archive_end=archive_end, api_end=api_end, timeframe=timeframe
+        mocker,
+        start=start,
+        archive_end=archive_end,
+        api_end=api_end,
+        timeframe=timeframe,
     )
 
     candle_type = CandleType.SPOT
@@ -957,7 +1016,9 @@ def test_get_historic_ohlcv_binance(
     since_ms = dt_ts(since)
     until_ms = dt_ts(until)
 
-    df = exchange.get_historic_ohlcv(pair, timeframe, since_ms, candle_type, is_new_pair, until_ms)
+    df = exchange.get_historic_ohlcv(
+        pair, timeframe, since_ms, candle_type, is_new_pair, until_ms
+    )
 
     if df.empty:
         assert first_date is None
@@ -966,7 +1027,8 @@ def test_get_historic_ohlcv_binance(
         assert df["date"].iloc[0] == first_date
         assert df["date"].iloc[-1] == last_date
         assert (
-            df["date"].diff().iloc[1:] == timedelta(seconds=timeframe_to_seconds(timeframe))
+            df["date"].diff().iloc[1:]
+            == timedelta(seconds=timeframe_to_seconds(timeframe))
         ).all()
 
     if candle_called:
@@ -981,7 +1043,9 @@ def test_get_historic_ohlcv_binance(
 
     # binanceus does not use archive mode!
     exchange._can_use_data_download_fast = False
-    df = exchange.get_historic_ohlcv(pair, timeframe, since_ms, candle_type, is_new_pair, until_ms)
+    df = exchange.get_historic_ohlcv(
+        pair, timeframe, since_ms, candle_type, is_new_pair, until_ms
+    )
     # Never uses archive
     assert archive_mock.call_count == 0
     assert candle_mock.call_count == (0 if not candle_called else 1)
@@ -1012,11 +1076,15 @@ def test_get_maintenance_ratio_and_amt_binance(
     mocker.patch(f"{EXMS}.exchange_has", return_value=True)
     exchange = get_patched_exchange(mocker, default_conf, exchange="binance")
     exchange._leverage_tiers = leverage_tiers
-    (result_ratio, result_amt) = exchange.get_maintenance_ratio_and_amt(pair, notional_value)
+    result_ratio, result_amt = exchange.get_maintenance_ratio_and_amt(
+        pair, notional_value
+    )
     assert (round(result_ratio, 8), round(result_amt, 8)) == (mm_ratio, amt)
 
 
-async def test__async_get_trade_history_id_binance(default_conf_usdt, mocker, fetch_trades_result):
+async def test__async_get_trade_history_id_binance(
+    default_conf_usdt, mocker, fetch_trades_result
+):
     default_conf_usdt["exchange"]["only_from_ccxt"] = True
     exchange = get_patched_exchange(mocker, default_conf_usdt, exchange="binance")
 
@@ -1029,10 +1097,15 @@ async def test__async_get_trade_history_id_binance(default_conf_usdt, mocker, fe
                 # Don't expect to get here
                 raise ValueError("Unexpected call")
                 # return fetch_trades_result[:-2]
-        elif kwargs.get("params", {}).get(exchange._ft_has["trades_pagination_arg"]) == "0":
+        elif (
+            kwargs.get("params", {}).get(exchange._ft_has["trades_pagination_arg"])
+            == "0"
+        ):
             # Return first 3
             return fetch_trades_result[:-2]
-        elif kwargs.get("params", {}).get(exchange._ft_has["trades_pagination_arg"]) in (
+        elif kwargs.get("params", {}).get(
+            exchange._ft_has["trades_pagination_arg"]
+        ) in (
             fetch_trades_result[-3]["id"],
             1565798399752,
         ):
@@ -1090,7 +1163,10 @@ async def test__async_get_trade_history_id_binance_fast(
             #     # Don't expect to get here
             #     raise ValueError("Unexpected call")
             #     # return fetch_trades_result[:-2]
-        elif kwargs.get("params", {}).get(exchange._ft_has["trades_pagination_arg"]) == "0":
+        elif (
+            kwargs.get("params", {}).get(exchange._ft_has["trades_pagination_arg"])
+            == "0"
+        ):
             # Return first 3
             return fetch_trades_result[:-2]
         # elif kwargs.get("params", {}).get(exchange._ft_has['trades_pagination_arg']) in (
@@ -1149,7 +1225,9 @@ async def test__async_get_trade_history_id_binance_fast_listing_probe(
     pair = "ETH/USDT:USDT" if trading_mode == TradingMode.FUTURES else "ETH/BTC"
 
     listing_trades = fetch_trades_result[1:3]
-    exchange._api_async.fetch_trades = AsyncMock(return_value=listing_trades, side_effect=error)
+    exchange._api_async.fetch_trades = AsyncMock(
+        return_value=listing_trades, side_effect=error
+    )
     dl_mock = mocker.patch(
         "freqtrade.exchange.binance.download_archive_trades",
         return_value=(pair, trades_dict_to_list(fetch_trades_result[-2:])),
@@ -1223,7 +1301,9 @@ def test__check_delisting_futures_binance(default_conf_usdt, mocker, markets):
 def test__get_spot_delist_schedule_binance(default_conf_usdt, mocker):
     exchange = get_patched_exchange(mocker, default_conf_usdt, exchange="binance")
     ret_value = [{"delistTime": 1759114800000, "symbols": ["ETCBTC"]}]
-    schedule_mock = mocker.patch.object(exchange, "_get_spot_delist_schedule", return_value=None)
+    schedule_mock = mocker.patch.object(
+        exchange, "_get_spot_delist_schedule", return_value=None
+    )
 
     # None - mode is DRY
     assert exchange._get_spot_pair_delist_time("ETC/BTC") is None

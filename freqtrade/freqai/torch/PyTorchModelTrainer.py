@@ -13,7 +13,6 @@ from freqtrade.freqai.torch.PyTorchTrainerInterface import PyTorchTrainerInterfa
 
 from .datasets import WindowDataset
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +83,9 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
         """
         self.model.train()
 
-        data_loaders_dictionary = self.create_data_loaders_dictionary(data_dictionary, splits)
+        data_loaders_dictionary = self.create_data_loaders_dictionary(
+            data_dictionary, splits
+        )
         n_obs = len(data_dictionary["train_features"])
         n_epochs = self.n_epochs or self.calc_n_epochs(n_obs=n_obs)
         batch_counter = 0
@@ -147,7 +148,9 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
             loss = self.criterion(yb_pred, yb)
             total_loss += loss.item()
             num_batches += 1
-            self.tb_logger.log_scalar(f"{split}_loss", loss.item(), self.test_batch_counter)
+            self.tb_logger.log_scalar(
+                f"{split}_loss", loss.item(), self.test_batch_counter
+            )
             self.test_batch_counter += 1
 
         self.model.train()
@@ -164,8 +167,12 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
         """
         data_loader_dictionary = {}
         for split in splits:
-            x = self.data_convertor.convert_x(data_dictionary[f"{split}_features"], self.device)
-            y = self.data_convertor.convert_y(data_dictionary[f"{split}_labels"], self.device)
+            x = self.data_convertor.convert_x(
+                data_dictionary[f"{split}_features"], self.device
+            )
+            y = self.data_convertor.convert_y(
+                data_dictionary[f"{split}_labels"], self.device
+            )
             dataset = TensorDataset(x, y)
             data_loader = DataLoader(
                 dataset,
@@ -241,8 +248,12 @@ class PyTorchTransformerTrainer(PyTorchModelTrainer):
         """
         data_loader_dictionary = {}
         for split in splits:
-            x = self.data_convertor.convert_x(data_dictionary[f"{split}_features"], self.device)
-            y = self.data_convertor.convert_y(data_dictionary[f"{split}_labels"], self.device)
+            x = self.data_convertor.convert_x(
+                data_dictionary[f"{split}_features"], self.device
+            )
+            y = self.data_convertor.convert_y(
+                data_dictionary[f"{split}_labels"], self.device
+            )
             dataset = WindowDataset(x, y, self.window_size)
             data_loader = DataLoader(
                 dataset,

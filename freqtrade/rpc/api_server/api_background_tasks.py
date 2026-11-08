@@ -6,14 +6,15 @@ from fastapi.exceptions import HTTPException
 from freqtrade.rpc.api_server.api_schemas import BackgroundTaskStatus
 from freqtrade.rpc.api_server.webserver_bgwork import ApiBG, JobsContainer
 
-
 logger = logging.getLogger(__name__)
 
 # Private API, protected by authentication and webserver_mode dependency
 router = APIRouter()
 
 
-def _create_background_task_response(jobid: str, job: JobsContainer) -> BackgroundTaskStatus:
+def _create_background_task_response(
+    jobid: str, job: JobsContainer
+) -> BackgroundTaskStatus:
     return BackgroundTaskStatus(
         job_id=jobid,
         job_category=job["category"],
@@ -27,7 +28,10 @@ def _create_background_task_response(jobid: str, job: JobsContainer) -> Backgrou
 
 @router.get("/background", response_model=list[BackgroundTaskStatus])
 def background_job_list():
-    return [_create_background_task_response(jobid, job) for jobid, job in ApiBG.jobs.items()]
+    return [
+        _create_background_task_response(jobid, job)
+        for jobid, job in ApiBG.jobs.items()
+    ]
 
 
 @router.get("/background/{jobid}", response_model=BackgroundTaskStatus)
@@ -48,7 +52,10 @@ def background_job_delete_all():
         if job["is_running"]:
             continue
         del ApiBG.jobs[jobid]
-    return [_create_background_task_response(jobid, job) for jobid, job in ApiBG.jobs.items()]
+    return [
+        _create_background_task_response(jobid, job)
+        for jobid, job in ApiBG.jobs.items()
+    ]
 
 
 @router.delete("/background/{jobid}", response_model=BackgroundTaskStatus)

@@ -1,7 +1,11 @@
 from collections.abc import Sequence
 from typing import Any, Protocol
 
-from optuna.distributions import CategoricalDistribution, FloatDistribution, IntDistribution
+from optuna.distributions import (
+    CategoricalDistribution,
+    FloatDistribution,
+    IntDistribution,
+)
 
 
 class DimensionProtocol(Protocol):

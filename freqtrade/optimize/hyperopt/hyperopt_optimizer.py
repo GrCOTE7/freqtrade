@@ -30,7 +30,10 @@ from freqtrade.optimize.backtesting import Backtesting
 
 # Import IHyperOptLoss to allow unpickling classes from these modules
 from freqtrade.optimize.hyperopt.hyperopt_auto import HyperOptAuto
-from freqtrade.optimize.hyperopt.hyperopt_logger import logging_mp_handle, logging_mp_setup
+from freqtrade.optimize.hyperopt.hyperopt_logger import (
+    logging_mp_handle,
+    logging_mp_setup,
+)
 from freqtrade.optimize.hyperopt_loss.hyperopt_loss_interface import IHyperOptLoss
 from freqtrade.optimize.hyperopt_tools import HyperoptStateContainer, HyperoptTools
 from freqtrade.optimize.optimize_reports import generate_strategy_stats
@@ -44,7 +47,6 @@ from freqtrade.optimize.space import (
 from freqtrade.resolvers.hyperopt_resolver import HyperOptLossResolver
 from freqtrade.util import dt_now
 from freqtrade.util.dry_run_wallet import get_dry_run_wallet
-
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +92,8 @@ class HyperOptimizer:
         self.custom_hyperopt.strategy = self.backtesting.strategy
 
         self.hyperopt_pickle_magic(self.backtesting.strategy.__class__.__bases__)
-        self.custom_hyperoptloss: IHyperOptLoss = HyperOptLossResolver.load_hyperoptloss(
-            self.config
+        self.custom_hyperoptloss: IHyperOptLoss = (
+            HyperOptLossResolver.load_hyperoptloss(self.config)
         )
         self.calculate_loss = self.custom_hyperoptloss.hyperopt_loss_function
 
@@ -101,7 +103,9 @@ class HyperOptimizer:
 
         self.es_epochs = config.get("early_stop", 0)
         if self.es_epochs > 0 and self.es_epochs < 0.2 * config.get("epochs", 0):
-            logger.warning(f"Early stop epochs {self.es_epochs} lower than 20% of total epochs")
+            logger.warning(
+                f"Early stop epochs {self.es_epochs} lower than 20% of total epochs"
+            )
 
         if HyperoptTools.has_space(self.config, "sell"):
             # Make sure use_exit_signal is enabled
@@ -169,7 +173,12 @@ class HyperOptimizer:
                 )
             elif space == "roi":
                 result["roi"] = round_dict(
-                    {str(k): v for k, v in self.custom_hyperopt.generate_roi_table(params).items()},
+                    {
+                        str(k): v
+                        for k, v in self.custom_hyperopt.generate_roi_table(
+                            params
+                        ).items()
+                    },
                     13,
                 )
             elif space == "stoploss":
@@ -224,7 +233,9 @@ class HyperOptimizer:
         Assign the dimensions in the hyperoptimization space.
         """
         spaces = ["buy", "sell", "protection", "roi", "stoploss", "trailing", "trades"]
-        spaces += [s for s in self.custom_hyperopt.get_available_spaces() if s not in spaces]
+        spaces += [
+            s for s in self.custom_hyperopt.get_available_spaces() if s not in spaces
+        ]
 
         for space in spaces:
             if not HyperoptTools.has_space(self.config, space):
@@ -260,7 +271,9 @@ class HyperOptimizer:
     @delayed
     @wrap_non_picklable_objects
     def generate_optimizer_wrapped(self, params_dict: dict[str, Any]) -> dict[str, Any]:
-        logging_mp_setup(log_queue, logging.INFO if self.config["verbosity"] < 1 else logging.DEBUG)
+        logging_mp_setup(
+            log_queue, logging.INFO if self.config["verbosity"] < 1 else logging.DEBUG
+        )
         return self.generate_optimizer(params_dict)
 
     def generate_optimizer(self, params_dict: dict[str, Any]) -> dict[str, Any]:
@@ -277,8 +290,8 @@ class HyperOptimizer:
                 attr.value = params_dict[attr_name]
 
         if HyperoptTools.has_space(self.config, "roi"):
-            self.backtesting.strategy.minimal_roi = self.custom_hyperopt.generate_roi_table(
-                params_dict
+            self.backtesting.strategy.minimal_roi = (
+                self.custom_hyperopt.generate_roi_table(params_dict)
             )
 
         if HyperoptTools.has_space(self.config, "stoploss"):
@@ -287,7 +300,9 @@ class HyperOptimizer:
         if HyperoptTools.has_space(self.config, "trailing"):
             d = self.custom_hyperopt.generate_trailing_params(params_dict)
             self.backtesting.strategy.trailing_stop = d["trailing_stop"]
-            self.backtesting.strategy.trailing_stop_positive = d["trailing_stop_positive"]
+            self.backtesting.strategy.trailing_stop_positive = d[
+                "trailing_stop_positive"
+            ]
             self.backtesting.strategy.trailing_stop_positive_offset = d[
                 "trailing_stop_positive_offset"
             ]
@@ -297,14 +312,18 @@ class HyperOptimizer:
 
         if HyperoptTools.has_space(self.config, "trades"):
             if self.config["stake_amount"] == "unlimited" and (
-                params_dict["max_open_trades"] == -1 or params_dict["max_open_trades"] == 0
+                params_dict["max_open_trades"] == -1
+                or params_dict["max_open_trades"] == 0
             ):
                 # Ignore unlimited max open trades if stake amount is unlimited
                 params_dict.update({"max_open_trades": self.config["max_open_trades"]})
 
             updated_max_open_trades = (
                 int(params_dict["max_open_trades"])
-                if (params_dict["max_open_trades"] != -1 and params_dict["max_open_trades"] != 0)
+                if (
+                    params_dict["max_open_trades"] != -1
+                    and params_dict["max_open_trades"] != 0
+                )
                 else float("inf")
             )
 
@@ -388,12 +407,17 @@ class HyperOptimizer:
             "total_profit": total_profit,
         }
 
-    def convert_dimensions_to_optuna_space(self, s_dimensions: list[DimensionProtocol]) -> dict:
+    def convert_dimensions_to_optuna_space(
+        self, s_dimensions: list[DimensionProtocol]
+    ) -> dict:
         o_dimensions: dict[str, optuna.distributions.BaseDistribution] = {}
         for original_dim in s_dimensions:
             if isinstance(
                 original_dim,
-                ft_CategoricalDistribution | ft_IntDistribution | ft_FloatDistribution | SKDecimal,
+                ft_CategoricalDistribution
+                | ft_IntDistribution
+                | ft_FloatDistribution
+                | SKDecimal,
             ):
                 o_dimensions[original_dim.name] = original_dim
             else:
@@ -432,7 +456,9 @@ class HyperOptimizer:
         if self.es_epochs > 0:
             with warnings.catch_warnings():
                 warnings.filterwarnings(action="ignore", category=ExperimentalWarning)
-                self.es_terminator = Terminator(BestValueStagnationEvaluator(self.es_epochs))
+                self.es_terminator = Terminator(
+                    BestValueStagnationEvaluator(self.es_epochs)
+                )
 
         logger.info(f"Using optuna sampler {o_sampler}.")
         return optuna.create_study(sampler=sampler, direction="minimize")
@@ -443,7 +469,9 @@ class HyperOptimizer:
         # Trim startup period from analyzed dataframe to get correct dates for output.
         # This is only used to keep track of min/max date after trimming.
         # The result is NOT returned from this method, actual trimming happens in backtesting.
-        trimmed = trim_dataframes(preprocessed, self.timerange, self.backtesting.required_startup)
+        trimmed = trim_dataframes(
+            preprocessed, self.timerange, self.backtesting.required_startup
+        )
         self.min_date, self.max_date = get_timerange(trimmed)
         if not self.market_change:
             self.market_change = calculate_market_change(trimmed, "close")

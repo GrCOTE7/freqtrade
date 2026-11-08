@@ -6,7 +6,6 @@ from freqtrade.constants import Config, LongShort
 from freqtrade.persistence import Trade
 from freqtrade.plugins.protections import IProtection, ProtectionReturn
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +53,9 @@ class LowProfitPairs(IProtection):
         # if pair:
         #     filters.append(Trade.pair == pair)
 
-        trades = Trade.get_trades_proxy(pair=pair, is_open=False, close_date=look_back_until)
+        trades = Trade.get_trades_proxy(
+            pair=pair, is_open=False, close_date=look_back_until
+        )
         trades_to_consider = [
             trade
             for trade in trades
@@ -65,7 +66,9 @@ class LowProfitPairs(IProtection):
             # Not enough trades in the relevant period
             return None
 
-        profit = sum(trade.close_profit for trade in trades_to_consider if trade.close_profit)
+        profit = sum(
+            trade.close_profit for trade in trades_to_consider if trade.close_profit
+        )
         if profit < self._required_profit:
             side_str = f" ({side} trades)" if self._only_per_side else ""
             self.log_once(

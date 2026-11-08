@@ -8,8 +8,11 @@ import logging
 
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,9 @@ class ProducerPairList(IPairList):
         )
 
         if pairlist is None:
-            pairlist = self._pairlistmanager._dataprovider.get_producer_pairs(self._producer_name)
+            pairlist = self._pairlistmanager._dataprovider.get_producer_pairs(
+                self._producer_name
+            )
 
         pairs = list(dict.fromkeys(pairlist + upstream_pairlist))
         if self._num_assets:
@@ -95,7 +100,9 @@ class ProducerPairList(IPairList):
         """
         pairs = self._filter_pairlist(None)
         self.log_once(f"Received pairs: {pairs}", logger.debug)
-        pairs = self._whitelist_for_active_markets(self.verify_whitelist(pairs, logger.info))
+        pairs = self._whitelist_for_active_markets(
+            self.verify_whitelist(pairs, logger.info)
+        )
         return pairs
 
     def filter_pairlist(self, pairlist: list[str], tickers: Tickers) -> list[str]:

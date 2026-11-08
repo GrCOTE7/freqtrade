@@ -17,7 +17,6 @@ from freqtrade.freqai.data_drawer import FreqaiDataDrawer
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.plugins.pairlist.pairlist_helpers import dynamic_expand_pairlist
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -74,7 +73,9 @@ def get_required_data_timerange(config: Config) -> TimeRange:
         max_tf_seconds = max(max_tf_seconds, secs)
 
     startup_candles = config.get("startup_candle_count", 0)
-    indicator_periods = config["freqai"]["feature_parameters"]["indicator_periods_candles"]
+    indicator_periods = config["freqai"]["feature_parameters"][
+        "indicator_periods_candles"
+    ]
 
     # factor the max_period as a factor of safety.
     max_period = int(max(startup_candles, max(indicator_periods)) * 1.5)
@@ -83,7 +84,9 @@ def get_required_data_timerange(config: Config) -> TimeRange:
 
     additional_seconds = max_period * max_tf_seconds
 
-    startts = int(time - config["freqai"].get("train_period_days", 0) * 86400 - additional_seconds)
+    startts = int(
+        time - config["freqai"].get("train_period_days", 0) * 86400 - additional_seconds
+    )
     stopts = int(time)
     data_load_timerange = TimeRange("date", "date", startts, stopts)
 
@@ -149,7 +152,9 @@ def plot_feature_importance(
         fig = add_feature_trace(fig, fi_df_top, 1)
         fig = add_feature_trace(fig, fi_df_worst, 2)
         fig.update_layout(title_text=f"Best and worst features by importance {pair}")
-        label = label.replace("&", "").replace("%", "")  # escape two FreqAI specific characters
+        label = label.replace("&", "").replace(
+            "%", ""
+        )  # escape two FreqAI specific characters
         store_plot_file(fig, f"{dk.model_filename}-{label}.html", dk.data_path)
 
 

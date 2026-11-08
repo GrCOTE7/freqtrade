@@ -7,7 +7,6 @@ from freqtrade.enums import ExitType
 from freqtrade.persistence import Trade
 from freqtrade.plugins.protections import IProtection, ProtectionReturn
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +48,9 @@ class StoplossGuard(IProtection):
         """
         look_back_until = date_now - timedelta(minutes=self._lookback_period)
 
-        trades1 = Trade.get_trades_proxy(pair=pair, is_open=False, close_date=look_back_until)
+        trades1 = Trade.get_trades_proxy(
+            pair=pair, is_open=False, close_date=look_back_until
+        )
         trades = [
             trade
             for trade in trades1

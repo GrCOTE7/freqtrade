@@ -8,7 +8,6 @@ from questionary import Separator, prompt
 from freqtrade.constants import UNLIMITED_STAKE_AMOUNT
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +83,8 @@ def ask_user_config() -> dict[str, Any]:
             "name": "stake_amount",
             "message": f"Please insert your stake amount (Number or '{UNLIMITED_STAKE_AMOUNT}'):",
             "default": "unlimited",
-            "validate": lambda val: val == UNLIMITED_STAKE_AMOUNT or validate_is_float(val),
+            "validate": lambda val: val == UNLIMITED_STAKE_AMOUNT
+            or validate_is_float(val),
             "filter": parse_stake_amount,
         },
         {
@@ -99,7 +99,10 @@ def ask_user_config() -> dict[str, Any]:
             "type": "select",
             "name": "timeframe_in_config",
             "message": "Time",
-            "choices": ["Have the strategy define timeframe.", "Override in configuration."],
+            "choices": [
+                "Have the strategy define timeframe.",
+                "Override in configuration.",
+            ],
         },
         {
             "type": "text",
@@ -165,7 +168,8 @@ def ask_user_config() -> dict[str, Any]:
             "type": "password",
             "name": "exchange_api_key_password",
             "message": "Insert Exchange API Key password",
-            "when": lambda x: not x["dry_run"] and exchange_requires_password(x["exchange_name"]),
+            "when": lambda x: not x["dry_run"]
+            and exchange_requires_password(x["exchange_name"]),
         },
         {
             "type": "confirm",
@@ -198,7 +202,9 @@ def ask_user_config() -> dict[str, Any]:
                 "Insert Api server Listen Address (0.0.0.0 for docker, "
                 "otherwise best left untouched)"
             ),
-            "default": "127.0.0.1" if not running_in_docker() else "0.0.0.0",  # noqa: S104
+            "default": (
+                "127.0.0.1" if not running_in_docker() else "0.0.0.0"
+            ),  # noqa: S104
             "when": lambda x: x["api_server"],
         },
         {
@@ -225,7 +231,9 @@ def ask_user_config() -> dict[str, Any]:
         raise OperationalException("User interrupted interactive questions.")
     # Ensure default is set for non-futures exchanges
     answers["trading_mode"] = answers.get("trading_mode", "spot")
-    answers["margin_mode"] = "isolated" if answers.get("trading_mode") == "futures" else ""
+    answers["margin_mode"] = (
+        "isolated" if answers.get("trading_mode") == "futures" else ""
+    )
     # Force JWT token to be a random string
     answers["api_server_jwt_key"] = secrets.token_hex()
     answers["api_server_ws_token"] = secrets.token_urlsafe(25)
@@ -253,14 +261,17 @@ def deploy_new_config(config_path: Path, selections: dict[str, Any]) -> None:
         )
 
         selections["exchange"] = render_template(
-            templatefile=f"subtemplates/exchange_{exchange_template}.j2", arguments=selections
+            templatefile=f"subtemplates/exchange_{exchange_template}.j2",
+            arguments=selections,
         )
     except TemplateNotFound:
         selections["exchange"] = render_template(
             templatefile="subtemplates/exchange_generic.j2", arguments=selections
         )
 
-    config_text = render_template(templatefile="base_config.json.j2", arguments=selections)
+    config_text = render_template(
+        templatefile="base_config.json.j2", arguments=selections
+    )
 
     logger.info(f"Writing config to `{config_path}`.")
     logger.info(

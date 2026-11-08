@@ -18,7 +18,6 @@ from freqtrade.optimize.analysis.base_analysis import BaseAnalysis, VarHolder
 from freqtrade.optimize.backtesting import Backtesting
 from freqtrade.util import CustomProgress
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -78,14 +77,20 @@ class RecursiveAnalysis(BaseAnalysis):
                             and is_number(values_diff_other)
                         ):
                             diff = round(
-                                (values_diff_other - values_diff_self) / values_diff_self, 12
+                                (values_diff_other - values_diff_self)
+                                / values_diff_self,
+                                12,
                             )
                         else:
                             diff = "nan"
-                        self.dict_recursive[indicator][part.startup_candle] = float(diff)
+                        self.dict_recursive[indicator][part.startup_candle] = float(
+                            diff
+                        )
 
             else:
-                logger.info("No variance on indicator(s) found due to recursive formula.")
+                logger.info(
+                    "No variance on indicator(s) found due to recursive formula."
+                )
                 break
 
     # For lookahead bias check
@@ -97,8 +102,12 @@ class RecursiveAnalysis(BaseAnalysis):
         part = self.partial_varHolder_lookahead_array[0]
         part_last_row = part.indicators[pair_to_check].iloc[-1]
         date_to_check = part_last_row["date"]
-        index_to_get = self.full_varHolder.indicators[pair_to_check]["date"] == date_to_check
-        base_row_check = self.full_varHolder.indicators[pair_to_check].loc[index_to_get].iloc[-1]
+        index_to_get = (
+            self.full_varHolder.indicators[pair_to_check]["date"] == date_to_check
+        )
+        base_row_check = (
+            self.full_varHolder.indicators[pair_to_check].loc[index_to_get].iloc[-1]
+        )
 
         check_time = part.to_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -123,7 +132,10 @@ class RecursiveAnalysis(BaseAnalysis):
             logger.info("No lookahead bias on indicators found.")
 
     def prepare_data(self, varholder: VarHolder, pairs_to_load: list[DataFrame]):
-        if "freqai" in self.local_config and "identifier" in self.local_config["freqai"]:
+        if (
+            "freqai" in self.local_config
+            and "identifier" in self.local_config["freqai"]
+        ):
             # purge previous data if the freqai model is defined
             # (to be sure nothing is carried over from older backtests)
             path_to_current_identifier = Path(
@@ -171,7 +183,9 @@ class RecursiveAnalysis(BaseAnalysis):
         varholder.data, varholder.timerange = backtesting.load_bt_data()
         varholder.timeframe = backtesting.timeframe
 
-        varholder.indicators = backtesting.strategy.advise_all_indicators(varholder.data)
+        varholder.indicators = backtesting.strategy.advise_all_indicators(
+            varholder.data
+        )
 
     def fill_partial_varholder(self, start_date, startup_candle):
         logger.info(f"Calculating indicators using startup candle of {startup_candle}.")
@@ -208,7 +222,9 @@ class RecursiveAnalysis(BaseAnalysis):
 
         timeframe_minutes = timeframe_to_minutes(self.full_varHolder.timeframe)
 
-        end_date_partial = start_date_full + timedelta(minutes=int(timeframe_minutes * 10))
+        end_date_partial = start_date_full + timedelta(
+            minutes=int(timeframe_minutes * 10)
+        )
 
         self.fill_partial_varholder_lookahead(end_date_partial)
 
@@ -216,7 +232,9 @@ class RecursiveAnalysis(BaseAnalysis):
 
         start_date_partial = end_date_full - timedelta(minutes=int(timeframe_minutes))
 
-        candle_task = progress.add_task("Startup candles", total=len(self._startup_candle))
+        candle_task = progress.add_task(
+            "Startup candles", total=len(self._startup_candle)
+        )
         for startup_candle in self._startup_candle:
             progress.update(candle_task, description=f"Startup candle {startup_candle}")
             self.fill_partial_varholder(start_date_partial, startup_candle)

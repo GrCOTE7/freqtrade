@@ -14,7 +14,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError as RequestConnectionError
 
-
 logger = logging.getLogger("ft_rest_client")
 
 ParamsT = dict[str, Any] | None
@@ -37,7 +36,9 @@ class FtRestClient:
         self._timeout = timeout
 
         # allow configuration of pool
-        adapter = HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize)
+        adapter = HTTPAdapter(
+            pool_connections=pool_connections, pool_maxsize=pool_maxsize
+        )
         self._session.mount("http://", adapter)
 
         if username and password:

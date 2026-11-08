@@ -17,7 +17,6 @@ from freqtrade.strategy.strategy_helper import (
     merge_informative_pair,
 )
 
-
 PopulateIndicators = Callable[[Any, DataFrame, dict], DataFrame]
 
 
@@ -48,12 +47,15 @@ class InformativeCache(TLRUCache[InformativeCacheKey, _InformativeCacheEntry]):
         super().__init__(maxsize=maxsize, ttu=self._time_to_use, timer=timer)
 
     @staticmethod
-    def _time_to_use(key: InformativeCacheKey, _entry: _InformativeCacheEntry, now: float) -> float:
+    def _time_to_use(
+        key: InformativeCacheKey, _entry: _InformativeCacheEntry, now: float
+    ) -> float:
         # Using effective timeframe instead of informative timeframe because some informative candle
         # types (like funding_rate) have a different effective timeframe. On most cases, effective
         # timeframe is equal to informative timeframe.
         return now + (
-            _INFORMATIVE_CACHE_TTL_CANDLES * timeframe_to_seconds(key.effective_timeframe)
+            _INFORMATIVE_CACHE_TTL_CANDLES
+            * timeframe_to_seconds(key.effective_timeframe)
         )
 
 
@@ -210,7 +212,9 @@ def _get_populated_informative_dataframe(
         _raise_reserved_column_name()
 
     if cache is not None:
-        fingerprint = _informative_dataframe_fingerprint(dataframe, cache_key.candle_type)
+        fingerprint = _informative_dataframe_fingerprint(
+            dataframe, cache_key.candle_type
+        )
         cached: _InformativeCacheEntry | None = cache.get(cache_key)
         if cached is not None and cached.fingerprint == fingerprint:
             return cached.prepared.dataframe

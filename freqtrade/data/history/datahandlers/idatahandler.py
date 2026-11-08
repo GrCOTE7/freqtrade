@@ -31,7 +31,6 @@ from freqtrade.enums import CandleType, TradingMode
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange import timeframe_to_seconds
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,7 +61,8 @@ class IDataHandler(ABC):
         if trading_mode == TradingMode.FUTURES:
             datadir = datadir.joinpath("futures")
         _tmp = [
-            cls._OHLCV_REGEX.search(p.name) for p in datadir.glob(f"*.{cls._get_file_extension()}")
+            cls._OHLCV_REGEX.search(p.name)
+            for p in datadir.glob(f"*.{cls._get_file_extension()}")
         ]
         return [
             (
@@ -104,11 +104,19 @@ class IDataHandler(ABC):
                 datetime.fromtimestamp(0, tz=UTC),
                 0,
             )
-        return df.iloc[0]["date"].to_pydatetime(), df.iloc[-1]["date"].to_pydatetime(), len(df)
+        return (
+            df.iloc[0]["date"].to_pydatetime(),
+            df.iloc[-1]["date"].to_pydatetime(),
+            len(df),
+        )
 
     @abstractmethod
     def _ohlcv_load(
-        self, pair: str, timeframe: str, timerange: TimeRange | None, candle_type: CandleType
+        self,
+        pair: str,
+        timeframe: str,
+        timerange: TimeRange | None,
+        candle_type: CandleType,
     ) -> DataFrame:
         """
         Internal method used to load data for one pair from disk.
@@ -133,7 +141,9 @@ class IDataHandler(ABC):
         return DataFrame(columns=get_candle_columns(candle_type))
 
     @classmethod
-    def _normalize_columns(cls, df: DataFrame, pair: str, candle_type: CandleType) -> DataFrame:
+    def _normalize_columns(
+        cls, df: DataFrame, pair: str, candle_type: CandleType
+    ) -> DataFrame:
         """
         Bring a dataframe read from storage into the layout for this candle type.
 
@@ -151,7 +161,9 @@ class IDataHandler(ABC):
         # the current columns and stale legacy ones is read as the current layout.
         if set(columns).issubset(df.columns):
             return df.loc[:, columns]
-        if candle_type == CandleType.FUNDING_RATE and set(OHLCV_COLUMNS).issubset(df.columns):
+        if candle_type == CandleType.FUNDING_RATE and set(OHLCV_COLUMNS).issubset(
+            df.columns
+        ):
             # Legacy layout, correctly named - the rate lives in "open"
             logger.debug(f"Migrating legacy funding rate columns for {pair} on read.")
             return df.rename(columns=FUNDING_RATE_LEGACY_RENAME).loc[:, columns]
@@ -209,7 +221,9 @@ class IDataHandler(ABC):
         """
 
     @classmethod
-    def trades_get_available_data(cls, datadir: Path, trading_mode: TradingMode) -> list[str]:
+    def trades_get_available_data(
+        cls, datadir: Path, trading_mode: TradingMode
+    ) -> list[str]:
         """
         Returns a list of all pairs with ohlcv data available in this datadir
         :param datadir: Directory to search for ohlcv files
@@ -219,7 +233,8 @@ class IDataHandler(ABC):
         if trading_mode == TradingMode.FUTURES:
             datadir = datadir.joinpath("futures")
         _tmp = [
-            cls._TRADES_REGEX.search(p.name) for p in datadir.glob(f"*.{cls._get_file_extension()}")
+            cls._TRADES_REGEX.search(p.name)
+            for p in datadir.glob(f"*.{cls._get_file_extension()}")
         ]
         return [
             cls.rebuild_pair_from_filename(match[1])
@@ -265,7 +280,9 @@ class IDataHandler(ABC):
         return [cls.rebuild_pair_from_filename(match[0]) for match in _tmp if match]
 
     @abstractmethod
-    def _trades_store(self, pair: str, data: DataFrame, trading_mode: TradingMode) -> None:
+    def _trades_store(
+        self, pair: str, data: DataFrame, trading_mode: TradingMode
+    ) -> None:
         """
         Store trades data (list of Dicts) to file
         :param pair: Pair - used for filename
@@ -295,7 +312,9 @@ class IDataHandler(ABC):
         :return: Dataframe containing trades
         """
 
-    def trades_store(self, pair: str, data: DataFrame, trading_mode: TradingMode) -> None:
+    def trades_store(
+        self, pair: str, data: DataFrame, trading_mode: TradingMode
+    ) -> None:
         """
         Store trades data (list of Dicts) to file
         :param pair: Pair - used for filename
@@ -367,11 +386,15 @@ class IDataHandler(ABC):
         if candle_type != CandleType.SPOT:
             datadir = datadir.joinpath("futures")
             candle = f"-{candle_type}"
-        filename = datadir.joinpath(f"{pair_s}-{timeframe}{candle}.{cls._get_file_extension()}")
+        filename = datadir.joinpath(
+            f"{pair_s}-{timeframe}{candle}.{cls._get_file_extension()}"
+        )
         return filename
 
     @classmethod
-    def _pair_trades_filename(cls, datadir: Path, pair: str, trading_mode: TradingMode) -> Path:
+    def _pair_trades_filename(
+        cls, datadir: Path, pair: str, trading_mode: TradingMode
+    ) -> Path:
         pair_s = misc.pair_to_filename(pair)
         if trading_mode == TradingMode.FUTURES:
             # Futures pair ...
@@ -429,7 +452,9 @@ class IDataHandler(ABC):
         # Fix startup period
         timerange_startup = timerange.copy() if timerange else None
         if startup_candles > 0 and timerange_startup:
-            timerange_startup.subtract_start(timeframe_to_seconds(timeframe) * startup_candles)
+            timerange_startup.subtract_start(
+                timeframe_to_seconds(timeframe) * startup_candles
+            )
 
         pairdf = self._ohlcv_load(
             pair, timeframe, timerange=timerange_startup, candle_type=candle_type
@@ -446,9 +471,13 @@ class IDataHandler(ABC):
             enddate = pairdf.iloc[-1]["date"]
 
             if timerange_startup:
-                self._validate_pairdata(pair, pairdf, timeframe, candle_type, timerange_startup)
+                self._validate_pairdata(
+                    pair, pairdf, timeframe, candle_type, timerange_startup
+                )
                 pairdf = trim_dataframe(pairdf, timerange_startup)
-                if self._check_empty_df(pairdf, pair, timeframe, candle_type, warn_no_data, True):
+                if self._check_empty_df(
+                    pairdf, pair, timeframe, candle_type, warn_no_data, True
+                ):
                     return pairdf
 
             # incomplete candles should only be dropped if we didn't trim the end beforehand.
@@ -457,7 +486,9 @@ class IDataHandler(ABC):
                 timeframe,
                 pair=pair,
                 fill_missing=fill_missing,
-                drop_incomplete=(drop_incomplete and enddate == pairdf.iloc[-1]["date"]),
+                drop_incomplete=(
+                    drop_incomplete and enddate == pairdf.iloc[-1]["date"]
+                ),
                 candle_type=candle_type,
             )
             self._check_empty_df(pairdf, pair, timeframe, candle_type, warn_no_data)
@@ -491,7 +522,9 @@ class IDataHandler(ABC):
                 and "open" in pairdf.columns
             ):
                 # Detect gaps between prior close and open
-                gaps = (pairdf["open"] - pairdf["close"].shift(1)) / pairdf["close"].shift(1)
+                gaps = (pairdf["open"] - pairdf["close"].shift(1)) / pairdf[
+                    "close"
+                ].shift(1)
                 gaps = gaps.dropna()
                 if len(gaps):
                     candle_price_gap = max(abs(gaps))
@@ -517,12 +550,18 @@ class IDataHandler(ABC):
         :param timerange: Timerange specified for start and end dates
         """
 
-        if timerange.starttype == "date" and pairdata.iloc[0]["date"] > timerange.startdt:
+        if (
+            timerange.starttype == "date"
+            and pairdata.iloc[0]["date"] > timerange.startdt
+        ):
             logger.warning(
                 f"{pair}, {candle_type}, {timeframe}, "
                 f"data starts at {pairdata.iloc[0]['date']:%Y-%m-%d %H:%M:%S}"
             )
-        if timerange.stoptype == "date" and pairdata.iloc[-1]["date"] < timerange.stopdt:
+        if (
+            timerange.stoptype == "date"
+            and pairdata.iloc[-1]["date"] < timerange.stopdt
+        ):
             logger.warning(
                 f"{pair}, {candle_type}, {timeframe}, "
                 f"data ends at {pairdata.iloc[-1]['date']:%Y-%m-%d %H:%M:%S}"
@@ -537,7 +576,9 @@ class IDataHandler(ABC):
         """
 
         file_old = self._pair_data_filename(self._datadir, pair, timeframe, candle_type)
-        file_new = self._pair_data_filename(self._datadir, new_pair, timeframe, candle_type)
+        file_new = self._pair_data_filename(
+            self._datadir, new_pair, timeframe, candle_type
+        )
         # print(file_old, file_new)
         if file_new.exists():
             logger.warning(f"{file_new} exists already, can't migrate {pair}.")
@@ -555,8 +596,7 @@ class IDataHandler(ABC):
         funding_rate_combs = [
             f
             for f in paircombs
-            if f[2] == CandleType.FUNDING_RATE
-            and f[1] != ff_timeframe
+            if f[2] == CandleType.FUNDING_RATE and f[1] != ff_timeframe
             # Only allow smaller timeframes to move from smaller to larger timeframes
             and timeframe_to_seconds(f[1]) < ff_timeframe_s
         ]
@@ -567,8 +607,12 @@ class IDataHandler(ABC):
             )
 
         for pair, timeframe, candletype in funding_rate_combs:
-            old_name = self._pair_data_filename(self._datadir, pair, timeframe, candletype)
-            new_name = self._pair_data_filename(self._datadir, pair, ff_timeframe, candletype)
+            old_name = self._pair_data_filename(
+                self._datadir, pair, timeframe, candletype
+            )
+            new_name = self._pair_data_filename(
+                self._datadir, pair, ff_timeframe, candletype
+            )
 
             if not Path(old_name).exists():
                 logger.warning(f"{old_name} does not exist, skipping.")
@@ -619,7 +663,9 @@ def get_datahandlerclass(datatype: str) -> type[IDataHandler]:
 
 
 def get_datahandler(
-    datadir: Path, data_format: str | None = None, data_handler: IDataHandler | None = None
+    datadir: Path,
+    data_format: str | None = None,
+    data_handler: IDataHandler | None = None,
 ) -> IDataHandler:
     """
     :param datadir: Folder to save data

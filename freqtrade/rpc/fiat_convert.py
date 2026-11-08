@@ -13,7 +13,6 @@ from freqtrade.util import FtTTLCache, dt_ts
 from freqtrade.util.coin_gecko import FtCoinGeckoApi
 from freqtrade.util.singleton import SingletonMeta
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -88,7 +87,11 @@ class CryptoToFiatConverter(LoggingMixin, metaclass=SingletonMeta):
         found = [x for x in self._coinlistings if x["symbol"].lower() == crypto_symbol]
 
         if crypto_symbol in coingecko_mapping:
-            found = [x for x in self._coinlistings if x["id"] == coingecko_mapping[crypto_symbol]]
+            found = [
+                x
+                for x in self._coinlistings
+                if x["id"] == coingecko_mapping[crypto_symbol]
+            ]
 
         if len(found) == 1:
             return found[0]["id"]
@@ -98,7 +101,9 @@ class CryptoToFiatConverter(LoggingMixin, metaclass=SingletonMeta):
             logger.warning(f"Found multiple mappings in CoinGecko for {crypto_symbol}.")
             return None
 
-    def convert_amount(self, crypto_amount: float, crypto_symbol: str, fiat_symbol: str) -> float:
+    def convert_amount(
+        self, crypto_amount: float, crypto_symbol: str, fiat_symbol: str
+    ) -> float:
         """
         Convert an amount of crypto-currency to fiat
         :param crypto_amount: amount of crypto-currency to convert
@@ -138,7 +143,9 @@ class CryptoToFiatConverter(LoggingMixin, metaclass=SingletonMeta):
         price = self._pair_price.get(symbol, None)
 
         if not price:
-            price = self._find_price(crypto_symbol=crypto_symbol, fiat_symbol=fiat_symbol)
+            price = self._find_price(
+                crypto_symbol=crypto_symbol, fiat_symbol=fiat_symbol
+            )
             if inverse and price != 0.0:
                 price = 1 / price
             self._pair_price[symbol] = price
@@ -174,15 +181,16 @@ class CryptoToFiatConverter(LoggingMixin, metaclass=SingletonMeta):
         if not _gecko_id:
             # return 0 for unsupported stake currencies (fiat-convert should not break the bot)
             self.log_once(
-                f"unsupported crypto-symbol {crypto_symbol.upper()} - returning 0.0", logger.warning
+                f"unsupported crypto-symbol {crypto_symbol.upper()} - returning 0.0",
+                logger.warning,
             )
             return 0.0
 
         try:
             return float(
-                self._coingecko.get_price(ids=_gecko_id, vs_currencies=fiat_symbol)[_gecko_id][
-                    fiat_symbol
-                ]
+                self._coingecko.get_price(ids=_gecko_id, vs_currencies=fiat_symbol)[
+                    _gecko_id
+                ][fiat_symbol]
             )
         except Exception as exception:
             logger.error("Error in _find_price: %s", exception)

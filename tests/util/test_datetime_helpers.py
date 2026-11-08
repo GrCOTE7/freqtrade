@@ -54,14 +54,18 @@ def test_dt_ts_none():
 
 def test_dt_utc():
     assert dt_utc(2023, 5, 5) == datetime(2023, 5, 5, tzinfo=UTC)
-    assert dt_utc(2023, 5, 5, 0, 0, 0, 555500) == datetime(2023, 5, 5, 0, 0, 0, 555500, tzinfo=UTC)
+    assert dt_utc(2023, 5, 5, 0, 0, 0, 555500) == datetime(
+        2023, 5, 5, 0, 0, 0, 555500, tzinfo=UTC
+    )
 
 
 @pytest.mark.parametrize("as_ms", [True, False])
 def test_dt_from_ts(as_ms):
     multi = 1000 if as_ms else 1
     assert dt_from_ts(1683244800.0 * multi) == datetime(2023, 5, 5, tzinfo=UTC)
-    assert dt_from_ts(1683244800.5555 * multi) == datetime(2023, 5, 5, 0, 0, 0, 555500, tzinfo=UTC)
+    assert dt_from_ts(1683244800.5555 * multi) == datetime(
+        2023, 5, 5, 0, 0, 0, 555500, tzinfo=UTC
+    )
     # As int
     assert dt_from_ts(1683244800 * multi) == datetime(2023, 5, 5, tzinfo=UTC)
     # As milliseconds
@@ -86,9 +90,13 @@ def test_dt_humanize() -> None:
         assert dt_humanize_delta(dt_now()) == "now"
         assert dt_humanize_delta(dt_now() - timedelta(minutes=50)) == "50 minutes ago"
         assert dt_humanize_delta(dt_now() - timedelta(hours=16)) == "16 hours ago"
-        assert dt_humanize_delta(dt_now() - timedelta(hours=16, minutes=30)) == "16 hours ago"
         assert (
-            dt_humanize_delta(dt_now() - timedelta(days=16, hours=10, minutes=25)) == "a month ago"
+            dt_humanize_delta(dt_now() - timedelta(hours=16, minutes=30))
+            == "16 hours ago"
+        )
+        assert (
+            dt_humanize_delta(dt_now() - timedelta(days=16, hours=10, minutes=25))
+            == "a month ago"
         )
         assert dt_humanize_delta(dt_now() - timedelta(minutes=50)) == "50 minutes ago"
 
@@ -129,4 +137,7 @@ def test_format_ms_time_detailed() -> None:
     res = datetime(2017, 12, 13, 8, 2, 1, 512321, tzinfo=UTC)
     # Date 2017-12-13 08:02:01
     date_in_epoch_ms = 1513152121512
-    assert format_ms_time_det(date_in_epoch_ms) == res.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+    assert (
+        format_ms_time_det(date_in_epoch_ms)
+        == res.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+    )

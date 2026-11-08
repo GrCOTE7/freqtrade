@@ -5,9 +5,10 @@ from rich.text import Text
 
 from freqtrade.constants import UNLIMITED_STAKE_AMOUNT, Config
 from freqtrade.ft_types import BacktestResultType
-from freqtrade.optimize.optimize_reports.optimize_reports import generate_periodic_breakdown_stats
+from freqtrade.optimize.optimize_reports.optimize_reports import (
+    generate_periodic_breakdown_stats,
+)
 from freqtrade.util import decimals_per_coin, fmt_coin, print_rich_table
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,16 @@ def _get_line_floatfmt(stake_currency: str) -> list[str]:
     """
     Generate floatformat (goes in line with _generate_result_line())
     """
-    return ["s", "d", ".2f", f".{decimals_per_coin(stake_currency)}f", ".2f", "d", "s", "s"]
+    return [
+        "s",
+        "d",
+        ".2f",
+        f".{decimals_per_coin(stake_currency)}f",
+        ".2f",
+        "d",
+        "s",
+        "s",
+    ]
 
 
 def _get_line_header(
@@ -44,7 +54,9 @@ def generate_wins_draws_losses(wins, draws, losses):
     elif wins == 0:
         wl_ratio = "0"
     else:
-        wl_ratio = f"{100.0 / (wins + draws + losses) * wins:.1f}" if losses > 0 else "100"
+        wl_ratio = (
+            f"{100.0 / (wins + draws + losses) * wins:.1f}" if losses > 0 else "100"
+        )
     return f"{wins:>4}  {draws:>4}  {losses:>4}  {wl_ratio:>4}"
 
 
@@ -98,7 +110,9 @@ def text_table_tags(
     else:
         # Mix tag
         title = "Mixed Tag"
-        headers = _get_line_header(["Enter Tag", "Exit Reason"], stake_currency, "Trades")
+        headers = _get_line_header(
+            ["Enter Tag", "Exit Reason"], stake_currency, "Trades"
+        )
         floatfmt.insert(0, "s")
         is_list = True
 
@@ -108,9 +122,7 @@ def text_table_tags(
                 (
                     list(t["key"])
                     if isinstance(t["key"], list | tuple)
-                    else [t["key"], ""]
-                    if is_list
-                    else [t["key"]]
+                    else [t["key"], ""] if is_list else [t["key"]]
                 )
                 if t.get("key") is not None and len(str(t["key"])) > 0
                 else [t.get(fallback, "OTHER")]
@@ -149,7 +161,9 @@ def text_table_periodic_breakdown(
             d.get("trades", "N/A"),
             fmt_coin(d["profit_abs"], stake_currency, False),
             round(d["profit_factor"], 2) if "profit_factor" in d else "N/A",
-            generate_wins_draws_losses(d["wins"], d["draws"], d.get("losses", d.get("loses", 0))),
+            generate_wins_draws_losses(
+                d["wins"], d["draws"], d.get("losses", d.get("loses", 0))
+            ),
         ]
         for d in days_breakdown_stats
     ]
@@ -236,7 +250,10 @@ def text_table_add_metrics(strat_results: dict) -> None:
         if "max_relative_drawdown" in strat_results:
             # Compatibility to show old hyperopt results
             drawdown_metrics.append(
-                ("Max % of account underwater", f"{strat_results['max_relative_drawdown']:.2%}")
+                (
+                    "Max % of account underwater",
+                    f"{strat_results['max_relative_drawdown']:.2%}",
+                )
             )
         drawdown_account = (
             strat_results["max_drawdown_account"]
@@ -271,9 +288,18 @@ def text_table_add_metrics(strat_results: dict) -> None:
 
         entry_adjustment_metrics = (
             [
-                ("Canceled Trade Entries", strat_results.get("canceled_trade_entries", "N/A")),
-                ("Canceled Entry Orders", strat_results.get("canceled_entry_orders", "N/A")),
-                ("Replaced Entry Orders", strat_results.get("replaced_entry_orders", "N/A")),
+                (
+                    "Canceled Trade Entries",
+                    strat_results.get("canceled_trade_entries", "N/A"),
+                ),
+                (
+                    "Canceled Entry Orders",
+                    strat_results.get("canceled_entry_orders", "N/A"),
+                ),
+                (
+                    "Replaced Entry Orders",
+                    strat_results.get("replaced_entry_orders", "N/A"),
+                ),
             ]
             if strat_results.get("canceled_entry_orders", 0) > 0
             else []
@@ -356,21 +382,27 @@ def text_table_add_metrics(strat_results: dict) -> None:
                         ("Drawdown end", wallet_stats["drawdown_end"]),
                         (
                             "Sharpe (daily wallet balance)",
-                            f"{wallet_stats['sharpe']:.2f}"
-                            if wallet_stats and "sharpe" in wallet_stats
-                            else "N/A",
+                            (
+                                f"{wallet_stats['sharpe']:.2f}"
+                                if wallet_stats and "sharpe" in wallet_stats
+                                else "N/A"
+                            ),
                         ),
                         (
                             "Sortino (daily wallet balance)",
-                            f"{wallet_stats['sortino']:.2f}"
-                            if wallet_stats and "sortino" in wallet_stats
-                            else "N/A",
+                            (
+                                f"{wallet_stats['sortino']:.2f}"
+                                if wallet_stats and "sortino" in wallet_stats
+                                else "N/A"
+                            ),
                         ),
                         (
                             "Calmar (daily wallet balance)",
-                            f"{wallet_stats['calmar']:.2f}"
-                            if wallet_stats and "calmar" in wallet_stats
-                            else "N/A",
+                            (
+                                f"{wallet_stats['calmar']:.2f}"
+                                if wallet_stats and "calmar" in wallet_stats
+                                else "N/A"
+                            ),
                         ),
                     ]
                 )
@@ -401,23 +433,42 @@ def text_table_add_metrics(strat_results: dict) -> None:
                 fmt_coin(strat_results["profit_total_abs"], stake),
             ),
             ("Total profit %", f"{strat_results['profit_total']:.2%}"),
-            ("CAGR %", f"{strat_results['cagr']:.2%}" if "cagr" in strat_results else "N/A"),
+            (
+                "CAGR %",
+                f"{strat_results['cagr']:.2%}" if "cagr" in strat_results else "N/A",
+            ),
             (
                 "Sharpe (closed trades)",
-                f"{strat_results['sharpe']:.2f}" if "sharpe" in strat_results else "N/A",
+                (
+                    f"{strat_results['sharpe']:.2f}"
+                    if "sharpe" in strat_results
+                    else "N/A"
+                ),
             ),
             (
                 "Sortino (closed trades)",
-                f"{strat_results['sortino']:.2f}" if "sortino" in strat_results else "N/A",
+                (
+                    f"{strat_results['sortino']:.2f}"
+                    if "sortino" in strat_results
+                    else "N/A"
+                ),
             ),
             (
                 "Calmar (closed trades)",
-                f"{strat_results['calmar']:.2f}" if "calmar" in strat_results else "N/A",
+                (
+                    f"{strat_results['calmar']:.2f}"
+                    if "calmar" in strat_results
+                    else "N/A"
+                ),
             ),
             ("SQN", f"{strat_results['sqn']:.2f}" if "sqn" in strat_results else "N/A"),
             (
                 "Mean profit p-value",
-                (f"{strat_results['p_value']:.4g}" if "p_value" in strat_results else "N/A"),
+                (
+                    f"{strat_results['p_value']:.4g}"
+                    if "p_value" in strat_results
+                    else "N/A"
+                ),
             ),
             (
                 "Profit factor",
@@ -438,7 +489,10 @@ def text_table_add_metrics(strat_results: dict) -> None:
             (
                 "Avg. daily profit",
                 fmt_coin(
-                    (strat_results["profit_total_abs"] / strat_results["backtest_days"]),
+                    (
+                        strat_results["profit_total_abs"]
+                        / strat_results["backtest_days"]
+                    ),
                     stake,
                 ),
             ),
@@ -524,7 +578,9 @@ def text_table_add_metrics(strat_results: dict) -> None:
             *wallet_metrics,
             *drawdown_metrics,
         ]
-        print_rich_table(metrics, ["Metric", "Value"], summary="SUMMARY METRICS", justify="left")
+        print_rich_table(
+            metrics, ["Metric", "Value"], summary="SUMMARY METRICS", justify="left"
+        )
 
     else:
         start_balance = fmt_coin(strat_results["starting_balance"], stake)
@@ -557,7 +613,10 @@ def _show_tag_subresults(results: dict[str, Any], stake_currency: str):
 
 
 def show_backtest_result(
-    strategy: str, results: dict[str, Any], stake_currency: str, backtest_breakdown: list[str]
+    strategy: str,
+    results: dict[str, Any],
+    stake_currency: str,
+    backtest_breakdown: list[str],
 ):
     """
     Print results for one strategy
@@ -565,10 +624,14 @@ def show_backtest_result(
     # Print results
     print(f"Result for strategy {strategy}")
     text_table_bt_results(
-        results["results_per_pair"], stake_currency=stake_currency, title="BACKTESTING REPORT"
+        results["results_per_pair"],
+        stake_currency=stake_currency,
+        title="BACKTESTING REPORT",
     )
     text_table_bt_results(
-        results["left_open_trades"], stake_currency=stake_currency, title="LEFT OPEN TRADES REPORT"
+        results["left_open_trades"],
+        stake_currency=stake_currency,
+        title="LEFT OPEN TRADES REPORT",
     )
 
     _show_tag_subresults(results, stake_currency)
@@ -581,7 +644,9 @@ def show_backtest_result(
                 trade_list=results["trades"], period=period
             )
         text_table_periodic_breakdown(
-            days_breakdown_stats=days_breakdown_stats, stake_currency=stake_currency, period=period
+            days_breakdown_stats=days_breakdown_stats,
+            stake_currency=stake_currency,
+            period=period,
         )
 
     text_table_add_metrics(results)

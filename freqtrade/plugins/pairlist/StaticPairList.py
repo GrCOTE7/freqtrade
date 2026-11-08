@@ -10,8 +10,11 @@ from cachetools import LRUCache
 
 from freqtrade.enums import RunMode
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +62,9 @@ class StaticPairList(IPairList):
 
         if not pairlist:
             wl = self.verify_whitelist(
-                self._config["exchange"]["pair_whitelist"], logger.info, keep_invalid=True
+                self._config["exchange"]["pair_whitelist"],
+                logger.info,
+                keep_invalid=True,
             )
             if self._allow_inactive:
                 pairlist = wl

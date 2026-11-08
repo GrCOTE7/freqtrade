@@ -9,7 +9,11 @@ from freqtrade.commands.optimize_commands import start_backtesting
 from freqtrade.enums import ExitType
 from freqtrade.exceptions import OperationalException
 from freqtrade.optimize.backtesting import Backtesting
-from tests.conftest import get_args, patch_exchange, patched_configuration_load_config_file
+from tests.conftest import (
+    get_args,
+    patch_exchange,
+    patched_configuration_load_config_file,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -139,7 +143,15 @@ def test_backtest_analysis_on_entry_and_rejected_signals_nomock(
 
     # test group 0 and indicator list
     args = get_args(
-        [*base_args, "--analysis-groups", "0", "--indicator-list", "close", "rsi", "profit_abs"]
+        [
+            *base_args,
+            "--analysis-groups",
+            "0",
+            "--indicator-list",
+            "close",
+            "rsi",
+            "profit_abs",
+        ]
     )
     start_analysis_entries_exits(args)
     captured = capsys.readouterr()
@@ -245,7 +257,15 @@ def test_backtest_analysis_on_entry_and_rejected_signals_nomock(
 
     # test date filtering
     args = get_args(
-        [*base_args, "--analysis-groups", "0", "1", "2", "--timerange", "20180129-20180130"]
+        [
+            *base_args,
+            "--analysis-groups",
+            "0",
+            "1",
+            "2",
+            "--timerange",
+            "20180129-20180130",
+        ]
     )
     start_analysis_entries_exits(args)
     captured = capsys.readouterr()

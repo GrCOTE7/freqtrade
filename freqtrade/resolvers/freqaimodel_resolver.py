@@ -12,7 +12,6 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.freqai.freqai_interface import IFreqaiModel
 from freqtrade.resolvers import IResolver
 
-
 logger = logging.getLogger(__name__)
 
 

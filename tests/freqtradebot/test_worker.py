@@ -77,7 +77,12 @@ def test_worker_stopped(mocker, default_conf, caplog) -> None:
         (State.RUNNING, State.PAUSED, False, "Changing state from RUNNING to: PAUSED"),
         (State.PAUSED, State.RUNNING, False, "Changing state from PAUSED to: RUNNING"),
         (State.PAUSED, State.STOPPED, False, "Changing state from PAUSED to: STOPPED"),
-        (State.RELOAD_CONFIG, State.RUNNING, True, "Changing state from RELOAD_CONFIG to: RUNNING"),
+        (
+            State.RELOAD_CONFIG,
+            State.RUNNING,
+            True,
+            "Changing state from RELOAD_CONFIG to: RUNNING",
+        ),
         (
             State.RELOAD_CONFIG,
             State.STOPPED,
@@ -131,7 +136,9 @@ def test_throttle(mocker, default_conf, caplog) -> None:
 
     assert result == 42
     assert 0.3 > end - start > 0.1
-    assert log_has_re(r"Throttling with 'throttled_func\(\)': sleep for \d\.\d{2} s.*", caplog)
+    assert log_has_re(
+        r"Throttling with 'throttled_func\(\)': sleep for \d\.\d{2} s.*", caplog
+    )
 
     result = worker._throttle(throttled_func, throttle_secs=-1)
     assert result == 42
@@ -177,7 +184,11 @@ def test_throttle_sleep_time(mocker, default_conf, caplog) -> None:
         # Throttle for more than 5m (1 timeframe)
         assert (
             worker._throttle(
-                throttled_func, throttle_secs=400, timeframe="5m", timeframe_offset=0.4, x=5
+                throttled_func,
+                throttle_secs=400,
+                timeframe="5m",
+                timeframe_offset=0.4,
+                x=5,
             )
             == 42
         )
@@ -191,7 +202,11 @@ def test_throttle_sleep_time(mocker, default_conf, caplog) -> None:
         # Which should not get a throttle iteration to avoid late candle fetching
         assert (
             worker._throttle(
-                throttled_func, throttle_secs=10, timeframe="5m", timeframe_offset=5, x=1.2
+                throttled_func,
+                throttle_secs=10,
+                timeframe="5m",
+                timeframe_offset=5,
+                x=1.2,
             )
             == 42
         )

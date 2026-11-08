@@ -6,7 +6,6 @@ from freqtrade.constants import BuySell
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.exchange_types import FtHas
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +28,9 @@ class Htx(Exchange):
         "trades_has_history": False,  # Endpoint doesn't have a "since" parameter
     }
 
-    def _get_stop_params(self, side: BuySell, ordertype: str, stop_price: float) -> dict:
+    def _get_stop_params(
+        self, side: BuySell, ordertype: str, stop_price: float
+    ) -> dict:
         params = self._params.copy()
         params.update(
             {

@@ -11,7 +11,6 @@ from freqtrade.exchange.exchange_utils_timeframe import timeframe_to_prev_date
 from freqtrade.persistence import KeyValueStore, Trade, WalletHistory
 from freqtrade.util import dt_now, dt_ts
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,9 +30,13 @@ def migrate_wallet_history(config: Config, exchange: Exchange, starting_balance:
     KeyValueStore.store_value("wallet_history_migration_date", dt_now())
 
 
-def _migrate_wallet_history(config: Config, exchange: Exchange, starting_balance: float):
+def _migrate_wallet_history(
+    config: Config, exchange: Exchange, starting_balance: float
+):
     # Prepare balance distribution data with OHLCV rates
-    balance_dist, pairlist_valid = _prepare_balance_distribution(config, exchange, starting_balance)
+    balance_dist, pairlist_valid = _prepare_balance_distribution(
+        config, exchange, starting_balance
+    )
     if not balance_dist.empty and pairlist_valid:
         _create_wallet_history_entries(
             config, exchange, balance_dist, pairlist_valid, config["stake_currency"]
@@ -50,7 +53,9 @@ def _prepare_balance_distribution(
     pairlist = list(trade_df["pair"].unique())
     timeframe = "1d"
     stake_currency = config["stake_currency"]
-    min_date = timeframe_to_prev_date(timeframe, KeyValueStore.get_datetime_value("bot_start_time"))
+    min_date = timeframe_to_prev_date(
+        timeframe, KeyValueStore.get_datetime_value("bot_start_time")
+    )
     balance_dist = balance_distribution_over_time(
         trade_df,
         min_date=min_date,
@@ -96,7 +101,9 @@ def _prepare_balance_distribution(
 
     balance_dist = balance_dist.join(merged, how="left")
     df_value = pd.DataFrame(
-        index=balance_dist.index, columns=[f"{p}_value" for p in pairlist_valid], dtype=float
+        index=balance_dist.index,
+        columns=[f"{p}_value" for p in pairlist_valid],
+        dtype=float,
     )
     for p in pairlist_valid:
         # df_value[f"{p}_value"] = balance_dist[f"{p}_open"] * balance_dist[p]
@@ -131,18 +138,24 @@ def _create_wallet_history_entries(
     # Precompute column indices for faster tuple-based iteration
     # Assume the first column is the index (date)
     stake_idx = balance_dist.columns.get_loc(stake_currency)
-    pair_balance_idx = {pair: balance_dist.columns.get_loc(pair) + 1 for pair in pairlist_valid}
+    pair_balance_idx = {
+        pair: balance_dist.columns.get_loc(pair) + 1 for pair in pairlist_valid
+    }
     pair_leverage_idx = {
-        pair: balance_dist.columns.get_loc(f"{pair}_leverage") + 1 for pair in pairlist_valid
+        pair: balance_dist.columns.get_loc(f"{pair}_leverage") + 1
+        for pair in pairlist_valid
     }
     pair_collateral_idx = {
-        pair: balance_dist.columns.get_loc(f"{pair}_collateral") + 1 for pair in pairlist_valid
+        pair: balance_dist.columns.get_loc(f"{pair}_collateral") + 1
+        for pair in pairlist_valid
     }
     pair_is_short_idx = {
-        pair: balance_dist.columns.get_loc(f"{pair}_is_short") + 1 for pair in pairlist_valid
+        pair: balance_dist.columns.get_loc(f"{pair}_is_short") + 1
+        for pair in pairlist_valid
     }
     pair_rate_idx = {
-        pair: balance_dist.columns.get_loc(f"{pair}_open") + 1 for pair in pairlist_valid
+        pair: balance_dist.columns.get_loc(f"{pair}_open") + 1
+        for pair in pairlist_valid
     }
     # Convert balance_dist to WalletHistory entries
     wallet_entries = []
@@ -180,7 +193,11 @@ def _create_wallet_history_entries(
                 if is_futures:
                     collateral = row[pair_collateral_idx[pair]]
                     is_short = row[pair_is_short_idx[pair]]
-                    if collateral is not None and not pd.isna(collateral) and rate is not None:
+                    if (
+                        collateral is not None
+                        and not pd.isna(collateral)
+                        and rate is not None
+                    ):
                         # Same formula than in rpc's _rpc_balance
                         total_quote = (
                             (rate * balance - collateral * (leverage - 1))
@@ -197,7 +214,9 @@ def _create_wallet_history_entries(
                         total_quote=total_quote,
                         leverage=leverage if not pd.isna(leverage) else 1.0,
                         bot_managed=True,
-                        total_position_value=balance * rate if is_futures and rate else None,
+                        total_position_value=(
+                            balance * rate if is_futures and rate else None
+                        ),
                         # collateral=collateral,
                     )
                 )
@@ -208,7 +227,9 @@ def _create_wallet_history_entries(
             # Use bulk_save_objects for better performance
             WalletHistory.session.bulk_save_objects(wallet_entries)
             WalletHistory.session.commit()
-            logger.info(f"Successfully created {len(wallet_entries)} wallet balance records")
+            logger.info(
+                f"Successfully created {len(wallet_entries)} wallet balance records"
+            )
         except Exception as e:
             WalletHistory.session.rollback()
             logger.error(f"Error saving wallet balance records: {e}")

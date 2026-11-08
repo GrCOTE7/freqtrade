@@ -114,7 +114,6 @@ from freqtrade.mixins import LoggingMixin
 from freqtrade.util import FtTTLCache, PeriodicCache, dt_from_ts, dt_now
 from freqtrade.util.datetime_helpers import dt_humanize_delta, dt_ts, format_ms_time
 
-
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -221,7 +220,9 @@ class Exchange(LoggingMixin):
 
         # Leverage properties
         self.trading_mode: TradingMode = TradingMode(
-            self._config.get("trading_mode", self._supported_trading_mode_margin_pairs[0][0])
+            self._config.get(
+                "trading_mode", self._supported_trading_mode_margin_pairs[0][0]
+            )
         )
         self.margin_mode: MarginMode = MarginMode(
             self._config["margin_mode"]
@@ -275,19 +276,28 @@ class Exchange(LoggingMixin):
         # Don't remove exchange credentials for dry-run or if always_require_api_keys is set
         remove_exchange_credentials(
             exchange_conf,
-            not self._ft_has["always_require_api_keys"] and self._config.get("dry_run", False),
+            not self._ft_has["always_require_api_keys"]
+            and self._config.get("dry_run", False),
         )
         self.log_responses = exchange_conf.get("log_responses", False)
 
         # Assign this directly for easy access
         self._ohlcv_partial_candle = self._ft_has["ohlcv_partial_candle"]
-        self._ohlcv_late_candle_grace_ms = self._ft_has["ohlcv_late_candle_grace_secs"] * 1000
-        self._ohlcv_max_poll_interval_ms = self._ft_has["ohlcv_max_poll_interval_secs"] * 1000
+        self._ohlcv_late_candle_grace_ms = (
+            self._ft_has["ohlcv_late_candle_grace_secs"] * 1000
+        )
+        self._ohlcv_max_poll_interval_ms = (
+            self._ft_has["ohlcv_max_poll_interval_secs"] * 1000
+        )
 
         # Initialize ccxt objects
         ccxt_config = self._ccxt_config
-        ccxt_config = deep_merge_dicts(exchange_conf.get("ccxt_config", {}), ccxt_config)
-        ccxt_config = deep_merge_dicts(exchange_conf.get("ccxt_sync_config", {}), ccxt_config)
+        ccxt_config = deep_merge_dicts(
+            exchange_conf.get("ccxt_config", {}), ccxt_config
+        )
+        ccxt_config = deep_merge_dicts(
+            exchange_conf.get("ccxt_sync_config", {}), ccxt_config
+        )
 
         self._api = self._init_ccxt(exchange_conf, True, ccxt_config)
 
@@ -344,7 +354,9 @@ class Exchange(LoggingMixin):
         """
         self.close()
 
-    def _close_async_ccxt(self, ccxt_object: ccxt_pro.Exchange | None, name: str) -> None:
+    def _close_async_ccxt(
+        self, ccxt_object: ccxt_pro.Exchange | None, name: str
+    ) -> None:
         """
         Release the aiohttp sessions of an async ccxt object.
         Errors are logged, but don't propagate as it's only called in shutdown phase.
@@ -354,13 +366,18 @@ class Exchange(LoggingMixin):
             ccxt_object is not None
             and inspect.iscoroutinefunction(ccxt_object.close)
             # ccxt warns about either of these being left behind in its destructor.
-            and (ccxt_object.session or getattr(ccxt_object, "socks_proxy_sessions", None))
+            and (
+                ccxt_object.session
+                or getattr(ccxt_object, "socks_proxy_sessions", None)
+            )
         ):
             logger.debug(f"Closing {name} ccxt session.")
             try:
                 self.loop.run_until_complete(ccxt_object.close())
             except Exception as e:
-                logger.warning(f"Error closing {name} ccxt session: {e.__class__.__name__} {e}")
+                logger.warning(
+                    f"Error closing {name} ccxt session: {e.__class__.__name__} {e}"
+                )
 
     def close(self):
         if self._exchange_ws:
@@ -438,16 +455,23 @@ class Exchange(LoggingMixin):
             "secret": exchange_config.get("secret"),
             "password": exchange_config.get("password"),
             "uid": exchange_config.get("uid"),
-            "accountId": exchange_config.get("account_id", exchange_config.get("accountId")),
+            "accountId": exchange_config.get(
+                "account_id", exchange_config.get("accountId")
+            ),
             # DEX attributes:
             "walletAddress": exchange_config.get(
                 "wallet_address", exchange_config.get("walletAddress")
             ),
-            "privateKey": exchange_config.get("private_key", exchange_config.get("privateKey")),
+            "privateKey": exchange_config.get(
+                "private_key", exchange_config.get("privateKey")
+            ),
         }
         if ccxt_kwargs:
             sanitized = sanitize_config({"exchange": {"ccxt_config": ccxt_kwargs}})
-            logger.info("Applying additional ccxt config: %s", sanitized["exchange"]["ccxt_config"])
+            logger.info(
+                "Applying additional ccxt config: %s",
+                sanitized["exchange"]["ccxt_config"],
+            )
         if self._ccxt_params:
             # Inject static options after the above output to not confuse users.
             ccxt_kwargs = deep_merge_dicts(self._ccxt_params, deepcopy(ccxt_kwargs))
@@ -458,9 +482,13 @@ class Exchange(LoggingMixin):
         except (KeyError, AttributeError) as e:
             raise OperationalException(f"Exchange {name} is not supported") from e
         except ccxt.BaseError as e:
-            raise OperationalException(f"Initialization of ccxt failed. Reason: {e}") from e
+            raise OperationalException(
+                f"Initialization of ccxt failed. Reason: {e}"
+            ) from e
 
-        if self.get_option("supports_demo_trading") and exchange_config.get("demo_trading", False):
+        if self.get_option("supports_demo_trading") and exchange_config.get(
+            "demo_trading", False
+        ):
             api.enable_demo_trading(True)
 
         return api
@@ -478,7 +506,9 @@ class Exchange(LoggingMixin):
     @property
     def name(self) -> str:
         """exchange Name (from ccxt)"""
-        return self._api.name if not self._is_demo_trading else f"{self._api.name} (Demo)"
+        return (
+            self._api.name if not self._is_demo_trading else f"{self._api.name} (Demo)"
+        )
 
     @property
     def id(self) -> str:
@@ -540,7 +570,9 @@ class Exchange(LoggingMixin):
         sync issues with freqtrade.
         """
         if not self.exchange_has("fetchTime"):
-            logger.debug(f"{self.name} does not support fetchTime, skipping time offset check.")
+            logger.debug(
+                f"{self.name} does not support fetchTime, skipping time offset check."
+            )
             return
         try:
             before = dt_ts()
@@ -583,7 +615,10 @@ class Exchange(LoggingMixin):
         """
 
         ccxt_val = self.features(
-            "spot" if candle_type == CandleType.SPOT else "futures", "fetchOHLCV", "limit", 500
+            "spot" if candle_type == CandleType.SPOT else "futures",
+            "fetchOHLCV",
+            "limit",
+            500,
         )
         if not isinstance(ccxt_val, float | int):
             ccxt_val = 500
@@ -619,7 +654,9 @@ class Exchange(LoggingMixin):
         if base_currencies:
             markets = {k: v for k, v in markets.items() if v["base"] in base_currencies}
         if quote_currencies:
-            markets = {k: v for k, v in markets.items() if v["quote"] in quote_currencies}
+            markets = {
+                k: v for k, v in markets.items() if v["quote"] in quote_currencies
+            }
         if tradable_only:
             markets = {k: v for k, v in markets.items() if self.market_is_tradable(v)}
         if spot_only:
@@ -676,14 +713,24 @@ class Exchange(LoggingMixin):
             )
             and (
                 (self.trading_mode == TradingMode.SPOT and self.market_is_spot(market))
-                or (self.trading_mode == TradingMode.MARGIN and self.market_is_margin(market))
-                or (self.trading_mode == TradingMode.FUTURES and self.market_is_future(market))
+                or (
+                    self.trading_mode == TradingMode.MARGIN
+                    and self.market_is_margin(market)
+                )
+                or (
+                    self.trading_mode == TradingMode.FUTURES
+                    and self.market_is_future(market)
+                )
             )
         )
 
     def klines(self, pair_interval: PairWithTimeframe, copy: bool = True) -> DataFrame:
         if pair_interval in self._klines:
-            return self._klines[pair_interval].copy() if copy else self._klines[pair_interval]
+            return (
+                self._klines[pair_interval].copy()
+                if copy
+                else self._klines[pair_interval]
+            )
         else:
             return DataFrame()
 
@@ -766,7 +813,9 @@ class Exchange(LoggingMixin):
     def _load_async_markets(self, reload: bool = False) -> None:
         try:
             with self._loop_lock:
-                markets = self.loop.run_until_complete(self._api_reload_markets(reload=reload))
+                markets = self.loop.run_until_complete(
+                    self._api_reload_markets(reload=reload)
+                )
 
             if isinstance(markets, Exception):
                 raise markets
@@ -775,7 +824,9 @@ class Exchange(LoggingMixin):
             logger.warning("Could not load markets. Reason: %s", e)
             raise TemporaryError from e
 
-    def reload_markets(self, force: bool = False, *, load_leverage_tiers: bool = True) -> None:
+    def reload_markets(
+        self, force: bool = False, *, load_leverage_tiers: bool = True
+    ) -> None:
         """
         Reload / Initialize markets both sync and async if refresh interval has passed
 
@@ -833,7 +884,9 @@ class Exchange(LoggingMixin):
                 f"Available currencies are: {', '.join(quote_currencies)}"
             )
 
-    def get_valid_pair_combination(self, curr_1: str, curr_2: str) -> Generator[str, None, None]:
+    def get_valid_pair_combination(
+        self, curr_1: str, curr_2: str
+    ) -> Generator[str, None, None]:
         """
         Get valid pair combination of curr_1 and curr_2 by trying both combinations.
         Candidates matching the bot's trading mode are yielded first.
@@ -850,7 +903,9 @@ class Exchange(LoggingMixin):
                 yielded = True
                 yield pair
         if not yielded:
-            raise ValueError(f"Could not combine {curr_1} and {curr_2} to get a valid pair.")
+            raise ValueError(
+                f"Could not combine {curr_1} and {curr_2} to get a valid pair."
+            )
 
     def validate_timeframes(self, timeframe: str | None) -> None:
         """
@@ -876,7 +931,9 @@ class Exchange(LoggingMixin):
             and self._config["runmode"] != RunMode.UTIL_EXCHANGE
             and timeframe_to_minutes(timeframe) < 1
         ):
-            raise ConfigurationError("Timeframes < 1m are currently not supported by Freqtrade.")
+            raise ConfigurationError(
+                "Timeframes < 1m are currently not supported by Freqtrade."
+            )
 
     def validate_ordertypes(self, order_types: dict) -> None:
         """
@@ -885,7 +942,9 @@ class Exchange(LoggingMixin):
         if any(v == "market" for k, v in order_types.items()) and not self.exchange_has(
             "createMarketOrder"
         ):
-            raise ConfigurationError(f"Exchange {self.name} does not support market orders.")
+            raise ConfigurationError(
+                f"Exchange {self.name} does not support market orders."
+            )
         self.validate_stop_ordertypes(order_types)
 
     def validate_stop_ordertypes(self, order_types: dict) -> None:
@@ -895,7 +954,9 @@ class Exchange(LoggingMixin):
         if order_types.get("stoploss_on_exchange") and not self._ft_has.get(
             "stoploss_on_exchange", False
         ):
-            raise ConfigurationError(f"On exchange stoploss is not supported for {self.name}.")
+            raise ConfigurationError(
+                f"On exchange stoploss is not supported for {self.name}."
+            )
         if self.trading_mode == TradingMode.FUTURES:
             price_mapping = self._ft_has.get("stop_price_type_value_mapping", {}).keys()
             if (
@@ -909,10 +970,13 @@ class Exchange(LoggingMixin):
                 )
 
     def validate_pricing(self, pricing: dict) -> None:
-        if pricing.get("use_order_book", False) and not self.exchange_has("fetchL2OrderBook"):
+        if pricing.get("use_order_book", False) and not self.exchange_has(
+            "fetchL2OrderBook"
+        ):
             raise ConfigurationError(f"Orderbook not available for {self.name}.")
         if not pricing.get("use_order_book", False) and (
-            not self.exchange_has("fetchTicker") or not self._ft_has["tickers_have_price"]
+            not self.exchange_has("fetchTicker")
+            or not self._ft_has["tickers_have_price"]
         ):
             raise ConfigurationError(f"Ticker pricing not available for {self.name}.")
 
@@ -930,7 +994,8 @@ class Exchange(LoggingMixin):
 
     def validate_orderflow(self, exchange: dict) -> None:
         if exchange.get("use_public_trades", False) and (
-            not self.exchange_has("fetchTrades") or not self._ft_has["trades_has_history"]
+            not self.exchange_has("fetchTrades")
+            or not self._ft_has["trades_has_history"]
         ):
             raise ConfigurationError(
                 f"Trade data not available for {self.name}. Can't use orderflow feature."
@@ -955,11 +1020,15 @@ class Exchange(LoggingMixin):
         """
         if exchange_conf.get("demo_trading", False):
             if not self.get_option("supports_demo_trading"):
-                raise ConfigurationError(f"Demo trading is not supported for {self.name}.")
+                raise ConfigurationError(
+                    f"Demo trading is not supported for {self.name}."
+                )
             else:
                 logger.info(f"Demo trading enabled for {self.name}")
 
-    def validate_required_startup_candles(self, startup_candles: int, timeframe: str) -> int:
+    def validate_required_startup_candles(
+        self, startup_candles: int, timeframe: str
+    ) -> int:
         """
         Checks if required startup_candles is more than ohlcv_candle_limit().
         Requires a grace-period of 5 candles - so a startup-period up to 494 is allowed by default.
@@ -968,13 +1037,18 @@ class Exchange(LoggingMixin):
         candle_limit = self.ohlcv_candle_limit(
             timeframe,
             self._config["candle_type_def"],
-            dt_ts(date_minus_candles(timeframe, startup_candles)) if timeframe else None,
+            (
+                dt_ts(date_minus_candles(timeframe, startup_candles))
+                if timeframe
+                else None
+            ),
         )
         # Require one more candle - to account for the still open candle.
         candle_count = startup_candles + 1
         # Allow 5 calls to the exchange per pair
         required_candle_call_count = int(
-            (candle_count / candle_limit) + (0 if candle_count % candle_limit == 0 else 1)
+            (candle_count / candle_limit)
+            + (0 if candle_count % candle_limit == 0 else 1)
         )
         if self._ft_has["ohlcv_has_history"]:
             if required_candle_call_count > 5:
@@ -1001,7 +1075,9 @@ class Exchange(LoggingMixin):
     def validate_trading_mode_and_margin_mode(
         self,
         trading_mode: TradingMode,
-        margin_mode: MarginMode | None,  # Only None when trading_mode = TradingMode.SPOT
+        margin_mode: (
+            MarginMode | None
+        ),  # Only None when trading_mode = TradingMode.SPOT
         allow_none_margin_mode: bool = False,
     ):
         """
@@ -1017,10 +1093,13 @@ class Exchange(LoggingMixin):
             allow_none_margin_mode
             and margin_mode is None
             and not any(
-                trading_mode == pair[0] for pair in self._supported_trading_mode_margin_pairs
+                trading_mode == pair[0]
+                for pair in self._supported_trading_mode_margin_pairs
             )
         ):
-            raise ConfigurationError(f"Freqtrade does not support '{trading_mode}' on {self.name}.")
+            raise ConfigurationError(
+                f"Freqtrade does not support '{trading_mode}' on {self.name}."
+            )
 
         if not allow_none_margin_mode and (
             (trading_mode, margin_mode) not in self._supported_trading_mode_margin_pairs
@@ -1050,13 +1129,20 @@ class Exchange(LoggingMixin):
         This is called on initialization of the exchange object.
         It must be called before ft_has is used.
         """
-        self._ft_has = self.combine_ft_has(include_futures=self.trading_mode == TradingMode.FUTURES)
+        self._ft_has = self.combine_ft_has(
+            include_futures=self.trading_mode == TradingMode.FUTURES
+        )
 
         if exchange_conf.get("_ft_has_params"):
-            self._ft_has = deep_merge_dicts(exchange_conf.get("_ft_has_params"), self._ft_has)
+            self._ft_has = deep_merge_dicts(
+                exchange_conf.get("_ft_has_params"), self._ft_has
+            )
             # A plain boolean override replaces the per-stream dict - normalize it.
             self._ft_has["ws_enabled"] = resolve_ws_enabled(self._ft_has["ws_enabled"])
-            logger.info("Overriding exchange._ft_has with config params, result: %s", self._ft_has)
+            logger.info(
+                "Overriding exchange._ft_has with config params, result: %s",
+                self._ft_has,
+            )
 
     def get_option(self, param: str, default: Any | None = None) -> Any:
         """
@@ -1124,9 +1210,13 @@ class Exchange(LoggingMixin):
         Returns the amount to buy or sell to a precision the Exchange accepts
 
         """
-        return amount_to_precision(amount, self.get_precision_amount(pair), self.precisionMode)
+        return amount_to_precision(
+            amount, self.get_precision_amount(pair), self.precisionMode
+        )
 
-    def price_to_precision(self, pair: str, price: float, *, rounding_mode: int = ROUND) -> float:
+    def price_to_precision(
+        self, pair: str, price: float, *, rounding_mode: int = ROUND
+    ) -> float:
         """
         Returns the price rounded to the precision the Exchange accepts.
         The default price_rounding_mode in conf is ROUND.
@@ -1155,8 +1245,12 @@ class Exchange(LoggingMixin):
     ) -> float | None:
         return self._get_stake_amount_limit(pair, price, stoploss, "min", leverage)
 
-    def get_max_pair_stake_amount(self, pair: str, price: float, leverage: float = 1.0) -> float:
-        max_stake_amount = self._get_stake_amount_limit(pair, price, 0.0, "max", leverage)
+    def get_max_pair_stake_amount(
+        self, pair: str, price: float, leverage: float = 1.0
+    ) -> float:
+        max_stake_amount = self._get_stake_amount_limit(
+            pair, price, 0.0, "max", leverage
+        )
         if max_stake_amount is None:
             # * Should never be executed
             raise OperationalException(
@@ -1186,24 +1280,31 @@ class Exchange(LoggingMixin):
             margin_reserve: float = 1.0 + self._config.get(
                 "amount_reserve_percent", DEFAULT_AMOUNT_RESERVE_PERCENT
             )
-            stoploss_reserve = margin_reserve / (1 - abs(stoploss)) if abs(stoploss) != 1 else 1.5
+            stoploss_reserve = (
+                margin_reserve / (1 - abs(stoploss)) if abs(stoploss) != 1 else 1.5
+            )
             # it should not be more than 50%
             stoploss_reserve = max(min(stoploss_reserve, 1.5), 1)
         else:
             # is_max
             margin_reserve = 1.0
             stoploss_reserve = 1.0
-            if max_from_tiers := self._get_max_notional_from_tiers(pair, leverage=leverage):
+            if max_from_tiers := self._get_max_notional_from_tiers(
+                pair, leverage=leverage
+            ):
                 stake_limits.append(max_from_tiers)
 
         if limits["cost"][limit] is not None:
             stake_limits.append(
-                self._contracts_to_amount(pair, limits["cost"][limit]) * stoploss_reserve
+                self._contracts_to_amount(pair, limits["cost"][limit])
+                * stoploss_reserve
             )
 
         if limits["amount"][limit] is not None:
             stake_limits.append(
-                self._contracts_to_amount(pair, limits["amount"][limit]) * price * margin_reserve
+                self._contracts_to_amount(pair, limits["amount"][limit])
+                * price
+                * margin_reserve
             )
 
         if not stake_limits:
@@ -1216,7 +1317,9 @@ class Exchange(LoggingMixin):
             max(stake_limits) if isMin else min(stake_limits), leverage or 1.0
         )
 
-    def _get_stake_amount_considering_leverage(self, stake_amount: float, leverage: float) -> float:
+    def _get_stake_amount_considering_leverage(
+        self, stake_amount: float, leverage: float
+    ) -> float:
         """
         Takes the minimum stake amount for a pair with no leverage and returns the minimum
         stake amount when leverage is considered
@@ -1243,7 +1346,8 @@ class Exchange(LoggingMixin):
         order_id = f"dry_run_{side}_{pair}_{uuid4()}"
         # Rounding here must respect to contract sizes
         _amount = self._contracts_to_amount(
-            pair, self.amount_to_precision(pair, self._amount_to_contracts(pair, amount))
+            pair,
+            self.amount_to_precision(pair, self._amount_to_contracts(pair, amount)),
         )
         dry_order: CcxtOrder = {
             "id": order_id,
@@ -1264,7 +1368,9 @@ class Exchange(LoggingMixin):
         }
         if stop_loss:
             dry_order["info"] = {"stopPrice": dry_order["price"]}
-            dry_order[self._ft_has["stop_price_prop"]] = stop_price or dry_order["price"]
+            dry_order[self._ft_has["stop_price_prop"]] = (
+                stop_price or dry_order["price"]
+            )
             # Workaround to avoid filling stoploss orders immediately
             dry_order["ft_order_type"] = "stoploss"
         orderbook: OrderBook | None = None
@@ -1401,7 +1507,10 @@ class Exchange(LoggingMixin):
         return False
 
     def check_dry_limit_order_filled(
-        self, order: CcxtOrder, immediate: bool = False, orderbook: OrderBook | None = None
+        self,
+        order: CcxtOrder,
+        immediate: bool = False,
+        orderbook: OrderBook | None = None,
     ) -> CcxtOrder:
         """
         Check dry-run limit order fill and update fee (if it filled).
@@ -1450,7 +1559,9 @@ class Exchange(LoggingMixin):
             and not order.get("ft_order_type")
         ):
             pair = order["symbol"]
-            if self._dry_is_price_crossed(pair, order["side"], order["price"], orderbook):
+            if self._dry_is_price_crossed(
+                pair, order["side"], order["price"], orderbook
+            ):
                 order.update(
                     {
                         "status": "closed",
@@ -1492,7 +1603,9 @@ class Exchange(LoggingMixin):
 
     # Order handling
 
-    def _lev_prep(self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False):
+    def _lev_prep(
+        self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False
+    ):
         if self.trading_mode != TradingMode.SPOT:
             self.set_margin_mode(pair, self.margin_mode, accept_fail)
             self._set_leverage(leverage, pair, accept_fail)
@@ -1515,7 +1628,10 @@ class Exchange(LoggingMixin):
     def _order_needs_price(self, side: BuySell, ordertype: str) -> bool:
         return (
             ordertype != "market"
-            or (side == "buy" and self._api.options.get("createMarketBuyOrderRequiresPrice", False))
+            or (
+                side == "buy"
+                and self._api.options.get("createMarketBuyOrderRequiresPrice", False)
+            )
             or self._ft_has.get("marketOrderRequiresPrice", False)
         )
 
@@ -1534,7 +1650,12 @@ class Exchange(LoggingMixin):
     ) -> CcxtOrder:
         if self._config["dry_run"]:
             dry_order = self.create_dry_run_order(
-                pair, ordertype, side, amount, self.price_to_precision(pair, rate), leverage
+                pair,
+                ordertype,
+                side,
+                amount,
+                self.price_to_precision(pair, rate),
+                leverage,
             )
             return dry_order
 
@@ -1542,9 +1663,13 @@ class Exchange(LoggingMixin):
 
         try:
             # Set the precision for amount and price(rate) as accepted by the exchange
-            amount = self.amount_to_precision(pair, self._amount_to_contracts(pair, amount))
+            amount = self.amount_to_precision(
+                pair, self._amount_to_contracts(pair, amount)
+            )
             needs_price = self._order_needs_price(side, ordertype)
-            rate_for_order = self.price_to_precision(pair, rate) if needs_price else None
+            rate_for_order = (
+                self.price_to_precision(pair, rate) if needs_price else None
+            )
 
             if not reduceOnly:
                 self._lev_prep(pair, leverage, side, accept_fail=not initial_order)
@@ -1618,7 +1743,9 @@ class Exchange(LoggingMixin):
             user_order_type = next(iter(available_order_Types.keys()))
         return ordertype, user_order_type
 
-    def _get_stop_limit_rate(self, stop_price: float, order_types: dict, side: str) -> float:
+    def _get_stop_limit_rate(
+        self, stop_price: float, order_types: dict, side: str
+    ) -> float:
         # Limit price threshold: As limit price should always be below stop-price
         limit_price_pct = order_types.get("stoploss_on_exchange_limit_ratio", 0.99)
         if side == "sell":
@@ -1626,7 +1753,9 @@ class Exchange(LoggingMixin):
         else:
             limit_rate = stop_price * (2 - limit_price_pct)
 
-        bad_stop_price = (stop_price < limit_rate) if side == "sell" else (stop_price > limit_rate)
+        bad_stop_price = (
+            (stop_price < limit_rate) if side == "sell" else (stop_price > limit_rate)
+        )
         # Ensure rate is less than stop price
         if bad_stop_price:
             # This can for example happen if the stop / liquidation price is set to 0
@@ -1640,7 +1769,9 @@ class Exchange(LoggingMixin):
             )
         return limit_rate
 
-    def _get_stop_params(self, side: BuySell, ordertype: str, stop_price: float) -> dict:
+    def _get_stop_params(
+        self, side: BuySell, ordertype: str, stop_price: float
+    ) -> dict:
         params = self._params.copy()
         # Verify if stopPrice works for your exchange, else configure stop_price_param
         params.update({self._ft_has["stop_price_param"]: stop_price})
@@ -1677,11 +1808,15 @@ class Exchange(LoggingMixin):
         user_order_type = order_types.get("stoploss", "market")
         ordertype, user_order_type = self._get_stop_order_type(user_order_type)
         round_mode = ROUND_DOWN if side == "buy" else ROUND_UP
-        stop_price_norm = self.price_to_precision(pair, stop_price, rounding_mode=round_mode)
+        stop_price_norm = self.price_to_precision(
+            pair, stop_price, rounding_mode=round_mode
+        )
         limit_rate = None
         if user_order_type == "limit":
             limit_rate = self._get_stop_limit_rate(stop_price, order_types, side)
-            limit_rate = self.price_to_precision(pair, limit_rate, rounding_mode=round_mode)
+            limit_rate = self.price_to_precision(
+                pair, limit_rate, rounding_mode=round_mode
+            )
 
         if self._config["dry_run"]:
             dry_order = self.create_dry_run_order(
@@ -1702,13 +1837,18 @@ class Exchange(LoggingMixin):
             )
             if self.trading_mode == TradingMode.FUTURES:
                 params["reduceOnly"] = True
-                if "stoploss_price_type" in order_types and "stop_price_type_field" in self._ft_has:
+                if (
+                    "stoploss_price_type" in order_types
+                    and "stop_price_type_field" in self._ft_has
+                ):
                     price_type = self._ft_has["stop_price_type_value_mapping"][
                         order_types.get("stoploss_price_type", PriceType.LAST)
                     ]
                     params[self._ft_has["stop_price_type_field"]] = price_type
 
-            amount = self.amount_to_precision(pair, self._amount_to_contracts(pair, amount))
+            amount = self.amount_to_precision(
+                pair, self._amount_to_contracts(pair, amount)
+            )
 
             self._lev_prep(pair, leverage, side, accept_fail=True)
             order = self._api.create_order(
@@ -1783,7 +1923,9 @@ class Exchange(LoggingMixin):
             raise OperationalException(e) from e
 
     @retrier(retries=API_FETCH_ORDER_RETRY_COUNT)
-    def fetch_order(self, order_id: str, pair: str, params: dict | None = None) -> CcxtOrder:
+    def fetch_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> CcxtOrder:
         if self._config["dry_run"]:
             return self.fetch_dry_run_order(order_id)
         if params is None:
@@ -1826,7 +1968,9 @@ class Exchange(LoggingMixin):
             and (new_orderid := order.get("info", {}).get(val))
         ):
             # Fetch real order, which was placed by the algo order.
-            actual_order = self.fetch_order(order_id=new_orderid, pair=pair, params=None)
+            actual_order = self.fetch_order(
+                order_id=new_orderid, pair=pair, params=None
+            )
             actual_order["id_stop"] = actual_order["id"]
             actual_order["id"] = order_id
             actual_order["type"] = "stoploss"
@@ -1857,15 +2001,22 @@ class Exchange(LoggingMixin):
         :param order: Order dict as returned from fetch_order()
         :return: True if order has been cancelled without being filled, False otherwise.
         """
-        return order.get("status") in NON_OPEN_EXCHANGE_STATES and order.get("filled") == 0.0
+        return (
+            order.get("status") in NON_OPEN_EXCHANGE_STATES
+            and order.get("filled") == 0.0
+        )
 
     @retrier
-    def cancel_order(self, order_id: str, pair: str, params: dict | None = None) -> dict[str, Any]:
+    def cancel_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> dict[str, Any]:
         if self._config["dry_run"]:
             try:
                 order = self.fetch_dry_run_order(order_id)
 
-                order.update({"status": "canceled", "filled": 0.0, "remaining": order["amount"]})
+                order.update(
+                    {"status": "canceled", "filled": 0.0, "remaining": order["amount"]}
+                )
                 return order
             except InvalidOrderException:
                 return {}
@@ -1888,7 +2039,9 @@ class Exchange(LoggingMixin):
         except ccxt.BaseError as e:
             raise OperationalException(e) from e
 
-    def cancel_stoploss_order(self, order_id: str, pair: str, params: dict | None = None) -> dict:
+    def cancel_stoploss_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> dict:
         if self.get_option("stoploss_query_requires_stop_flag"):
             params = params or {}
             params["stop"] = True
@@ -1901,7 +2054,9 @@ class Exchange(LoggingMixin):
         required = ("fee", "status", "amount")
         return all(corder.get(k, None) is not None for k in required)
 
-    def cancel_order_with_result(self, order_id: str, pair: str, amount: float) -> CcxtOrder:
+    def cancel_order_with_result(
+        self, order_id: str, pair: str, amount: float
+    ) -> CcxtOrder:
         """
         Cancel order returning a result.
         Creates a fake result if cancel order returns a non-usable result
@@ -1951,7 +2106,13 @@ class Exchange(LoggingMixin):
             order = self.fetch_stoploss_order(order_id, pair)
         except InvalidOrderException:
             logger.warning(f"Could not fetch cancelled stoploss order {order_id}.")
-            order = {"id": order_id, "fee": {}, "status": "canceled", "amount": amount, "info": {}}
+            order = {
+                "id": order_id,
+                "fee": {},
+                "status": "canceled",
+                "amount": amount,
+                "info": {},
+            }
 
         return order
 
@@ -1991,7 +2152,9 @@ class Exchange(LoggingMixin):
             symbols = None
             if pair:
                 symbols = [pair]
-            positions: list[CcxtPosition] = self._api.fetch_positions(symbols, params=params or {})
+            positions: list[CcxtPosition] = self._api.fetch_positions(
+                symbols, params=params or {}
+            )
             self._log_exchange_response("fetch_positions", positions)
             return positions
         except ccxt.DDoSProtection as e:
@@ -2099,7 +2262,9 @@ class Exchange(LoggingMixin):
             raise OperationalException(e) from e
 
     @retrier
-    def fetch_bids_asks(self, symbols: list[str] | None = None, *, cached: bool = False) -> dict:
+    def fetch_bids_asks(
+        self, symbols: list[str] | None = None, *, cached: bool = False
+    ) -> dict:
         """
         :param symbols: List of symbols to fetch
         :param cached: Allow cached result
@@ -2159,7 +2324,11 @@ class Exchange(LoggingMixin):
             market_types = {
                 TradingMode.FUTURES: "swap",
             }
-            params = {"type": market_types.get(market_type, market_type)} if market_type else {}
+            params = (
+                {"type": market_types.get(market_type, market_type)}
+                if market_type
+                else {}
+            )
             tickers = self._api.fetch_tickers(symbols, params)
             with self._cache_lock:
                 self._fetch_tickers_cache[cache_key] = tickers
@@ -2194,7 +2363,9 @@ class Exchange(LoggingMixin):
         """
         return self._config["stake_currency"]
 
-    def get_conversion_rate(self, coin: str, currency: str, *, cached=True) -> float | None:
+    def get_conversion_rate(
+        self, coin: str, currency: str, *, cached=True
+    ) -> float | None:
         """
         Quick and cached way to get conversion rate one currency to the other.
         Can then be used as "rate * amount" to convert between currencies.
@@ -2205,9 +2376,13 @@ class Exchange(LoggingMixin):
         :raises: ExchangeErrors
         """
 
-        if (proxy_coin := self._ft_has["proxy_coin_mapping"].get(coin, None)) is not None:
+        if (
+            proxy_coin := self._ft_has["proxy_coin_mapping"].get(coin, None)
+        ) is not None:
             coin = proxy_coin
-        if (proxy_currency := self._ft_has["proxy_coin_mapping"].get(currency, None)) is not None:
+        if (
+            proxy_currency := self._ft_has["proxy_coin_mapping"].get(currency, None)
+        ) is not None:
             currency = proxy_currency
         if coin == currency:
             return 1.0
@@ -2226,7 +2401,9 @@ class Exchange(LoggingMixin):
                     )
                     ticker = tickers_other.get(pair, None)
                 if ticker:
-                    rate: float | None = safe_value_fallback(ticker, "last", "ask", None)
+                    rate: float | None = safe_value_fallback(
+                        ticker, "last", "ask", None
+                    )
                     if rate:
                         if pair.startswith(currency) and not pair.endswith(currency):
                             rate = 1.0 / rate
@@ -2238,7 +2415,10 @@ class Exchange(LoggingMixin):
     @retrier
     def fetch_ticker(self, pair: str) -> Ticker:
         try:
-            if pair not in self.markets or self.markets[pair].get("active", False) is False:
+            if (
+                pair not in self.markets
+                or self.markets[pair].get("active", False) is False
+            ):
                 raise ExchangeError(f"Pair {pair} not available")
             data: Ticker = self._api.fetch_ticker(pair)
             return data
@@ -2259,7 +2439,10 @@ class Exchange(LoggingMixin):
         Won't work for non-futures markets
         """
         try:
-            if pair not in self.markets or self.markets[pair].get("active", False) is False:
+            if (
+                pair not in self.markets
+                or self.markets[pair].get("active", False) is False
+            ):
                 raise ExchangeError(f"Pair {pair} not available")
             return self._api.fetch_funding_rate(pair)
         except ccxt.NotSupported as e:
@@ -2425,7 +2608,9 @@ class Exchange(LoggingMixin):
             order_book_top = conf_strategy.get("order_book_top", 1)
             if order_book is None:
                 order_book = self.fetch_l2_order_book(pair, order_book_top)
-            rate = self._get_rate_from_ob(pair, side, order_book, name, price_side, order_book_top)
+            rate = self._get_rate_from_ob(
+                pair, side, order_book, name, price_side, order_book_top
+            )
         else:
             logger.debug(f"Using Last {price_side.capitalize()} / Last Price")
             if ticker is None:
@@ -2440,7 +2625,11 @@ class Exchange(LoggingMixin):
         return rate
 
     def _get_rate_from_ticker(
-        self, side: EntryExit, ticker: Ticker, conf_strategy: dict[str, Any], price_side: BidAsk
+        self,
+        side: EntryExit,
+        ticker: Ticker,
+        conf_strategy: dict[str, Any],
+        price_side: BidAsk,
     ) -> float | None:
         """
         Get rate from ticker.
@@ -2486,7 +2675,9 @@ class Exchange(LoggingMixin):
         )
         return rate
 
-    def get_rates(self, pair: str, refresh: bool, is_short: bool) -> tuple[float, float]:
+    def get_rates(
+        self, pair: str, refresh: bool, is_short: bool
+    ) -> tuple[float, float]:
         entry_rate = None
         exit_rate = None
         if not refresh:
@@ -2503,10 +2694,13 @@ class Exchange(LoggingMixin):
         order_book = ticker = None
         if not entry_rate and entry_pricing.get("use_order_book", False):
             order_book_top = max(
-                entry_pricing.get("order_book_top", 1), exit_pricing.get("order_book_top", 1)
+                entry_pricing.get("order_book_top", 1),
+                exit_pricing.get("order_book_top", 1),
             )
             order_book = self.fetch_l2_order_book(pair, order_book_top)
-            entry_rate = self.get_rate(pair, refresh, "entry", is_short, order_book=order_book)
+            entry_rate = self.get_rate(
+                pair, refresh, "entry", is_short, order_book=order_book
+            )
         elif not entry_rate:
             ticker = self.fetch_ticker(pair)
             entry_rate = self.get_rate(pair, refresh, "entry", is_short, ticker=ticker)
@@ -2551,7 +2745,9 @@ class Exchange(LoggingMixin):
                 int((since.replace(tzinfo=UTC).timestamp() - 5) * 1000),
                 params=_params,
             )
-            matched_trades = [trade for trade in my_trades if trade["order"] == order_id]
+            matched_trades = [
+                trade for trade in my_trades if trade["order"] == order_id
+            ]
 
             self._log_exchange_response("get_trades_for_order", matched_trades)
 
@@ -2693,7 +2889,9 @@ class Exchange(LoggingMixin):
                 if not fee_to_quote_rate:
                     raise ValueError("Conversion rate not found.")
             except (ValueError, ExchangeError):
-                fee_to_quote_rate = self._config["exchange"].get("unknown_fee_rate", None)
+                fee_to_quote_rate = self._config["exchange"].get(
+                    "unknown_fee_rate", None
+                )
                 if not fee_to_quote_rate:
                     return None
             return round((fee_cost * fee_to_quote_rate) / cost, 8)
@@ -2838,9 +3036,13 @@ class Exchange(LoggingMixin):
             ):
                 # Usable result, candle contains the previous candle.
                 # Also, we check if the last refresh time is no more than half the candle ago.
-                logger.debug(f"reuse watch result for {pair}, {timeframe}, {last_refresh_time}")
+                logger.debug(
+                    f"reuse watch result for {pair}, {timeframe}, {last_refresh_time}"
+                )
 
-                return self._exchange_ws.get_ohlcv(pair, timeframe, candle_type, candle_ts)
+                return self._exchange_ws.get_ohlcv(
+                    pair, timeframe, candle_type, candle_ts
+                )
             logger.info(
                 f"Couldn't reuse watch for {pair}, {timeframe}, falling back to REST api. "
                 f"{candle_ts < last_refresh_time}, {candle_ts}, {last_refresh_time}, "
@@ -2849,7 +3051,11 @@ class Exchange(LoggingMixin):
         return None
 
     def _can_use_websocket(
-        self, exchange_ws: ExchangeWS | None, pair: str, timeframe: str, candle_type: CandleType
+        self,
+        exchange_ws: ExchangeWS | None,
+        pair: str,
+        timeframe: str,
+        candle_type: CandleType,
     ) -> TypeGuard[ExchangeWS]:
         """
         Check if we can use websocket for this pair.
@@ -2871,7 +3077,9 @@ class Exchange(LoggingMixin):
         cache: bool,
     ) -> Coroutine[Any, Any, OHLCVResponse]:
         not_all_data = cache and self.required_candle_call_count > 1
-        if cache and self._can_use_websocket(self._exchange_ws, pair, timeframe, candle_type):
+        if cache and self._can_use_websocket(
+            self._exchange_ws, pair, timeframe, candle_type
+        ):
             # Subscribe to websocket
             self._exchange_ws.schedule_ohlcv(pair, timeframe, candle_type)
 
@@ -2884,7 +3092,9 @@ class Exchange(LoggingMixin):
                 return ws_resp
 
             # Check if 1 call can get us updated candles without hole in the data.
-            if min_ts < self._pairs_last_refresh_time.get((pair, timeframe, candle_type), 0):
+            if min_ts < self._pairs_last_refresh_time.get(
+                (pair, timeframe, candle_type), 0
+            ):
                 # Cache can be used - do one-off call.
                 not_all_data = False
             else:
@@ -2973,7 +3183,9 @@ class Exchange(LoggingMixin):
         if candle_type in (CandleType.FUNDING_RATE,):
             # Never incomplete - there's nothing to drop, whatever the caller asked for.
             return False
-        return self._ohlcv_partial_candle if drop_incomplete is None else drop_incomplete
+        return (
+            self._ohlcv_partial_candle if drop_incomplete is None else drop_incomplete
+        )
 
     def _process_ohlcv_df(
         self,
@@ -2988,7 +3200,9 @@ class Exchange(LoggingMixin):
         # Open date of the candle that was forming when the fetch started.
         # Judged against the fetch time, not the processing time - a batch may finish
         # processing after a candle boundary
-        curr_candle_date = dt_ts(timeframe_to_prev_date(timeframe, dt_from_ts(fetch_start_ms)))
+        curr_candle_date = dt_ts(
+            timeframe_to_prev_date(timeframe, dt_from_ts(fetch_start_ms))
+        )
         # Whether the newest completed candle of the response can be relied upon.
         candles_final = bool(ticks) and self._candle_is_final(
             ticks[-1][0], timeframe, curr_candle_date, fetch_start_ms
@@ -3037,7 +3251,9 @@ class Exchange(LoggingMixin):
                     drop_incomplete=False,
                     candle_type=c_type,
                 )
-                candle_limit = self.ohlcv_candle_limit(timeframe, self._config["candle_type_def"])
+                candle_limit = self.ohlcv_candle_limit(
+                    timeframe, self._config["candle_type_def"]
+                )
                 # Age out old candles
                 ohlcv_df = ohlcv_df.tail(candle_limit + self._startup_candle_count)
                 ohlcv_df = ohlcv_df.reset_index(drop=True)
@@ -3069,7 +3285,9 @@ class Exchange(LoggingMixin):
         logger.debug("Refreshing candle (OHLCV) data for %d pairs", len(pair_list))
 
         # Gather coroutines to run
-        ohlcv_dl_jobs, cached_pairs = self._build_ohlcv_dl_jobs(pair_list, since_ms, cache)
+        ohlcv_dl_jobs, cached_pairs = self._build_ohlcv_dl_jobs(
+            pair_list, since_ms, cache
+        )
 
         results_df = {}
         # Chunk requests into batches of 100 to avoid overwhelming ccxt Throttling
@@ -3092,7 +3310,13 @@ class Exchange(LoggingMixin):
                     c_type, drop_hint if drop_incomplete is None else drop_incomplete
                 )
                 ohlcv_df = self._process_ohlcv_df(
-                    pair, timeframe, c_type, ticks, cache, drop_incomplete_, fetch_start_ms
+                    pair,
+                    timeframe,
+                    c_type,
+                    ticks,
+                    cache,
+                    drop_incomplete_,
+                    fetch_start_ms,
                 )
 
                 results_df[(pair, timeframe, c_type)] = ohlcv_df
@@ -3123,8 +3347,8 @@ class Exchange(LoggingMixin):
             if (timeframe, lookback_period) not in self._expiring_candle_cache:
                 timeframe_in_sec = timeframe_to_seconds(timeframe)
                 # Initialise cache
-                self._expiring_candle_cache[(timeframe, lookback_period)] = PeriodicCache(
-                    ttl=timeframe_in_sec, maxsize=1000
+                self._expiring_candle_cache[(timeframe, lookback_period)] = (
+                    PeriodicCache(ttl=timeframe_in_sec, maxsize=1000)
                 )
 
         # Get candles from cache
@@ -3139,7 +3363,9 @@ class Exchange(LoggingMixin):
             if not tf_pairs:
                 continue
             since_ms = dt_ts(date_minus_candles(timeframe, lookback_period + 1))
-            candles_new = self.refresh_latest_ohlcv(tf_pairs, since_ms=since_ms, cache=False)
+            candles_new = self.refresh_latest_ohlcv(
+                tf_pairs, since_ms=since_ms, cache=False
+            )
             for c, val in candles_new.items():
                 candles[c] = val
                 self._expiring_candle_cache[(c[1], lookback_period)][c] = val
@@ -3154,7 +3380,11 @@ class Exchange(LoggingMixin):
         return min(self._ohlcv_late_candle_grace_ms, timeframe_to_msecs(timeframe) // 2)
 
     def _candle_is_final(
-        self, last_candle_date: int, timeframe: str, curr_candle_date: int, fetch_start_ms: int
+        self,
+        last_candle_date: int,
+        timeframe: str,
+        curr_candle_date: int,
+        fetch_start_ms: int,
     ) -> bool:
         """
         Whether the candles of a response can be considered final.
@@ -3172,9 +3402,13 @@ class Exchange(LoggingMixin):
             return True
         # The just-closed candle, with no newer candle issued yet.
         # Considered final once the grace period after its close is over.
-        return fetch_start_ms >= (curr_candle_date + self._ohlcv_candle_grace_ms(timeframe))
+        return fetch_start_ms >= (
+            curr_candle_date + self._ohlcv_candle_grace_ms(timeframe)
+        )
 
-    def _now_is_time_to_refresh(self, pair: str, timeframe: str, candle_type: CandleType) -> bool:
+    def _now_is_time_to_refresh(
+        self, pair: str, timeframe: str, candle_type: CandleType
+    ) -> bool:
         pair_key: PairWithTimeframe = (pair, timeframe, candle_type)
         if pair_key not in self._pairs_last_refresh_time:
             # We don't have any candle for this pair yet.
@@ -3220,7 +3454,11 @@ class Exchange(LoggingMixin):
         """
         try:
             # Fetch OHLCV asynchronously
-            s = "(" + dt_from_ts(since_ms).isoformat() + ") " if since_ms is not None else ""
+            s = (
+                "(" + dt_from_ts(since_ms).isoformat() + ") "
+                if since_ms is not None
+                else ""
+            )
             logger.debug(
                 "Fetching pair %s, %s, interval %s, since %s %s...",
                 pair,
@@ -3249,11 +3487,18 @@ class Exchange(LoggingMixin):
                     since_ms=since_ms,
                 )
             else:
-                if candle_type and candle_type not in (CandleType.SPOT, CandleType.FUTURES):
+                if candle_type and candle_type not in (
+                    CandleType.SPOT,
+                    CandleType.FUTURES,
+                ):
                     self.verify_candle_type_support(candle_type)
                     params.update({"price": str(candle_type)})
                 data = await self._api_async.fetch_ohlcv(
-                    pair, timeframe=timeframe, since=since_ms, limit=candle_limit, params=params
+                    pair,
+                    timeframe=timeframe,
+                    since=since_ms,
+                    limit=candle_limit,
+                    params=params,
                 )
             # Some exchanges sort OHLCV in ASC order and others in DESC.
             # Only sort if necessary to save computing time
@@ -3262,8 +3507,16 @@ class Exchange(LoggingMixin):
                     data = sorted(data, key=lambda x: x[0])
             except IndexError:
                 logger.exception("Error loading %s. Result was %s.", pair, data)
-                return pair, timeframe, candle_type, [], self._drop_incomplete_candle(candle_type)
-            logger.debug("Done fetching pair %s, %s interval %s...", pair, candle_type, timeframe)
+                return (
+                    pair,
+                    timeframe,
+                    candle_type,
+                    [],
+                    self._drop_incomplete_candle(candle_type),
+                )
+            logger.debug(
+                "Done fetching pair %s, %s interval %s...", pair, candle_type, timeframe
+            )
             return (
                 pair,
                 timeframe,
@@ -3302,7 +3555,9 @@ class Exchange(LoggingMixin):
         Fetch funding rate history - used to selectively override this by subclasses.
         """
         # Funding rate
-        data = await self._api_async.fetch_funding_rate_history(pair, since=since_ms, limit=limit)
+        data = await self._api_async.fetch_funding_rate_history(
+            pair, since=since_ms, limit=limit
+        )
         # Reduce to the columns stored for funding rates (date, funding_rate)
         data = [[x["timestamp"], x["fundingRate"]] for x in data]
         return data
@@ -3320,7 +3575,10 @@ class Exchange(LoggingMixin):
         data = await self._api_async.fetch_open_interest_history(
             pair, timeframe, since=since_ms, limit=limit
         )
-        data_res = [[x["timestamp"], x["openInterestAmount"], x["openInterestValue"]] for x in data]
+        data_res = [
+            [x["timestamp"], x["openInterestAmount"], x["openInterestValue"]]
+            for x in data
+        ]
         return data_res
 
     def check_candle_type_support(self, candle_type: CandleType) -> bool:
@@ -3353,7 +3611,9 @@ class Exchange(LoggingMixin):
 
     # fetch Trade data stuff
 
-    def needed_candle_for_trades_ms(self, timeframe: str, candle_type: CandleType) -> int:
+    def needed_candle_for_trades_ms(
+        self, timeframe: str, candle_type: CandleType
+    ) -> int:
         """
         Get the timestamp in milliseconds of the earliest candle needed to fetch trades
         for the given timeframe and candle type.
@@ -3390,10 +3650,13 @@ class Exchange(LoggingMixin):
                 combined_df = concat([old, trades_df], axis=0)
                 logger.debug(f"Clean duplicated ticks from Trades data {pair}")
                 trades_df = DataFrame(
-                    trades_df_remove_duplicates(combined_df), columns=combined_df.columns
+                    trades_df_remove_duplicates(combined_df),
+                    columns=combined_df.columns,
                 )
                 # Age out old candles
-                trades_df = trades_df[first_required_candle_date < trades_df["timestamp"]]
+                trades_df = trades_df[
+                    first_required_candle_date < trades_df["timestamp"]
+                ]
                 trades_df = trades_df.reset_index(drop=True)
             self._trades[(pair, timeframe, c_type)] = trades_df
         return trades_df
@@ -3426,7 +3689,9 @@ class Exchange(LoggingMixin):
                 until = None
                 from_id = None
                 if is_in_cache:
-                    from_id = self._trades[(pair, timeframe, candle_type)].iloc[-1]["id"]
+                    from_id = self._trades[(pair, timeframe, candle_type)].iloc[-1][
+                        "id"
+                    ]
                     until = dt_ts()  # now
 
                 else:
@@ -3438,7 +3703,8 @@ class Exchange(LoggingMixin):
                     if not all_stored_ticks_df.empty:
                         if (
                             all_stored_ticks_df.iloc[-1]["timestamp"] > first_candle_ms
-                            and all_stored_ticks_df.iloc[0]["timestamp"] <= first_candle_ms
+                            and all_stored_ticks_df.iloc[0]["timestamp"]
+                            <= first_candle_ms
                         ):
                             # Use cache and populate further
                             last_cached_ms = all_stored_ticks_df.iloc[-1]["timestamp"]
@@ -3464,7 +3730,9 @@ class Exchange(LoggingMixin):
                 return pairwt, None
 
             if new_ticks:
-                all_stored_ticks_list = all_stored_ticks_df[DEFAULT_TRADES_COLUMNS].values.tolist()
+                all_stored_ticks_list = all_stored_ticks_df[
+                    DEFAULT_TRADES_COLUMNS
+                ].values.tolist()
                 all_stored_ticks_list.extend(new_ticks)
                 trades_df = self._process_trades_df(
                     pair,
@@ -3475,7 +3743,9 @@ class Exchange(LoggingMixin):
                     first_required_candle_date=first_candle_ms,
                 )
                 data_handler.trades_store(
-                    f"{pair}-cached", trades_df[DEFAULT_TRADES_COLUMNS], self.trading_mode
+                    f"{pair}-cached",
+                    trades_df[DEFAULT_TRADES_COLUMNS],
+                    self.trading_mode,
                 )
                 return pairwt, trades_df
             else:
@@ -3505,7 +3775,9 @@ class Exchange(LoggingMixin):
         results_df = {}
         trades_dl_jobs = []
         for pair_wt in set(pair_list):
-            trades_dl_jobs.append(self._build_trades_dl_jobs(pair_wt, data_handler, cache))
+            trades_dl_jobs.append(
+                self._build_trades_dl_jobs(pair_wt, data_handler, cache)
+            )
 
         async def gather_coroutines(coro):
             return await asyncio.gather(*coro, return_exceptions=True)
@@ -3530,7 +3802,11 @@ class Exchange(LoggingMixin):
         trades = self.trades((pair, timeframe, candle_type), False)
         pair_last_refreshed = int(trades.iloc[-1]["timestamp"])
         full_candle = (
-            int(timeframe_to_next_date(timeframe, dt_from_ts(pair_last_refreshed)).timestamp())
+            int(
+                timeframe_to_next_date(
+                    timeframe, dt_from_ts(pair_last_refreshed)
+                ).timestamp()
+            )
             * 1000
         )
         now = dt_ts()
@@ -3554,15 +3830,23 @@ class Exchange(LoggingMixin):
             # fetch trades asynchronously
             if params:
                 logger.debug("Fetching trades for pair %s, params: %s ", pair, params)
-                trades = await self._api_async.fetch_trades(pair, params=params, limit=trades_limit)
+                trades = await self._api_async.fetch_trades(
+                    pair, params=params, limit=trades_limit
+                )
             else:
                 logger.debug(
                     "Fetching trades for pair %s, since %s %s...",
                     pair,
                     since,
-                    "(" + dt_from_ts(since).isoformat() + ") " if since is not None else "",
+                    (
+                        "(" + dt_from_ts(since).isoformat() + ") "
+                        if since is not None
+                        else ""
+                    ),
                 )
-                trades = await self._api_async.fetch_trades(pair, since=since, limit=trades_limit)
+                trades = await self._api_async.fetch_trades(
+                    pair, since=since, limit=trades_limit
+                )
             trades = self._trades_contracts_to_amount(trades)
             pagination_value = self._get_trade_pagination_next_value(trades)
             return trades_dict_to_list(trades), pagination_value
@@ -3633,7 +3917,9 @@ class Exchange(LoggingMixin):
             # of up to an hour.
             # e.g. Binance returns the "last 1000" candles within a 1h time interval
             # - so we will miss the first trades.
-            t, from_id = await self._async_get_trade_history_id_startup(pair, since=since)
+            t, from_id = await self._async_get_trade_history_id_startup(
+                pair, since=since
+            )
             trades.extend(t[x])
         while True:
             try:
@@ -3689,7 +3975,9 @@ class Exchange(LoggingMixin):
                     trades.extend(t)
                     # Reached the end of the defined-download period
                     if until and since_next > until:
-                        logger.debug(f"Stopping because until was reached. {since_next} > {until}")
+                        logger.debug(
+                            f"Stopping because until was reached. {since_next} > {until}"
+                        )
                         break
                 else:
                     logger.debug("Stopping as no more trades were returned.")
@@ -3721,7 +4009,9 @@ class Exchange(LoggingMixin):
             logger.debug(f"Exchange milliseconds: {until}")
 
         if self._ft_has["trades_pagination"] == "time":
-            return await self._async_get_trade_history_time(pair=pair, since=since, until=until)
+            return await self._async_get_trade_history_time(
+                pair=pair, since=since, until=until
+            )
         elif self._ft_has["trades_pagination"] == "id":
             return await self._async_get_trade_history_id(
                 pair=pair, since=since, until=until, from_id=from_id
@@ -3749,11 +4039,15 @@ class Exchange(LoggingMixin):
         :returns List of trade data
         """
         if not self.exchange_has("fetchTrades"):
-            raise OperationalException("This exchange does not support downloading Trades.")
+            raise OperationalException(
+                "This exchange does not support downloading Trades."
+            )
 
         with self._loop_lock:
             task = asyncio.ensure_future(
-                self._async_get_trade_history(pair=pair, since=since, until=until, from_id=from_id)
+                self._async_get_trade_history(
+                    pair=pair, since=since, until=until, from_id=from_id
+                )
             )
 
             for sig in [signal.SIGINT, signal.SIGTERM]:
@@ -3765,7 +4059,9 @@ class Exchange(LoggingMixin):
             return self.loop.run_until_complete(task)
 
     @retrier
-    def _get_funding_fees_from_exchange(self, pair: str, since: datetime | int) -> float:
+    def _get_funding_fees_from_exchange(
+        self, pair: str, since: datetime | int
+    ) -> float:
         """
         Returns the sum of all funding fees that were exchanged for a pair within a timeframe
         Dry-run handling happens as part of _calculate_funding_fees.
@@ -3786,7 +4082,9 @@ class Exchange(LoggingMixin):
             # One funding payment per timestamp - not all exchanges provide an id.
             funding_history: dict[int, float] = {}
             while True:
-                page = self._api.fetch_funding_history(symbol=pair, since=since, limit=limit)
+                page = self._api.fetch_funding_history(
+                    symbol=pair, since=since, limit=limit
+                )
                 self._log_exchange_response(
                     "funding_history", page, add_info=f"pair: {pair}, since: {since}"
                 )
@@ -3861,7 +4159,9 @@ class Exchange(LoggingMixin):
 
                 tiers: dict[str, list[dict]] = {}
 
-                tiers_cached = self.load_cached_leverage_tiers(self._config["stake_currency"])
+                tiers_cached = self.load_cached_leverage_tiers(
+                    self._config["stake_currency"]
+                )
                 if tiers_cached:
                     tiers = tiers_cached
 
@@ -3885,7 +4185,9 @@ class Exchange(LoggingMixin):
 
                 for input_coro in chunks(coros, 100):
                     with self._loop_lock:
-                        results = self.loop.run_until_complete(gather_results(input_coro))
+                        results = self.loop.run_until_complete(
+                            gather_results(input_coro)
+                        )
 
                     for res in results:
                         if isinstance(res, Exception):
@@ -3900,8 +4202,14 @@ class Exchange(LoggingMixin):
                 return tiers
         return {}
 
-    def cache_leverage_tiers(self, tiers: dict[str, list[dict]], stake_currency: str) -> None:
-        filename = self._config["datadir"] / "futures" / f"leverage_tiers_{stake_currency}.json"
+    def cache_leverage_tiers(
+        self, tiers: dict[str, list[dict]], stake_currency: str
+    ) -> None:
+        filename = (
+            self._config["datadir"]
+            / "futures"
+            / f"leverage_tiers_{stake_currency}.json"
+        )
         if not filename.parent.is_dir():
             filename.parent.mkdir(parents=True)
         data = {
@@ -3920,7 +4228,11 @@ class Exchange(LoggingMixin):
         if not cache_time:
             # Default to 4 weeks
             cache_time = timedelta(weeks=4)
-        filename = self._config["datadir"] / "futures" / f"leverage_tiers_{stake_currency}.json"
+        filename = (
+            self._config["datadir"]
+            / "futures"
+            / f"leverage_tiers_{stake_currency}.json"
+        )
         if filename.is_file():
             try:
                 tiers = file_load_json(filename)
@@ -4009,14 +4321,18 @@ class Exchange(LoggingMixin):
             #     else:  # if on the last tier
             if stake_amount > max_stake:
                 # If stake is > than max tradeable amount
-                raise InvalidOrderException(f"Stake amount {stake_amount} too high for {pair}")
+                raise InvalidOrderException(
+                    f"Stake amount {stake_amount} too high for {pair}"
+                )
 
             raise OperationalException(
                 f"Looped through all tiers without finding a max leverage for {pair}. "
                 "Should never be reached."
             )
 
-        elif self.trading_mode == TradingMode.MARGIN:  # Search markets.limits for max lev
+        elif (
+            self.trading_mode == TradingMode.MARGIN
+        ):  # Search markets.limits for max lev
             market = self.markets[pair]
             if market["limits"]["leverage"]["max"] is not None:
                 return market["limits"]["leverage"]["max"]
@@ -4188,7 +4504,9 @@ class Exchange(LoggingMixin):
 
     @staticmethod
     def combine_funding_and_mark(
-        funding_rates: DataFrame, mark_rates: DataFrame, futures_funding_rate: int | None = None
+        funding_rates: DataFrame,
+        mark_rates: DataFrame,
+        futures_funding_rate: int | None = None,
     ) -> DataFrame:
         """
         Combine funding-rates and mark-rates dataframes
@@ -4354,7 +4672,9 @@ class Exchange(LoggingMixin):
         if liquidation_price is not None:
             buffer_amount = abs(open_rate - liquidation_price) * self.liquidation_buffer
             liquidation_price_buffer = (
-                liquidation_price - buffer_amount if is_short else liquidation_price + buffer_amount
+                liquidation_price - buffer_amount
+                if is_short
+                else liquidation_price + buffer_amount
             )
             return max(liquidation_price_buffer, 0.0)
         else:
@@ -4402,9 +4722,14 @@ class Exchange(LoggingMixin):
         ).get("taker", 0.001)
         mm_ratio, _ = self.get_maintenance_ratio_and_amt(pair, stake_amount)
 
-        if self.trading_mode == TradingMode.FUTURES and self.margin_mode == MarginMode.ISOLATED:
+        if (
+            self.trading_mode == TradingMode.FUTURES
+            and self.margin_mode == MarginMode.ISOLATED
+        ):
             if market["inverse"]:
-                raise OperationalException("Freqtrade does not yet support inverse contracts")
+                raise OperationalException(
+                    "Freqtrade does not yet support inverse contracts"
+                )
 
             value = wallet_balance / amount
 

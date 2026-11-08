@@ -6,7 +6,6 @@ import torch
 from freqtrade.freqai.freqai_interface import IFreqaiModel
 from freqtrade.freqai.torch.PyTorchDataConvertor import PyTorchDataConvertor
 
-
 logger = logging.getLogger(__name__)
 
 

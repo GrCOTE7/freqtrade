@@ -5,7 +5,6 @@ from datetime import UTC, datetime
 
 from freqtrade.exchange import Exchange
 
-
 logger = logging.getLogger(__name__)
 
 

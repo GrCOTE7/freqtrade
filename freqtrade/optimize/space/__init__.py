@@ -6,7 +6,6 @@ from .optunaspaces import (
     ft_IntDistribution,
 )
 
-
 # Alias for the distribution classes
 Dimension = DimensionProtocol
 Categorical = ft_CategoricalDistribution

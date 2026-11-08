@@ -99,10 +99,12 @@ class TestCCXTExchange:
                 # Generic comparison which works for all fields
                 for key, value in expected.items():
                     assert key in po, f"Expected key {key} not found in parsed order"
-                    assert po[key] == value, f"Expected {key} to be {value}, got {po[key]}"
-                    assert isinstance(po[key], type(value)), (
-                        f"Expected {key} to be of type {type(value)}, got {type(po[key])}"
-                    )
+                    assert (
+                        po[key] == value
+                    ), f"Expected {key} to be {value}, got {po[key]}"
+                    assert isinstance(
+                        po[key], type(value)
+                    ), f"Expected {key} to be of type {type(value)}, got {type(po[key])}"
         else:
             pytest.skip(f"No sample order available for exchange {exchangename}")
 
@@ -122,10 +124,12 @@ class TestCCXTExchange:
                 # Generic comparison which works for all fields
                 for key, value in expected.items():
                     assert key in po, f"Expected key {key} not found in parsed order"
-                    assert po[key] == value, f"Expected {key} to be {value}, got {po[key]}"
-                    assert isinstance(po[key], type(value)), (
-                        f"Expected {key} to be of type {type(value)}, got {type(po[key])}"
-                    )
+                    assert (
+                        po[key] == value
+                    ), f"Expected {key} to be {value}, got {po[key]}"
+                    assert isinstance(
+                        po[key], type(value)
+                    ), f"Expected {key} to be of type {type(value)}, got {type(po[key])}"
 
         else:
             pytest.skip(f"No sample order available for exchange {exchangename}")
@@ -267,11 +271,16 @@ class TestCCXTExchange:
         # assert len(exch.klines(pair_tf)) > 200
         # Assume 90% uptime ...
         assert (
-            len(exch.klines(pair_tf)) > exch.ohlcv_candle_limit(timeframe, CandleType.SPOT) * 0.90
+            len(exch.klines(pair_tf))
+            > exch.ohlcv_candle_limit(timeframe, CandleType.SPOT) * 0.90
         )
         # Check if last-timeframe is within the last 2 intervals
-        now = datetime.now(UTC) - timedelta(minutes=(timeframe_to_minutes(timeframe) * 2))
-        assert exch.klines(pair_tf).iloc[-1]["date"] >= timeframe_to_prev_date(timeframe, now)
+        now = datetime.now(UTC) - timedelta(
+            minutes=(timeframe_to_minutes(timeframe) * 2)
+        )
+        assert exch.klines(pair_tf).iloc[-1]["date"] >= timeframe_to_prev_date(
+            timeframe, now
+        )
 
     def test_ccxt_fetch_ohlcv_startdate(self, exchange: EXCHANGE_FIXTURE_TYPE):
         """
@@ -288,12 +297,24 @@ class TestCCXTExchange:
         assert isinstance(ohlcv, dict)
         assert len(ohlcv[pair_tf]) == len(exch.klines(pair_tf))
         # Check if last-timeframe is within the last 2 intervals
-        now = datetime.now(UTC) - timedelta(minutes=(timeframe_to_minutes(timeframe) * 2))
-        assert exch.klines(pair_tf).iloc[-1]["date"] >= timeframe_to_prev_date(timeframe, now)
-        assert exch.klines(pair_tf)["date"].dt.as_unit("ms").astype("int64").iloc[0] == since_ms
+        now = datetime.now(UTC) - timedelta(
+            minutes=(timeframe_to_minutes(timeframe) * 2)
+        )
+        assert exch.klines(pair_tf).iloc[-1]["date"] >= timeframe_to_prev_date(
+            timeframe, now
+        )
+        assert (
+            exch.klines(pair_tf)["date"].dt.as_unit("ms").astype("int64").iloc[0]
+            == since_ms
+        )
 
     def _ccxt__async_get_candle_history(
-        self, exchange, pair: str, timeframe: str, candle_type: CandleType, factor: float = 0.9
+        self,
+        exchange,
+        pair: str,
+        timeframe: str,
+        candle_type: CandleType,
+        factor: float = 0.9,
     ):
         timeframe_ms = timeframe_to_msecs(timeframe)
         timeframe_ms_8h = timeframe_to_msecs("8h")
@@ -309,7 +330,10 @@ class TestCCXTExchange:
 
             res = exchange.loop.run_until_complete(
                 exchange._async_get_candle_history(
-                    pair=pair, timeframe=timeframe, since_ms=since_ms, candle_type=candle_type
+                    pair=pair,
+                    timeframe=timeframe,
+                    since_ms=since_ms,
+                    candle_type=candle_type,
                 )
             )
             assert res
@@ -317,18 +341,26 @@ class TestCCXTExchange:
             assert res[1] == timeframe
             assert res[2] == candle_type
             candles = res[3]
-            candle_count = exchange.ohlcv_candle_limit(timeframe, candle_type, since_ms) * factor
+            candle_count = (
+                exchange.ohlcv_candle_limit(timeframe, candle_type, since_ms) * factor
+            )
             candle_count1 = (now.timestamp() * 1000 - since_ms) // timeframe_ms * factor
             # funding fees can be 1h or 8h - depending on pair and time.
-            candle_count2 = (now.timestamp() * 1000 - since_ms) // timeframe_ms_8h * factor
+            candle_count2 = (
+                (now.timestamp() * 1000 - since_ms) // timeframe_ms_8h * factor
+            )
             min_value = min(
                 candle_count,
                 candle_count1,
-                candle_count2 if candle_type == CandleType.FUNDING_RATE else candle_count1,
+                (
+                    candle_count2
+                    if candle_type == CandleType.FUNDING_RATE
+                    else candle_count1
+                ),
             )
-            assert len(candles) >= min_value, (
-                f"{len(candles)} < {candle_count} in {timeframe} {offset_days=} {factor=}"
-            )
+            assert (
+                len(candles) >= min_value
+            ), f"{len(candles)} < {candle_count} in {timeframe} {offset_days=} {factor=}"
             # Check if first-timeframe is either the start, or start + 1
             assert candles[0][0] == since_ms or (since_ms + timeframe_ms)
 
@@ -372,7 +404,9 @@ class TestCCXTExchange:
             candle_type=candle_type,
         )
 
-    def test_ccxt_fetch_open_interest_history(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_fetch_open_interest_history(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         exchange, exchange_name, exchange_params = exchange_futures
 
         if not exchange.check_candle_type_support(CandleType.OPEN_INTEREST):
@@ -383,30 +417,41 @@ class TestCCXTExchange:
         # Setting it to None disables the test for that exchange.
         history_days = exchange_params.get("open_interest_history_days", 30)
         if not history_days:
-            pytest.skip(f"No open interest history depth configured for {exchange_name}")
+            pytest.skip(
+                f"No open interest history depth configured for {exchange_name}"
+            )
 
         pair = exchange_params.get("futures_pair", exchange_params["pair"])
         timeframe = exchange_params["timeframe"]
         tf_delta = timedelta(minutes=timeframe_to_minutes(timeframe))
         pair_tf = (pair, timeframe, CandleType.OPEN_INTEREST)
-        since_date = timeframe_to_next_date(timeframe, dt_now() - timedelta(days=history_days))
+        since_date = timeframe_to_next_date(
+            timeframe, dt_now() - timedelta(days=history_days)
+        )
 
         res = exchange.refresh_latest_ohlcv(
             [pair_tf], since_ms=dt_ts(since_date), drop_incomplete=False
         )
         oi = res[pair_tf]
 
-        assert list(oi.columns) == ["date", "open_interest_amount", "open_interest_value"]
+        assert list(oi.columns) == [
+            "date",
+            "open_interest_amount",
+            "open_interest_value",
+        ]
         assert len(oi) > 0
         # Exchanges report open interest in base currency, quote currency, or both -
         # but at least one of the two has to carry data.
         assert not (
-            oi["open_interest_amount"].isna().all() and oi["open_interest_value"].isna().all()
+            oi["open_interest_amount"].isna().all()
+            and oi["open_interest_value"].isna().all()
         ), f"{exchange_name} returned no open interest values at all"
 
         # Dates are aligned to the timeframe and strictly increasing
         assert oi["date"].is_monotonic_increasing
-        assert (oi["date"] == oi["date"].dt.floor(timeframe_to_resample_freq(timeframe))).all()
+        assert (
+            oi["date"] == oi["date"].dt.floor(timeframe_to_resample_freq(timeframe))
+        ).all()
 
         # History must start at the requested date - exchanges may skip the very first candle.
         assert oi.iloc[0]["date"] <= since_date + tf_delta, (
@@ -415,17 +460,19 @@ class TestCCXTExchange:
         )
         # ... and must reach up to now. Open interest usually lags OHLCV by one candle.
         last_date = timeframe_to_prev_date(timeframe, dt_now())
-        assert oi.iloc[-1]["date"] >= last_date - 3 * tf_delta, (
-            f"{exchange_name} open interest history is stale - last candle {oi.iloc[-1]['date']}"
-        )
+        assert (
+            oi.iloc[-1]["date"] >= last_date - 3 * tf_delta
+        ), f"{exchange_name} open interest history is stale - last candle {oi.iloc[-1]['date']}"
         # The full range must be covered, not just the last call. Assume 90% uptime,
         # in line with the other candle history tests.
         expected_candles = (last_date - since_date) // tf_delta
-        assert len(oi) >= expected_candles * 0.9, (
-            f"{exchange_name} returned {len(oi)} of ~{expected_candles} open interest candles"
-        )
+        assert (
+            len(oi) >= expected_candles * 0.9
+        ), f"{exchange_name} returned {len(oi)} of ~{expected_candles} open interest candles"
 
-    def test_ccxt_fetch_funding_rate_history(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_fetch_funding_rate_history(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         exchange, _, exchange_params = exchange_futures
 
         pair = exchange_params.get("futures_pair", exchange_params["pair"])
@@ -449,9 +496,15 @@ class TestCCXTExchange:
         hour3 = timeframe_to_prev_date(timeframe_ff, hour2 - timedelta(minutes=1))
         # Alternative 8h timeframe - funding fee timeframe is not stable.
         h8_this_hour = timeframe_to_prev_date(timeframe_ff_8h)
-        h8_hour1 = timeframe_to_prev_date(timeframe_ff_8h, h8_this_hour - timedelta(minutes=1))
-        h8_hour2 = timeframe_to_prev_date(timeframe_ff_8h, h8_hour1 - timedelta(minutes=1))
-        h8_hour3 = timeframe_to_prev_date(timeframe_ff_8h, h8_hour2 - timedelta(minutes=1))
+        h8_hour1 = timeframe_to_prev_date(
+            timeframe_ff_8h, h8_this_hour - timedelta(minutes=1)
+        )
+        h8_hour2 = timeframe_to_prev_date(
+            timeframe_ff_8h, h8_hour1 - timedelta(minutes=1)
+        )
+        h8_hour3 = timeframe_to_prev_date(
+            timeframe_ff_8h, h8_hour2 - timedelta(minutes=1)
+        )
         row0 = rate.iloc[-1]
         row1 = rate.iloc[-2]
         row2 = rate.iloc[-3]
@@ -481,7 +534,9 @@ class TestCCXTExchange:
             or (rate["funding_rate"].min() != rate["funding_rate"].max())
         )
 
-    def test_ccxt_fetch_mark_price_history(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_fetch_mark_price_history(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         exchange, _, exchange_params = exchange_futures
         pair = exchange_params.get("futures_pair", exchange_params["pair"])
         since = int((datetime.now(UTC) - timedelta(days=5)).timestamp() * 1000)
@@ -493,9 +548,13 @@ class TestCCXTExchange:
         # Determine the open candle before fetching - otherwise the hour can roll over
         # between the request and the assertion.
         this_hour = timeframe_to_prev_date(expected_tf)
-        prev_hour = timeframe_to_prev_date(expected_tf, this_hour - timedelta(minutes=1))
+        prev_hour = timeframe_to_prev_date(
+            expected_tf, this_hour - timedelta(minutes=1)
+        )
 
-        mark_ohlcv = exchange.refresh_latest_ohlcv([pair_tf], since_ms=since, drop_incomplete=False)
+        mark_ohlcv = exchange.refresh_latest_ohlcv(
+            [pair_tf], since_ms=since, drop_incomplete=False
+        )
 
         assert isinstance(mark_ohlcv, dict)
         mark_candles = mark_ohlcv[pair_tf]
@@ -507,7 +566,9 @@ class TestCCXTExchange:
         assert mark_candles[mark_candles["date"] == prev_hour].iloc[0]["open"] != 0.0
         assert mark_candles[mark_candles["date"] == this_hour].iloc[0]["open"] != 0.0
 
-    def test_ccxt__calculate_funding_fees(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt__calculate_funding_fees(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         exchange, _, exchange_params = exchange_futures
         pair = exchange_params.get("futures_pair", exchange_params["pair"])
         since = datetime.now(UTC) - timedelta(days=5)
@@ -519,14 +580,18 @@ class TestCCXTExchange:
         assert isinstance(funding_fee, float)
         assert funding_fee != 0
 
-    def test_ccxt__async_get_trade_history(self, exchange: EXCHANGE_FIXTURE_TYPE, mocker):
+    def test_ccxt__async_get_trade_history(
+        self, exchange: EXCHANGE_FIXTURE_TYPE, mocker
+    ):
         exch, exchangename, exchange_params = exchange
         if not (lookback := exchange_params.get("trades_lookback_hours")):
             pytest.skip("test_fetch_trades not enabled for this exchange")
         pair = exchange_params["pair"]
         since = int((datetime.now(UTC) - timedelta(hours=lookback)).timestamp() * 1000)
         nvspy = mocker.spy(exch, "_get_trade_pagination_next_value")
-        res = exch.loop.run_until_complete(exch._async_get_trade_history(pair, since, None, None))
+        res = exch.loop.run_until_complete(
+            exch._async_get_trade_history(pair, since, None, None)
+        )
         assert len(res) == 2
         res_pair, res_trades = res
         assert res_pair == pair
@@ -569,7 +634,9 @@ class TestCCXTExchange:
                 assert isinstance(spot_leverage, (float, int))
                 assert spot_leverage >= 1.0
 
-    def test_ccxt_get_max_leverage_futures(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_get_max_leverage_futures(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         futures, _, exchange_params = exchange_futures
         leverage_tiers_public = exchange_params.get("leverage_tiers_public")
         if leverage_tiers_public:
@@ -597,21 +664,33 @@ class TestCCXTExchange:
             oldLeverage = float("inf")
             oldMaintenanceMarginRate = oldminNotional = oldmaxNotional = -1
             for tier in pair_tiers:
-                for key in ["maintenanceMarginRate", "minNotional", "maxNotional", "maxLeverage"]:
+                for key in [
+                    "maintenanceMarginRate",
+                    "minNotional",
+                    "maxNotional",
+                    "maxLeverage",
+                ]:
                     assert key in tier
                     # maxNotional can be None (no limit)
                     assert tier[key] is None or tier[key] >= 0.0
-                assert tier["maxNotional"] is None or tier["maxNotional"] > tier["minNotional"]
+                assert (
+                    tier["maxNotional"] is None
+                    or tier["maxNotional"] > tier["minNotional"]
+                )
                 assert tier["maxLeverage"] <= oldLeverage
                 assert tier["maintenanceMarginRate"] >= oldMaintenanceMarginRate
                 assert tier["minNotional"] > oldminNotional
-                assert tier["maxNotional"] is None or tier["maxNotional"] > oldmaxNotional
+                assert (
+                    tier["maxNotional"] is None or tier["maxNotional"] > oldmaxNotional
+                )
                 oldLeverage = tier["maxLeverage"]
                 oldMaintenanceMarginRate = tier["maintenanceMarginRate"]
                 oldminNotional = tier["minNotional"]
                 oldmaxNotional = tier["maxNotional"]
 
-    def test_ccxt_dry_run_liquidation_price(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_dry_run_liquidation_price(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         futures, _, exchange_params = exchange_futures
         if exchange_params.get("leverage_tiers_public"):
             futures_pair = exchange_params.get("futures_pair", exchange_params["pair"])
@@ -642,7 +721,9 @@ class TestCCXTExchange:
             assert isinstance(liquidation_price, float)
             assert liquidation_price >= 0.0
 
-    def test_ccxt_get_max_pair_stake_amount(self, exchange_futures: EXCHANGE_FIXTURE_TYPE):
+    def test_ccxt_get_max_pair_stake_amount(
+        self, exchange_futures: EXCHANGE_FIXTURE_TYPE
+    ):
         futures, _, exchange_params = exchange_futures
         futures_pair = exchange_params.get("futures_pair", exchange_params["pair"])
         max_stake_amount = futures.get_max_pair_stake_amount(futures_pair, 40000)
@@ -668,20 +749,54 @@ class TestCCXTExchange:
             assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE) == 200
 
             start_time = dt_ts(dt_now() - timedelta(days=17))
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == 1000
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == 1000
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == 1000
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == 1000
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time)
+                == 1000
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == 1000
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+                == 200
+            )
             start_time = dt_ts(dt_now() - timedelta(days=48))
             length = 200 if timeframe in ("1m", "5m") else 1000
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+                == 200
+            )
 
             start_time = dt_ts(dt_now() - timedelta(days=61))
             length = 200
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == length
-            assert exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 200
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time)
+                == length
+            )
+            assert (
+                exch.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+                == 200
+            )

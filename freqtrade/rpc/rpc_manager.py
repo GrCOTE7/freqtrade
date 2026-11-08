@@ -13,7 +13,6 @@ from freqtrade.enums import NO_ECHO_MESSAGES, RPCMessageType
 from freqtrade.rpc import RPC, RPCHandler
 from freqtrade.rpc.rpc_types import RPCSendMsg
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -69,7 +68,10 @@ class RPCManager:
         if mod._use_queue:
             q: Queue[RPCSendMsg | None] = Queue()
             worker = Thread(
-                target=self._worker, args=(mod, q), name=f"FTRPC-{mod.name}", daemon=True
+                target=self._worker,
+                args=(mod, q),
+                name=f"FTRPC-{mod.name}",
+                daemon=True,
             )
             self._queues[mod.name] = q
             self._workers[mod.name] = worker
@@ -93,7 +95,9 @@ class RPCManager:
         try:
             mod.send_msg(msg)
         except NotImplementedError:
-            logger.error(f"Message type '{msg['type']}' not implemented by handler {mod.name}.")
+            logger.error(
+                f"Message type '{msg['type']}' not implemented by handler {mod.name}."
+            )
         except Exception:
             logger.exception(f"Exception occurred within RPC module {mod.name}")
 
@@ -106,7 +110,9 @@ class RPCManager:
             q.put(msg.copy())
             if (size := q.qsize()) > 0 and size % 100 == 0:
                 # Warn if a queue has 100 messages pending
-                logger.warning(f"RPC module {mod.name} is slow - {size} messages pending.")
+                logger.warning(
+                    f"RPC module {mod.name} is slow - {size} messages pending."
+                )
         else:
             self._deliver(mod, msg)
 
@@ -155,7 +161,9 @@ class RPCManager:
                 # Give the current message a chance to finish before the module is torn down.
                 worker.join(timeout=10)
                 if worker.is_alive():
-                    logger.warning(f"RPC module {name} is still sending - cleaning up anyway.")
+                    logger.warning(
+                        f"RPC module {name} is still sending - cleaning up anyway."
+                    )
         self._queues = {}
         self._workers = {}
 
@@ -240,7 +248,12 @@ class RPCManager:
             }
         )
         if len(protections.name_list) > 0:
-            prots = "\n".join([p for prot in protections.short_desc() for k, p in prot.items()])
+            prots = "\n".join(
+                [p for prot in protections.short_desc() for k, p in prot.items()]
+            )
             self.send_msg(
-                {"type": RPCMessageType.STARTUP, "status": f"Using Protections: \n{prots}"}
+                {
+                    "type": RPCMessageType.STARTUP,
+                    "status": f"Using Protections: \n{prots}",
+                }
             )

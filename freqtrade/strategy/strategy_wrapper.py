@@ -6,7 +6,6 @@ from typing import Any, cast
 
 from freqtrade.exceptions import StrategyError
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +36,10 @@ def strategy_safe_wrapper[F: Callable[..., Any]](
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
-            if not (getattr(f, "__qualname__", "")).startswith("IStrategy.") and "trade" in kwargs:
+            if (
+                not (getattr(f, "__qualname__", "")).startswith("IStrategy.")
+                and "trade" in kwargs
+            ):
                 # Protect accidental modifications from within the strategy
                 # but don't deep-copy if the function is not implemented in the user strategy.
                 kwargs["trade"] = deepcopy(kwargs["trade"])

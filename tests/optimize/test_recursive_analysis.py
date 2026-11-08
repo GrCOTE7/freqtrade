@@ -19,7 +19,9 @@ def recursive_conf(default_conf_usdt, tmp_path):
     default_conf_usdt["user_data_dir"] = tmp_path
     default_conf_usdt["timerange"] = "20220101-20220501"
 
-    default_conf_usdt["strategy_path"] = str(Path(__file__).parent.parent / "strategy/strats")
+    default_conf_usdt["strategy_path"] = str(
+        Path(__file__).parent.parent / "strategy/strats"
+    )
     default_conf_usdt["strategy"] = "strategy_test_v3_recursive_issue"
     default_conf_usdt["pairs"] = ["UNITTEST/USDT"]
     default_conf_usdt["startup_candle"] = [100]
@@ -101,12 +103,16 @@ def test_recursive_helper_text_table_recursive_analysis_instances(recursive_conf
 
     strategy_obj = {
         "name": "strategy_test_v3_recursive_issue",
-        "location": Path(recursive_conf["strategy_path"], f"{recursive_conf['strategy']}.py"),
+        "location": Path(
+            recursive_conf["strategy_path"], f"{recursive_conf['strategy']}.py"
+        ),
     }
 
     instance = RecursiveAnalysis(recursive_conf, strategy_obj)
     instance.dict_recursive = dict_diff
-    data = RecursiveAnalysisSubFunctions.text_table_recursive_analysis_instances([instance])
+    data = RecursiveAnalysisSubFunctions.text_table_recursive_analysis_instances(
+        [instance]
+    )
 
     # check row contents for a try that has too few signals
     assert data[0][0] == "rsi"
@@ -117,7 +123,9 @@ def test_recursive_helper_text_table_recursive_analysis_instances(recursive_conf
     dict_diff = {}
     instance = RecursiveAnalysis(recursive_conf, strategy_obj)
     instance.dict_recursive = dict_diff
-    data = RecursiveAnalysisSubFunctions.text_table_recursive_analysis_instances([instance])
+    data = RecursiveAnalysisSubFunctions.text_table_recursive_analysis_instances(
+        [instance]
+    )
     assert len(data) == 0
 
 
@@ -132,10 +140,14 @@ def test_initialize_single_recursive_analysis(recursive_conf, mocker, caplog):
 
     recursive_conf["timeframe"] = "5m"
     recursive_conf["timerange"] = "20180119-20180122"
-    start_mock = mocker.patch("freqtrade.optimize.analysis.recursive.RecursiveAnalysis.start")
+    start_mock = mocker.patch(
+        "freqtrade.optimize.analysis.recursive.RecursiveAnalysis.start"
+    )
     strategy_obj = {
         "name": "strategy_test_v3_recursive_issue",
-        "location": Path(recursive_conf["strategy_path"], f"{recursive_conf['strategy']}.py"),
+        "location": Path(
+            recursive_conf["strategy_path"], f"{recursive_conf['strategy']}.py"
+        ),
     }
 
     instance = RecursiveAnalysisSubFunctions.initialize_single_recursive_analysis(

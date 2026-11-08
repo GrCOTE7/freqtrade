@@ -5,13 +5,17 @@ import ccxt
 
 from freqtrade.constants import BuySell
 from freqtrade.enums import OPTIMIZE_MODES, MarginMode, PriceType, TradingMode
-from freqtrade.exceptions import DDosProtection, ExchangeError, OperationalException, TemporaryError
+from freqtrade.exceptions import (
+    DDosProtection,
+    ExchangeError,
+    OperationalException,
+    TemporaryError,
+)
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.common import retrier
 from freqtrade.exchange.exchange_types import CcxtOrder, FtHas
 from freqtrade.misc import deep_merge_dicts
 from freqtrade.util import dt_from_ts, dt_ts
-
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +80,9 @@ class Bybit(Exchange):
         if self.trading_mode == TradingMode.SPOT:
             config.update({"options": {"defaultType": "spot"}})
         elif self.trading_mode == TradingMode.FUTURES:
-            config.update({"options": {"defaultSettle": self._config["stake_currency"]}})
+            config.update(
+                {"options": {"defaultSettle": self._config["stake_currency"]}}
+            )
         config = deep_merge_dicts(config, super()._ccxt_config)
         return config
 
@@ -111,10 +117,14 @@ class Bybit(Exchange):
         except ccxt.BaseError as e:
             raise OperationalException(e) from e
 
-    def _lev_prep(self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False):
+    def _lev_prep(
+        self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False
+    ):
         if self.trading_mode != TradingMode.SPOT:
             params = {"leverage": leverage}
-            self.set_margin_mode(pair, self.margin_mode, accept_fail=True, params=params)
+            self.set_margin_mode(
+                pair, self.margin_mode, accept_fail=True, params=params
+            )
             self._set_leverage(leverage, pair, accept_fail=True)
 
     def _get_params(
@@ -136,7 +146,9 @@ class Bybit(Exchange):
             params["position_idx"] = 0
         return params
 
-    def _get_stop_params(self, side: BuySell, ordertype: str, stop_price: float) -> dict:
+    def _get_stop_params(
+        self, side: BuySell, ordertype: str, stop_price: float
+    ) -> dict:
         params = super()._get_stop_params(
             side=side,
             ordertype=ordertype,
@@ -157,7 +169,9 @@ class Bybit(Exchange):
         return (
             ordertype != "market"
             or (
-                side == "buy" and not self.unified_account and self.trading_mode == TradingMode.SPOT
+                side == "buy"
+                and not self.unified_account
+                and self.trading_mode == TradingMode.SPOT
             )
             or self._ft_has.get("marketOrderRequiresPrice", False)
         )
@@ -224,9 +238,14 @@ class Bybit(Exchange):
         market = self.markets[pair]
         mm_ratio, _ = self.get_maintenance_ratio_and_amt(pair, stake_amount)
 
-        if self.trading_mode == TradingMode.FUTURES and self.margin_mode == MarginMode.ISOLATED:
+        if (
+            self.trading_mode == TradingMode.FUTURES
+            and self.margin_mode == MarginMode.ISOLATED
+        ):
             if market["inverse"]:
-                raise OperationalException("Freqtrade does not yet support inverse contracts")
+                raise OperationalException(
+                    "Freqtrade does not yet support inverse contracts"
+                )
             position_value = amount * open_rate
             initial_margin = position_value / leverage
             maintenance_margin = position_value * mm_ratio
@@ -259,12 +278,16 @@ class Bybit(Exchange):
         # Bybit does not provide "applied" funding fees per position.
         if self.trading_mode == TradingMode.FUTURES:
             try:
-                return self._fetch_and_calculate_funding_fees(pair, amount, is_short, open_date)
+                return self._fetch_and_calculate_funding_fees(
+                    pair, amount, is_short, open_date
+                )
             except ExchangeError:
                 logger.warning(f"Could not update funding fees for {pair}.")
         return 0.0
 
-    def fetch_order(self, order_id: str, pair: str, params: dict | None = None) -> CcxtOrder:
+    def fetch_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> CcxtOrder:
         if self.exchange_has("fetchOrder"):
             # Set acknowledged to True to avoid ccxt exception
             params = {"acknowledged": True}
@@ -316,7 +339,9 @@ class Bybit(Exchange):
         return None
 
     def _check_delisting_futures(self, pair: str) -> datetime | None:
-        delivery_time = self.markets.get(pair, {}).get("info", {}).get("deliveryTime", 0)
+        delivery_time = (
+            self.markets.get(pair, {}).get("info", {}).get("deliveryTime", 0)
+        )
         if delivery_time:
             if isinstance(delivery_time, str) and (delivery_time != ""):
                 delivery_time = int(delivery_time)

@@ -9,7 +9,6 @@ from freqtrade.data.metrics import calculate_max_drawdown
 from freqtrade.persistence import Trade
 from freqtrade.plugins.protections import IProtection, ProtectionReturn
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -43,13 +42,17 @@ class MaxDrawdown(IProtection):
             f"locking {self.unlock_reason_time_element}."
         )
 
-    def _max_drawdown(self, date_now: datetime, starting_balance: float) -> ProtectionReturn | None:
+    def _max_drawdown(
+        self, date_now: datetime, starting_balance: float
+    ) -> ProtectionReturn | None:
         """
         Evaluate recent trades for drawdown ...
         """
         look_back_until = date_now - timedelta(minutes=self._lookback_period)
 
-        trades_in_window = Trade.get_trades_proxy(is_open=False, close_date=look_back_until)
+        trades_in_window = Trade.get_trades_proxy(
+            is_open=False, close_date=look_back_until
+        )
 
         if len(trades_in_window) < self._trade_limit:
             return None
@@ -67,7 +70,10 @@ class MaxDrawdown(IProtection):
 
                 trades_df = pd.DataFrame(
                     [
-                        {"close_date": t.close_date_utc, "profit_abs": t.close_profit_abs}
+                        {
+                            "close_date": t.close_date_utc,
+                            "profit_abs": t.close_profit_abs,
+                        }
                         for t in trades_in_window
                     ]
                 )
@@ -87,7 +93,9 @@ class MaxDrawdown(IProtection):
                         for t in trades_in_window
                     ]
                 )
-                drawdown_obj = calculate_max_drawdown(trades_df, value_col="close_profit")
+                drawdown_obj = calculate_max_drawdown(
+                    trades_df, value_col="close_profit"
+                )
                 # In ratios mode, drawdown_abs is the cumulative ratio drop
                 drawdown = drawdown_obj.drawdown_abs
         except ValueError:

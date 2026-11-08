@@ -20,7 +20,6 @@ import pandas
 import rapidjson
 import websockets
 
-
 logger = logging.getLogger("WebSocketClient")
 
 
@@ -105,7 +104,9 @@ def json_deserialize(message):
     def json_to_dataframe(data: str) -> pandas.DataFrame:
         dataframe = pandas.read_json(data, orient="split")
         if "date" in dataframe.columns:
-            dataframe["date"] = pandas.to_datetime(dataframe["date"], unit="ms", utc=True)
+            dataframe["date"] = pandas.to_datetime(
+                dataframe["date"], unit="ms", utc=True
+            )
 
         return dataframe
 
@@ -158,7 +159,9 @@ class ClientProtocol:
         if self._MESSAGE_COUNT > 0:
             self.logger.info(f"Time since last message: {time_difference}")
 
-        message_handler = getattr(self, f"_handle_{message_type}", None) or self._handle_default
+        message_handler = (
+            getattr(self, f"_handle_{message_type}", None) or self._handle_default
+        )
         await message_handler(name, message_type, message_data)
 
         self._MESSAGE_COUNT += 1
@@ -230,7 +233,9 @@ async def create_client(
                 # Now listen for messages
                 while 1:
                     try:
-                        message = await asyncio.wait_for(ws.recv(), timeout=wait_timeout)
+                        message = await asyncio.wait_for(
+                            ws.recv(), timeout=wait_timeout
+                        )
 
                         await protocol.on_message(ws, name, message)
 
@@ -238,7 +243,10 @@ async def create_client(
                         # Try pinging
                         try:
                             pong = await ws.ping()
-                            latency = await asyncio.wait_for(pong, timeout=ping_timeout) * 1000
+                            latency = (
+                                await asyncio.wait_for(pong, timeout=ping_timeout)
+                                * 1000
+                            )
 
                             logger.info(f"Connection still alive, latency: {latency}ms")
 

@@ -3,7 +3,6 @@ import math
 import torch
 from torch import nn
 
-
 """
 The architecture is based on the paper “Attention Is All You Need”.
 Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
@@ -38,7 +37,9 @@ class PyTorchTransformerModel(nn.Module):
         )
 
         # Encode the timeseries with Positional encoding
-        self.positional_encoding = PositionalEncoding(d_model=self.dim_val, max_len=self.dim_val)
+        self.positional_encoding = PositionalEncoding(
+            d_model=self.dim_val, max_len=self.dim_val
+        )
 
         # Define the encoder block of the Transformer
         self.encoder_layer = nn.TransformerEncoderLayer(
@@ -90,7 +91,9 @@ class PositionalEncoding(nn.Module):
         # for max_len inputs
         pe = torch.zeros(max_len, d_model)
         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+        )
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0)

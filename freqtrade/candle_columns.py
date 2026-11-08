@@ -12,7 +12,6 @@ re-export from it without pulling pandas into every import of the bot.
 
 from freqtrade.enums import CandleType
 
-
 OHLCV_COLUMNS = ["date", "open", "high", "low", "close", "volume"]
 _FUNDING_RATE_COLUMNS = ["date", "funding_rate"]
 # Open interest is reported in the base currency ("amount") and the quote currency ("value").
@@ -20,7 +19,13 @@ _FUNDING_RATE_COLUMNS = ["date", "funding_rate"]
 # only "amount" on linear markets - so either column can legitimately be all-NaN.
 _OPEN_INTEREST_COLUMNS = ["date", "open_interest_amount", "open_interest_value"]
 
-_OHLCV_AGG = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "max"}
+_OHLCV_AGG = {
+    "open": "first",
+    "high": "max",
+    "low": "min",
+    "close": "last",
+    "volume": "max",
+}
 
 # Columns persisted per candle type. Types not listed here use OHLCV_COLUMNS.
 # Every entry must start with "date" - it is mandatory for all candle types.

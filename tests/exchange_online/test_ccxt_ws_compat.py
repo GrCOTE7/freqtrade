@@ -20,7 +20,9 @@ from tests.exchange_online.conftest import EXCHANGE_WS_FIXTURE_TYPE
 @pytest.mark.longrun
 @pytest.mark.timeout(3 * 60)
 class TestCCXTExchangeWs:
-    def test_ccxt_watch_ohlcv(self, exchange_ws: EXCHANGE_WS_FIXTURE_TYPE, caplog, mocker):
+    def test_ccxt_watch_ohlcv(
+        self, exchange_ws: EXCHANGE_WS_FIXTURE_TYPE, caplog, mocker
+    ):
         exch, _exchangename, pair = exchange_ws
 
         assert exch._ws_async is not None
@@ -45,15 +47,17 @@ class TestCCXTExchangeWs:
         # Currently open candle
         next_candle = timeframe_to_prev_date(timeframe, dt_now())
         # Currently closed candle
-        curr_candle = timeframe_to_prev_date(timeframe, next_candle - timedelta(seconds=1))
+        curr_candle = timeframe_to_prev_date(
+            timeframe, next_candle - timedelta(seconds=1)
+        )
 
         assert pair_tf in exch._exchange_ws._klines_watching
         assert pair_tf in exch._exchange_ws._klines_scheduled
         assert res[pair_tf] is not None
         df1 = res[pair_tf]
-        assert df1.iloc[-1]["date"] == curr_candle, (
-            f"Expected {curr_candle}, got {df1.iloc[-1]['date']} for {pair_tf}, now: {dt_now()}"
-        )
+        assert (
+            df1.iloc[-1]["date"] == curr_candle
+        ), f"Expected {curr_candle}, got {df1.iloc[-1]['date']} for {pair_tf}, now: {dt_now()}"
 
         # Wait until the next candle (might be up to 1 minute).
         while True:
@@ -71,7 +75,9 @@ class TestCCXTExchangeWs:
         assert m_cand.call_count == 1
         assert log_has_re(r"watch result.*", caplog)
 
-    def test_ccxt_watch_orderbook(self, exchange_ws: EXCHANGE_WS_FIXTURE_TYPE, caplog, mocker):
+    def test_ccxt_watch_orderbook(
+        self, exchange_ws: EXCHANGE_WS_FIXTURE_TYPE, caplog, mocker
+    ):
         exch, _exchangename, pair = exchange_ws
 
         assert exch._ws_async is not None
@@ -134,7 +140,9 @@ class TestCCXTExchangeWs:
         assert shallow is not None
         assert m_ws.call_count == 1
         assert m_rest.call_count == 1
-        assert log_has_re(rf"Websocket orderbook for .* only has 2/{limit} entries.*", caplog)
+        assert log_has_re(
+            rf"Websocket orderbook for .* only has 2/{limit} entries.*", caplog
+        )
         # REST answered - with more entries than the (mocked) websocket book holds.
         assert len(shallow["bids"]) > 2
         assert len(shallow["asks"]) > 2

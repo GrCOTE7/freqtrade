@@ -53,7 +53,9 @@ def make_response_from_url(start_date, end_date):
     def make_daily_df(date, timeframe):
         start = dt_utc(date.year, date.month, date.day)
         end = start + timedelta(days=1)
-        date_col = pd.date_range(start, end, freq=timeframe.replace("m", "min"), inclusive="left")
+        date_col = pd.date_range(
+            start, end, freq=timeframe.replace("m", "min"), inclusive="left"
+        )
         cols = (
             "open_time,open,high,low,close,volume,close_time,quote_volume,count,taker_buy_volume,"
             "taker_buy_quote_volume,ignore"
@@ -91,7 +93,9 @@ def make_response_from_url(start_date, end_date):
         if date < start_date or date > end_date:
             return MockResponse(content="", status=404)
 
-        zip_file = make_daily_zip(m["asset_type_url_segment"], m["symbol"], m["timeframe"], date)
+        zip_file = make_daily_zip(
+            m["asset_type_url_segment"], m["symbol"], m["timeframe"], date
+        )
         return MockResponse(content=zip_file, status=200)
 
     return make_response
@@ -263,11 +267,17 @@ async def test_download_archive_ohlcv_exception(mocker):
 
     markets = {"BTC/USDT": {"id": "BTCUSDT"}, "BTC/USDT:USDT": {"id": "BTCUSDT"}}
     mocker.patch(
-        "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get", side_effect=RuntimeError
+        "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
+        side_effect=RuntimeError,
     )
 
     df = await download_archive_ohlcv(
-        CandleType.SPOT, pair, timeframe, since_ms=since_ms, until_ms=until_ms, markets=markets
+        CandleType.SPOT,
+        pair,
+        timeframe,
+        since_ms=since_ms,
+        until_ms=until_ms,
+        markets=markets,
     )
 
     assert df.empty
@@ -282,7 +292,8 @@ async def test_get_daily_ohlcv(mocker, testdatadir):
 
     async with aiohttp.ClientSession() as session:
         spot_path = (
-            testdatadir / "binance/binance_public_data/spot-klines-BTCUSDT-1h-2024-10-28.zip"
+            testdatadir
+            / "binance/binance_public_data/spot-klines-BTCUSDT-1h-2024-10-28.zip"
         )
         get = mocker.patch(
             "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
@@ -294,7 +305,8 @@ async def test_get_daily_ohlcv(mocker, testdatadir):
         assert df["date"].iloc[-1] == last_date
 
         futures_path = (
-            testdatadir / "binance/binance_public_data/futures-um-klines-BTCUSDT-1h-2024-10-28.zip"
+            testdatadir
+            / "binance/binance_public_data/futures-um-klines-BTCUSDT-1h-2024-10-28.zip"
         )
         get = mocker.patch(
             "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
@@ -321,7 +333,9 @@ async def test_get_daily_ohlcv(mocker, testdatadir):
         )
         mocker.patch("asyncio.sleep")
         with pytest.raises(BadHttpStatus):
-            df = await get_daily_ohlcv(symbol, timeframe, CandleType.SPOT, date, session)
+            df = await get_daily_ohlcv(
+                symbol, timeframe, CandleType.SPOT, date, session
+            )
         assert get.call_count == 4  # 1 + 3 default retries
 
         get = mocker.patch(
@@ -329,7 +343,9 @@ async def test_get_daily_ohlcv(mocker, testdatadir):
             return_value=MockResponse(b"nop", 200),
         )
         with pytest.raises(zipfile.BadZipFile):
-            df = await get_daily_ohlcv(symbol, timeframe, CandleType.SPOT, date, session)
+            df = await get_daily_ohlcv(
+                symbol, timeframe, CandleType.SPOT, date, session
+            )
         assert get.call_count == 4  # 1 + 3 default retries
 
 
@@ -340,7 +356,9 @@ async def test_download_archive_trades(mocker, caplog):
     until_ms = dt_ts(dt_utc(2020, 1, 2))
     markets = {"BTC/USDT": {"id": "BTCUSDT"}, "BTC/USDT:USDT": {"id": "BTCUSDT"}}
 
-    mocker.patch("freqtrade.exchange.binance_public_data.get_daily_trades", return_value=[[2, 3]])
+    mocker.patch(
+        "freqtrade.exchange.binance_public_data.get_daily_trades", return_value=[[2, 3]]
+    )
 
     pair1, res = await download_archive_trades(
         CandleType.SPOT, pair, since_ms=since_ms, until_ms=until_ms, markets=markets
@@ -393,7 +411,8 @@ async def test_download_archive_trades_exception(mocker, caplog):
 
     markets = {"BTC/USDT": {"id": "BTCUSDT"}, "BTC/USDT:USDT": {"id": "BTCUSDT"}}
     mocker.patch(
-        "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get", side_effect=RuntimeError
+        "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
+        side_effect=RuntimeError,
     )
 
     pair1, res = await download_archive_trades(
@@ -403,7 +422,8 @@ async def test_download_archive_trades_exception(mocker, caplog):
     assert pair1 == pair
     assert res == []
     mocker.patch(
-        "freqtrade.exchange.binance_public_data._download_archive_trades", side_effect=RuntimeError
+        "freqtrade.exchange.binance_public_data._download_archive_trades",
+        side_effect=RuntimeError,
     )
 
     await download_archive_trades(
@@ -415,13 +435,17 @@ async def test_download_archive_trades_exception(mocker, caplog):
 
 
 async def test_binance_vision_trades_zip_url():
-    url = binance_vision_trades_zip_url("BTCUSDT", CandleType.SPOT, dt_utc(2023, 10, 27))
+    url = binance_vision_trades_zip_url(
+        "BTCUSDT", CandleType.SPOT, dt_utc(2023, 10, 27)
+    )
     assert (
         url == "https://data.binance.vision/data/spot/daily/aggTrades/"
         "BTCUSDT/BTCUSDT-aggTrades-2023-10-27.zip"
     )
 
-    url = binance_vision_trades_zip_url("BTCUSDT", CandleType.FUTURES, dt_utc(2023, 10, 28))
+    url = binance_vision_trades_zip_url(
+        "BTCUSDT", CandleType.FUTURES, dt_utc(2023, 10, 28)
+    )
     assert (
         url == "https://data.binance.vision/data/futures/um/daily/aggTrades/"
         "BTCUSDT/BTCUSDT-aggTrades-2023-10-28.zip"
@@ -437,7 +461,8 @@ async def test_get_daily_trades(mocker, testdatadir):
 
     async with aiohttp.ClientSession() as session:
         spot_path = (
-            testdatadir / "binance/binance_public_data/spot-PEPEUSDT-aggTrades-2024-10-27.zip"
+            testdatadir
+            / "binance/binance_public_data/spot-PEPEUSDT-aggTrades-2024-10-27.zip"
         )
         get = mocker.patch(
             "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
@@ -449,13 +474,16 @@ async def test_get_daily_trades(mocker, testdatadir):
         assert res[-1][0] == last_date
 
         futures_path = (
-            testdatadir / "binance/binance_public_data/futures-APEUSDT-aggTrades-2024-10-18.zip"
+            testdatadir
+            / "binance/binance_public_data/futures-APEUSDT-aggTrades-2024-10-18.zip"
         )
         get = mocker.patch(
             "freqtrade.exchange.binance_public_data.aiohttp.ClientSession.get",
             return_value=MockResponse(futures_path.read_bytes(), 200),
         )
-        res_fut = await get_daily_trades(symbol_futures, CandleType.FUTURES, date, session)
+        res_fut = await get_daily_trades(
+            symbol_futures, CandleType.FUTURES, date, session
+        )
         assert get.call_count == 1
         assert res_fut[0][0] == 1729209603958
         assert res_fut[-1][0] == 1729295981272
@@ -465,7 +493,9 @@ async def test_get_daily_trades(mocker, testdatadir):
             return_value=MockResponse(b"", 404),
         )
         with pytest.raises(Http404):
-            await get_daily_trades(symbol, CandleType.SPOT, date, session, retry_delay=0)
+            await get_daily_trades(
+                symbol, CandleType.SPOT, date, session, retry_delay=0
+            )
         assert get.call_count == 1
 
         get = mocker.patch(

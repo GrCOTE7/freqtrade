@@ -5,7 +5,6 @@ from gymnasium import spaces
 
 from freqtrade.freqai.RL.BaseEnvironment import BaseEnvironment, Positions
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -124,14 +123,27 @@ class Base5ActionRLEnv(BaseEnvironment):
             (action == Actions.Neutral.value and self._position == Positions.Neutral)
             or (action == Actions.Neutral.value and self._position == Positions.Short)
             or (action == Actions.Neutral.value and self._position == Positions.Long)
-            or (action == Actions.Short_enter.value and self._position == Positions.Short)
-            or (action == Actions.Short_enter.value and self._position == Positions.Long)
+            or (
+                action == Actions.Short_enter.value
+                and self._position == Positions.Short
+            )
+            or (
+                action == Actions.Short_enter.value and self._position == Positions.Long
+            )
             or (action == Actions.Short_exit.value and self._position == Positions.Long)
-            or (action == Actions.Short_exit.value and self._position == Positions.Neutral)
+            or (
+                action == Actions.Short_exit.value
+                and self._position == Positions.Neutral
+            )
             or (action == Actions.Long_enter.value and self._position == Positions.Long)
-            or (action == Actions.Long_enter.value and self._position == Positions.Short)
+            or (
+                action == Actions.Long_enter.value and self._position == Positions.Short
+            )
             or (action == Actions.Long_exit.value and self._position == Positions.Short)
-            or (action == Actions.Long_exit.value and self._position == Positions.Neutral)
+            or (
+                action == Actions.Long_exit.value
+                and self._position == Positions.Neutral
+            )
         )
 
     def _is_valid(self, action: int) -> bool:

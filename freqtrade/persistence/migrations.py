@@ -5,7 +5,6 @@ from sqlalchemy import Engine, inspect, select, text, update
 from freqtrade.exceptions import OperationalException
 from freqtrade.persistence.trade_model import Order, Trade
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +29,9 @@ def get_backup_name(tabs: list[str], backup_prefix: str):
     return table_back_name
 
 
-def get_last_sequence_ids(engine, sequence_name: str, table_back_name: str) -> int | None:
+def get_last_sequence_ids(
+    engine, sequence_name: str, table_back_name: str
+) -> int | None:
     last_id: int | None = None
 
     if engine.name == "postgresql":
@@ -40,7 +41,9 @@ def get_last_sequence_ids(engine, sequence_name: str, table_back_name: str) -> i
             ).fetchone()[0]
         with engine.begin() as connection:
             connection.execute(
-                text(f'ALTER SEQUENCE "{sequence_name}" rename to "{table_back_name}_id_seq_bak"')
+                text(
+                    f'ALTER SEQUENCE "{sequence_name}" rename to "{table_back_name}_id_seq_bak"'
+                )
             )
 
     return last_id
@@ -70,9 +73,13 @@ def set_sequence_ids(
     if engine.name == "postgresql":
         with engine.begin() as connection:
             if order_id:
-                connection.execute(text(f"ALTER SEQUENCE orders_id_seq RESTART WITH {order_id}"))
+                connection.execute(
+                    text(f"ALTER SEQUENCE orders_id_seq RESTART WITH {order_id}")
+                )
             if trade_id:
-                connection.execute(text(f"ALTER SEQUENCE trades_id_seq RESTART WITH {trade_id}"))
+                connection.execute(
+                    text(f"ALTER SEQUENCE trades_id_seq RESTART WITH {trade_id}")
+                )
             if pairlock_id:
                 connection.execute(
                     text(f"ALTER SEQUENCE pairlocks_id_seq RESTART WITH {pairlock_id}")
@@ -83,11 +90,15 @@ def set_sequence_ids(
                 )
             if custom_data_id:
                 connection.execute(
-                    text(f"ALTER SEQUENCE trade_custom_data_id_seq RESTART WITH {custom_data_id}")
+                    text(
+                        f"ALTER SEQUENCE trade_custom_data_id_seq RESTART WITH {custom_data_id}"
+                    )
                 )
             if wallet_history_id:
                 connection.execute(
-                    text(f"ALTER SEQUENCE wallet_history_id_seq RESTART WITH {wallet_history_id}")
+                    text(
+                        f"ALTER SEQUENCE wallet_history_id_seq RESTART WITH {wallet_history_id}"
+                    )
                 )
 
 
@@ -96,7 +107,9 @@ def drop_index_on_table(engine, inspector, table_bak_name):
         # drop indexes on backup table in new session
         for index in inspector.get_indexes(table_bak_name):
             if engine.name == "mysql":
-                connection.execute(text(f'drop index "{index["name"]}" on {table_bak_name}'))
+                connection.execute(
+                    text(f'drop index "{index["name"]}" on {table_bak_name}')
+                )
             else:
                 connection.execute(text(f'drop index "{index["name"]}"'))
 
@@ -131,9 +144,13 @@ def migrate_trades_and_orders_table(
     )
     max_rate = get_column_def(cols, "max_rate", "0.0")
     min_rate = get_column_def(cols, "min_rate", "null")
-    exit_reason = get_column_def(cols, "sell_reason", get_column_def(cols, "exit_reason", "null"))
+    exit_reason = get_column_def(
+        cols, "sell_reason", get_column_def(cols, "exit_reason", "null")
+    )
     strategy = get_column_def(cols, "strategy", "null")
-    enter_tag = get_column_def(cols, "buy_tag", get_column_def(cols, "enter_tag", "null"))
+    enter_tag = get_column_def(
+        cols, "buy_tag", get_column_def(cols, "enter_tag", "null")
+    )
     realized_profit = get_column_def(cols, "realized_profit", "0.0")
 
     trading_mode = get_column_def(cols, "trading_mode", "null")
@@ -166,7 +183,9 @@ def migrate_trades_and_orders_table(
         cols, "open_trade_value", f"amount * open_rate * (1 + {fee_open})"
     )
     close_profit_abs = get_column_def(
-        cols, "close_profit_abs", f"(amount * close_rate * (1 - {fee_close})) - {open_trade_value}"
+        cols,
+        "close_profit_abs",
+        f"(amount * close_rate * (1 - {fee_close})) - {open_trade_value}",
     )
     exit_order_status = get_column_def(
         cols, "exit_order_status", get_column_def(cols, "sell_order_status", "null")
@@ -197,9 +216,7 @@ def migrate_trades_and_orders_table(
 
     # Copy data back - following the correct schema
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                f"""insert into trades
+        connection.execute(text(f"""insert into trades
             (id, exchange, pair, base_currency, stake_currency, is_open,
             fee_open, fee_open_cost, fee_open_currency,
             fee_close, fee_close_cost, fee_close_currency, open_rate,
@@ -245,9 +262,7 @@ def migrate_trades_and_orders_table(
             {contract_size} contract_size, {max_stake_amount} max_stake_amount,
             {record_version} record_version
             from {trade_back_name}
-            """
-            )
-        )
+            """))
 
     migrate_orders_table(engine, order_back_name, cols_order)
     set_sequence_ids(engine, order_id, trade_id)
@@ -258,7 +273,9 @@ def drop_orders_table(engine, table_back_name: str):
     # This drops foreign keys, too.
 
     with engine.begin() as connection:
-        connection.execute(text(f"create table {table_back_name} as select * from orders"))
+        connection.execute(
+            text(f"create table {table_back_name} as select * from orders")
+        )
         connection.execute(text("drop table orders"))
 
 
@@ -274,9 +291,7 @@ def migrate_orders_table(engine, table_back_name: str, cols_order: list):
 
     # sqlite does not support literals for booleans
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                f"""
+        connection.execute(text(f"""
             insert into orders (id, ft_trade_id, ft_order_side, ft_pair, ft_is_open, order_id,
             status, symbol, order_type, side, price, amount, filled, average, remaining, cost,
             stop_price, order_date, order_filled_date, order_update_date, ft_fee_base, funding_fee,
@@ -289,15 +304,17 @@ def migrate_orders_table(engine, table_back_name: str, cols_order: list):
             {ft_amount} ft_amount, {ft_price} ft_price, {ft_cancel_reason} ft_cancel_reason,
             {ft_order_tag} ft_order_tag
             from {table_back_name}
-            """
-            )
-        )
+            """))
 
 
-def migrate_pairlocks_table(decl_base, inspector, engine, pairlock_back_name: str, cols: list):
+def migrate_pairlocks_table(
+    decl_base, inspector, engine, pairlock_back_name: str, cols: list
+):
     # Schema migration necessary
     with engine.begin() as connection:
-        connection.execute(text(f"alter table pairlocks rename to {pairlock_back_name}"))
+        connection.execute(
+            text(f"alter table pairlocks rename to {pairlock_back_name}")
+        )
 
     drop_index_on_table(engine, inspector, pairlock_back_name)
     pairlock_id = get_last_sequence_ids(engine, "pairlocks_id_seq", pairlock_back_name)
@@ -308,42 +325,40 @@ def migrate_pairlocks_table(decl_base, inspector, engine, pairlock_back_name: st
     decl_base.metadata.create_all(engine)
     # Copy data back - following the correct schema
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                f"""insert into pairlocks
+        connection.execute(text(f"""insert into pairlocks
         (id, pair, side, reason, lock_time,
          lock_end_time, active)
         select id, pair, {side} side, reason, lock_time,
          lock_end_time, active
         from {pairlock_back_name}
-        """
-            )
-        )
+        """))
 
     set_sequence_ids(engine, pairlock_id=pairlock_id)
 
 
-def migrate_kv_store_table(decl_base, inspector, engine, kv_store_back_name: str, cols: list):
+def migrate_kv_store_table(
+    decl_base, inspector, engine, kv_store_back_name: str, cols: list
+):
     # Schema migration necessary
     with engine.begin() as connection:
-        connection.execute(text(f'alter table "KeyValueStore" rename to "{kv_store_back_name}"'))
+        connection.execute(
+            text(f'alter table "KeyValueStore" rename to "{kv_store_back_name}"')
+        )
 
     drop_index_on_table(engine, inspector, kv_store_back_name)
-    kv_store_id = get_last_sequence_ids(engine, "KeyValueStore_id_seq", kv_store_back_name)
+    kv_store_id = get_last_sequence_ids(
+        engine, "KeyValueStore_id_seq", kv_store_back_name
+    )
 
     # let SQLAlchemy create the schema as required
     decl_base.metadata.create_all(engine)
     # Copy data back - following the correct schema
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                f"""insert into "KeyValueStore"
+        connection.execute(text(f"""insert into "KeyValueStore"
         (id, key, value_type, string_value, datetime_value, float_value, int_value)
         select id, key, value_type, string_value, datetime_value, float_value, int_value
         from "{kv_store_back_name}"
-        """
-            )
-        )
+        """))
 
     set_sequence_ids(engine, kv_id=kv_store_id)
 
@@ -381,7 +396,9 @@ def fix_old_dry_orders(engine):
             update(Order)
             .where(
                 Order.ft_is_open.is_(True),
-                Order.ft_trade_id.not_in(select(Trade.id).where(Trade.is_open.is_(True))),
+                Order.ft_trade_id.not_in(
+                    select(Trade.id).where(Trade.is_open.is_(True))
+                ),
                 Order.ft_order_side != "stoploss",
                 Order.order_id.like("dry%"),
             )
@@ -404,7 +421,10 @@ def fix_wrong_max_stake_amount(engine):
                 Trade.is_open.is_(False),
                 Trade.max_stake_amount != 0,
             )
-            .values(max_stake_amount=Trade.max_stake_amount / Trade.leverage, record_version=2)
+            .values(
+                max_stake_amount=Trade.max_stake_amount / Trade.leverage,
+                record_version=2,
+            )
         )
         connection.execute(stmt)
 
@@ -452,7 +472,9 @@ def check_migrate(engine: Engine, decl_base, previous_tables: list[str]) -> None
 
     if not has_column(cols_pairlocks, "side"):
         migrating = True
-        logger.info(f"Running database migration for pairlocks - backup: {pairlock_table_bak_name}")
+        logger.info(
+            f"Running database migration for pairlocks - backup: {pairlock_table_bak_name}"
+        )
 
         migrate_pairlocks_table(
             decl_base, inspector, engine, pairlock_table_bak_name, cols_pairlocks
@@ -465,7 +487,9 @@ def check_migrate(engine: Engine, decl_base, previous_tables: list[str]) -> None
             logger.info(
                 f"Running database migration for KeyValueStore - backup: {kv_store_back_name}"
             )
-            migrate_kv_store_table(decl_base, inspector, engine, kv_store_back_name, cols_kv_store)
+            migrate_kv_store_table(
+                decl_base, inspector, engine, kv_store_back_name, cols_kv_store
+            )
 
     if "orders" not in previous_tables and "trades" in previous_tables:
         raise OperationalException(

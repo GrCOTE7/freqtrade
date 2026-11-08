@@ -9,9 +9,12 @@ from freqtrade.constants import ListPairsWithTimeframes
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.misc import plural
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import PeriodicCache, dt_floor_day, dt_now, dt_ts
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,9 @@ class AgeFilter(IPairList):
                 f"({candle_limit})"
             )
         if self._max_days_listed and self._max_days_listed <= self._min_days_listed:
-            raise OperationalException("AgeFilter max_days_listed <= min_days_listed not permitted")
+            raise OperationalException(
+                "AgeFilter max_days_listed <= min_days_listed not permitted"
+            )
         if self._max_days_listed and self._max_days_listed > candle_limit:
             raise OperationalException(
                 "AgeFilter requires max_days_listed to not exceed "
@@ -58,7 +63,9 @@ class AgeFilter(IPairList):
             f"{self.name} - Filtering pairs with age less than "
             f"{self._min_days_listed} {plural(self._min_days_listed, 'day')}"
         ) + (
-            (f" or more than {self._max_days_listed} {plural(self._max_days_listed, 'day')}")
+            (
+                f" or more than {self._max_days_listed} {plural(self._max_days_listed, 'day')}"
+            )
             if self._max_days_listed
             else ""
         )

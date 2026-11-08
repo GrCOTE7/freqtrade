@@ -13,7 +13,6 @@ from freqtrade.persistence.models import PairLock
 from freqtrade.plugins.protections import IProtection
 from freqtrade.resolvers import ProtectionResolver
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -48,7 +47,10 @@ class ProtectionManager:
         return [{p.name: p.short_desc()} for p in self._protection_handlers]
 
     def global_stop(
-        self, now: datetime | None = None, side: LongShort = "long", starting_balance: float = 0.0
+        self,
+        now: datetime | None = None,
+        side: LongShort = "long",
+        starting_balance: float = 0.0,
     ) -> PairLock | None:
         if not now:
             now = datetime.now(UTC)
@@ -81,7 +83,10 @@ class ProtectionManager:
         for protection_handler in self._protection_handlers:
             if protection_handler.has_local_stop:
                 lock = protection_handler.stop_per_pair(
-                    pair=pair, date_now=now, side=side, starting_balance=starting_balance
+                    pair=pair,
+                    date_now=now,
+                    side=side,
+                    starting_balance=starting_balance,
                 )
                 if (
                     lock

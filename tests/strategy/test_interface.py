@@ -34,7 +34,6 @@ from tests.conftest import CURRENT_TEST_STRATEGY, TRADE_SIDES, log_has, log_has_
 
 from .strats.strategy_test_v3 import StrategyTestV3
 
-
 # Avoid to reinit the same object again and again
 _STRATEGY = StrategyTestV3(config={})
 _STRATEGY.dp = DataProvider({}, None, None)
@@ -62,8 +61,15 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
         mocked_history.loc[0, "exit_tag"] = "wrong_line"
         mocked_history.loc[last_idx, "exit_long"] = 1
 
-        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (None, None)
-        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (False, True, None)
+        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (
+            None,
+            None,
+        )
+        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
+            False,
+            True,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history, True) == (
             False,
             False,
@@ -76,7 +82,11 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
             SignalDirection.LONG,
             None,
         )
-        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (True, False, None)
+        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
+            True,
+            False,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history, True) == (
             False,
             False,
@@ -85,8 +95,15 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
         mocked_history.loc[last_idx, "exit_long"] = 0
         mocked_history.loc[last_idx, "enter_long"] = 0
 
-        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (None, None)
-        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (False, False, None)
+        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (
+            None,
+            None,
+        )
+        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
+            False,
+            False,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history, True) == (
             False,
             False,
@@ -100,7 +117,11 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
             SignalDirection.LONG,
             "buy_signal_01",
         )
-        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (True, False, None)
+        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
+            True,
+            False,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history, True) == (
             False,
             False,
@@ -114,11 +135,17 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
         mocked_history.loc[last_idx, "enter_tag"] = "sell_signal_01"
 
         # Don't provide short signal while in spot mode
-        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (None, None)
+        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (
+            None,
+            None,
+        )
 
         _STRATEGY.config["trading_mode"] = "futures"
         # Short signal gets ignored as can_short is not set.
-        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (None, None)
+        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (
+            None,
+            None,
+        )
 
         _STRATEGY.can_short = True
 
@@ -126,7 +153,11 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
             SignalDirection.SHORT,
             "sell_signal_01",
         )
-        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (False, False, None)
+        assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
+            False,
+            False,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history, True) == (
             True,
             False,
@@ -136,7 +167,10 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
         mocked_history.loc[last_idx, "enter_short"] = 0
         mocked_history.loc[last_idx, "exit_short"] = 1
         mocked_history.loc[last_idx, "exit_tag"] = "sell_signal_02"
-        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (None, None)
+        assert _STRATEGY.get_entry_signal("ETH/BTC", "5m", mocked_history) == (
+            None,
+            None,
+        )
         assert _STRATEGY.get_exit_signal("ETH/BTC", "5m", mocked_history) == (
             False,
             False,
@@ -156,7 +190,9 @@ def test_returns_latest_signal(ohlcv_history, disable_dataframe_checks):
 
 def test_analyze_pair_empty(mocker, caplog, ohlcv_history):
     mocker.patch.object(_STRATEGY.dp, "ohlcv", return_value=ohlcv_history)
-    mocker.patch.object(_STRATEGY, "_analyze_ticker_internal", return_value=DataFrame([]))
+    mocker.patch.object(
+        _STRATEGY, "_analyze_ticker_internal", return_value=DataFrame([])
+    )
 
     _STRATEGY.analyze_pair("ETH/BTC")
 
@@ -170,7 +206,9 @@ def test_get_signal_empty(default_conf, caplog):
     assert log_has("Empty candle (OHLCV) data for pair foo", caplog)
     caplog.clear()
 
-    assert (None, None) == _STRATEGY.get_latest_candle("bar", default_conf["timeframe"], None)
+    assert (None, None) == _STRATEGY.get_latest_candle(
+        "bar", default_conf["timeframe"], None
+    )
     assert log_has("Empty candle (OHLCV) data for pair bar", caplog)
     caplog.clear()
 
@@ -185,20 +223,28 @@ def test_get_signal_exception_valueerror(mocker, caplog, ohlcv_history):
     mocker.patch.object(_STRATEGY.dp, "ohlcv", return_value=ohlcv_history)
     mocker.patch.object(_STRATEGY, "analyze_ticker", side_effect=ValueError("xyz"))
     _STRATEGY.analyze_pair("foo")
-    assert log_has_re(r"Strategy caused the following exception: ValueError\('xyz'\).*", caplog)
-    assert log_has_re(r"Unable to analyze candle \(OHLCV\) data for pair foo: xyz", caplog)
+    assert log_has_re(
+        r"Strategy caused the following exception: ValueError\('xyz'\).*", caplog
+    )
+    assert log_has_re(
+        r"Unable to analyze candle \(OHLCV\) data for pair foo: xyz", caplog
+    )
     caplog.clear()
 
     mocker.patch.object(
         _STRATEGY, "analyze_ticker", side_effect=Exception("invalid ticker history ")
     )
     _STRATEGY.analyze_pair("foo")
-    assert log_has_re(r"Unexpected error Exception\('invalid ticker history '\).*", caplog)
+    assert log_has_re(
+        r"Unexpected error Exception\('invalid ticker history '\).*", caplog
+    )
     assert log_has_re(r"Unable to analyze candle \(OHLCV\) data for pair foo", caplog)
 
 
 @pytest.mark.parametrize("disable_dataframe_checks", [False, True])
-def test_get_signal_old_dataframe(default_conf, caplog, ohlcv_history, disable_dataframe_checks):
+def test_get_signal_old_dataframe(
+    default_conf, caplog, ohlcv_history, disable_dataframe_checks
+):
     _STRATEGY.disable_dataframe_checks = disable_dataframe_checks
     # disable_dataframe_checks=False (default): the latest candle is the last row by position.
     last_idx = 1 if disable_dataframe_checks else ohlcv_history.index[-1]
@@ -217,13 +263,17 @@ def test_get_signal_old_dataframe(default_conf, caplog, ohlcv_history, disable_d
         assert (None, None) == _STRATEGY.get_latest_candle(
             "xyz", default_conf["timeframe"], mocked_history
         )
-        assert log_has("Outdated history for pair xyz. Last tick is 16 minutes old", caplog)
+        assert log_has(
+            "Outdated history for pair xyz. Last tick is 16 minutes old", caplog
+        )
     finally:
         _STRATEGY.disable_dataframe_checks = False
 
 
 @pytest.mark.parametrize("disable_dataframe_checks", [False, True])
-def test_get_signal_no_sell_column(default_conf, caplog, ohlcv_history, disable_dataframe_checks):
+def test_get_signal_no_sell_column(
+    default_conf, caplog, ohlcv_history, disable_dataframe_checks
+):
     _STRATEGY.disable_dataframe_checks = disable_dataframe_checks
     # disable_dataframe_checks=False (default): the latest candle is the last row by position.
     last_idx = 1 if disable_dataframe_checks else ohlcv_history.index[-1]
@@ -257,7 +307,10 @@ def test_ignore_expired_candle(default_conf):
 
     assert (
         strategy.ignore_expired_candle(
-            latest_date=latest_date, current_time=current_time, timeframe_seconds=300, enter=True
+            latest_date=latest_date,
+            current_time=current_time,
+            timeframe_seconds=300,
+            enter=True,
         )
         is True
     )
@@ -266,7 +319,10 @@ def test_ignore_expired_candle(default_conf):
 
     assert (
         strategy.ignore_expired_candle(
-            latest_date=latest_date, current_time=current_time, timeframe_seconds=300, enter=True
+            latest_date=latest_date,
+            current_time=current_time,
+            timeframe_seconds=300,
+            enter=True,
         )
         is not True
     )
@@ -282,14 +338,17 @@ def test_assert_df_raise(mocker, caplog, ohlcv_history):
 
     caplog.set_level(logging.INFO)
     mocker.patch.object(_STRATEGY.dp, "ohlcv", return_value=ohlcv_history)
-    mocker.patch.object(_STRATEGY.dp, "get_analyzed_dataframe", return_value=(mocked_history, 0))
+    mocker.patch.object(
+        _STRATEGY.dp, "get_analyzed_dataframe", return_value=(mocked_history, 0)
+    )
     mocker.patch(
         "freqtrade.strategy.interface.StrategyResultValidator.assert_df",
         side_effect=StrategyError("Dataframe returned..."),
     )
     _STRATEGY.analyze_pair("xyz")
     assert log_has(
-        "Unable to analyze candle (OHLCV) data for pair xyz: Dataframe returned...", caplog
+        "Unable to analyze candle (OHLCV) data for pair xyz: Dataframe returned...",
+        caplog,
     )
 
 
@@ -301,7 +360,9 @@ def test_assert_df(ohlcv_history, caplog):
     # Ensure it's running when passed correctly
     validator.assert_df(ohlcv_history)
 
-    with pytest.raises(StrategyError, match=r"Dataframe returned from strategy.*length\."):
+    with pytest.raises(
+        StrategyError, match=r"Dataframe returned from strategy.*length\."
+    ):
         validator.assert_df(concat([ohlcv_history, ohlcv_history]))
 
     with pytest.raises(
@@ -311,7 +372,9 @@ def test_assert_df(ohlcv_history, caplog):
         df.loc[df_len, "close"] += 0.01
         validator.assert_df(df)
 
-    with pytest.raises(StrategyError, match=r"Dataframe returned from strategy.*last date\."):
+    with pytest.raises(
+        StrategyError, match=r"Dataframe returned from strategy.*last date\."
+    ):
         df = ohlcv_history.copy()
         df.loc[df_len, "date"] = ohlcv_history.loc[0, "date"] - timedelta(days=1)
         validator.assert_df(df)
@@ -336,7 +399,9 @@ def test_advise_all_indicators(default_conf, testdatadir) -> None:
     strategy = StrategyResolver.load_strategy(default_conf)
 
     timerange = TimeRange.parse_timerange("1510694220-1510700340")
-    data = load_data(testdatadir, "1m", ["UNITTEST/BTC"], timerange=timerange, fill_up_missing=True)
+    data = load_data(
+        testdatadir, "1m", ["UNITTEST/BTC"], timerange=timerange, fill_up_missing=True
+    )
     processed = strategy.advise_all_indicators(data)
     assert len(processed["UNITTEST/BTC"]) == 103
 
@@ -356,7 +421,9 @@ def test_advise_all_indicators_copy(mocker, default_conf, testdatadir) -> None:
         side_effect=lambda dataframe, metadata: dataframe,
     )
     timerange = TimeRange.parse_timerange("1510694220-1510700340")
-    data = load_data(testdatadir, "1m", ["UNITTEST/BTC"], timerange=timerange, fill_up_missing=True)
+    data = load_data(
+        testdatadir, "1m", ["UNITTEST/BTC"], timerange=timerange, fill_up_missing=True
+    )
     strategy.advise_all_indicators(data)
     assert aimock.call_count == 1
     # Ensure that a copy of the dataframe is passed to advice_indicators
@@ -383,13 +450,19 @@ def test_min_roi_reached(default_conf, fee) -> None:
             open_rate=1,
         )
 
-        assert not strategy.min_roi_reached(trade, 0.02, dt_now() - timedelta(minutes=56))
+        assert not strategy.min_roi_reached(
+            trade, 0.02, dt_now() - timedelta(minutes=56)
+        )
         assert strategy.min_roi_reached(trade, 0.12, dt_now() - timedelta(minutes=56))
 
-        assert not strategy.min_roi_reached(trade, 0.04, dt_now() - timedelta(minutes=39))
+        assert not strategy.min_roi_reached(
+            trade, 0.04, dt_now() - timedelta(minutes=39)
+        )
         assert strategy.min_roi_reached(trade, 0.06, dt_now() - timedelta(minutes=39))
 
-        assert not strategy.min_roi_reached(trade, -0.01, dt_now() - timedelta(minutes=1))
+        assert not strategy.min_roi_reached(
+            trade, -0.01, dt_now() - timedelta(minutes=1)
+        )
         assert strategy.min_roi_reached(trade, 0.02, dt_now() - timedelta(minutes=1))
 
 
@@ -413,17 +486,25 @@ def test_min_roi_reached2(default_conf, fee) -> None:
             open_rate=1,
         )
 
-        assert not strategy.min_roi_reached(trade, 0.02, dt_now() - timedelta(minutes=56))
+        assert not strategy.min_roi_reached(
+            trade, 0.02, dt_now() - timedelta(minutes=56)
+        )
         assert strategy.min_roi_reached(trade, 0.12, dt_now() - timedelta(minutes=56))
 
-        assert not strategy.min_roi_reached(trade, 0.04, dt_now() - timedelta(minutes=39))
+        assert not strategy.min_roi_reached(
+            trade, 0.04, dt_now() - timedelta(minutes=39)
+        )
         assert strategy.min_roi_reached(trade, 0.071, dt_now() - timedelta(minutes=39))
 
-        assert not strategy.min_roi_reached(trade, 0.04, dt_now() - timedelta(minutes=26))
+        assert not strategy.min_roi_reached(
+            trade, 0.04, dt_now() - timedelta(minutes=26)
+        )
         assert strategy.min_roi_reached(trade, 0.06, dt_now() - timedelta(minutes=26))
 
         # Should not trigger with 20% profit since after 55 minutes only 30% is active.
-        assert not strategy.min_roi_reached(trade, 0.20, dt_now() - timedelta(minutes=2))
+        assert not strategy.min_roi_reached(
+            trade, 0.20, dt_now() - timedelta(minutes=2)
+        )
         assert strategy.min_roi_reached(trade, 0.31, dt_now() - timedelta(minutes=2))
 
 
@@ -468,7 +549,9 @@ def test_min_roi_reached_custom_roi(default_conf, fee) -> None:
     strategy.use_custom_roi = True
 
     def custom_roi(*args, trade: Trade, current_time: datetime, **kwargs):
-        trade_dur = int((current_time.timestamp() - trade.open_date_utc.timestamp()) // 60)
+        trade_dur = int(
+            (current_time.timestamp() - trade.open_date_utc.timestamp()) // 60
+        )
         # Profit is reduced after 30 minutes.
         if trade.pair == "XRP/BTC":
             return 0.2
@@ -518,8 +601,30 @@ def test_min_roi_reached_custom_roi(default_conf, fee) -> None:
         # Profit, adjusted stoploss(absolute), profit for 2nd call, enable trailing,
         #   enable custom stoploss, expected after 1st call, expected after 2nd call
         (0.2, 0.9, ExitType.NONE, None, False, False, 0.3, 0.9, ExitType.NONE, None),
-        (0.2, 0.9, ExitType.NONE, None, False, False, -0.2, 0.9, ExitType.STOP_LOSS, None),
-        (0.2, 0.9, ExitType.NONE, 0.92, False, False, -0.09, 0.9, ExitType.LIQUIDATION, None),
+        (
+            0.2,
+            0.9,
+            ExitType.NONE,
+            None,
+            False,
+            False,
+            -0.2,
+            0.9,
+            ExitType.STOP_LOSS,
+            None,
+        ),
+        (
+            0.2,
+            0.9,
+            ExitType.NONE,
+            0.92,
+            False,
+            False,
+            -0.09,
+            0.9,
+            ExitType.LIQUIDATION,
+            None,
+        ),
         (
             0.2,
             1.14,
@@ -532,7 +637,18 @@ def test_min_roi_reached_custom_roi(default_conf, fee) -> None:
             ExitType.TRAILING_STOP_LOSS,
             None,
         ),
-        (0.01, 0.96, ExitType.NONE, None, True, False, 0.05, 0.998, ExitType.NONE, None),
+        (
+            0.01,
+            0.96,
+            ExitType.NONE,
+            None,
+            True,
+            False,
+            0.05,
+            0.998,
+            ExitType.NONE,
+            None,
+        ),
         (
             0.05,
             0.998,
@@ -546,7 +662,18 @@ def test_min_roi_reached_custom_roi(default_conf, fee) -> None:
             None,
         ),
         # Default custom case - trails with 10%
-        (0.05, 0.945, ExitType.NONE, None, False, True, -0.02, 0.945, ExitType.NONE, None),
+        (
+            0.05,
+            0.945,
+            ExitType.NONE,
+            None,
+            False,
+            True,
+            -0.02,
+            0.945,
+            ExitType.NONE,
+            None,
+        ),
         (
             0.05,
             0.945,
@@ -708,10 +835,13 @@ def test_ft_stoploss_reached(
         pytest.param(True, True, id="trailing+custom"),
     ],
 )
-def test_should_exit_bound_profit_reuse(default_conf, fee, is_short, trailing, custom_stop) -> None:
+def test_should_exit_bound_profit_reuse(
+    default_conf, fee, is_short, trailing, custom_stop
+) -> None:
     """should_exit forwards the candle-bound profit it already computed into the stoploss
     check; that must adjust the stop identically to ft_stoploss_adjust recomputing it
-    (bound_profit=None). This is the only stoploss test that sets a candle bound (low/high)."""
+    (bound_profit=None). This is the only stoploss test that sets a candle bound (low/high).
+    """
     strategy = StrategyResolver.load_strategy(default_conf)
     strategy.trailing_stop = trailing
     strategy.trailing_stop_positive = 0.01
@@ -751,7 +881,9 @@ def test_should_exit_bound_profit_reuse(default_conf, fee, is_short, trailing, c
 
     # should_exit forwards its precomputed bound profit into the stoploss check.
     trade_opt = make_trade()
-    strategy.should_exit(trade_opt, current_rate, now, enter=False, exit_=False, low=low, high=high)
+    strategy.should_exit(
+        trade_opt, current_rate, now, enter=False, exit_=False, low=low, high=high
+    )
 
     # With bound_profit=None, ft_stoploss_adjust recomputes the bound profit from low/high itself.
     trade_ref = make_trade()
@@ -772,7 +904,9 @@ def test_should_exit_bound_profit_reuse(default_conf, fee, is_short, trailing, c
     # (2) Passing bound_profit explicitly matches the recompute too.
     trade_explicit = make_trade()
     trade_explicit.adjust_min_max_rates(high or current_rate, low or current_rate)
-    bound_best = trade_explicit.calc_profit_ratio((low if is_short else high) or current_rate)
+    bound_best = trade_explicit.calc_profit_ratio(
+        (low if is_short else high) or current_rate
+    )
     strategy.ft_stoploss_reached(
         current_rate=current_rate,
         trade=trade_explicit,
@@ -815,30 +949,40 @@ def test_custom_exit(default_conf, fee, caplog) -> None:
     )
 
     now = dt_now()
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
 
     assert res == []
 
     strategy.custom_exit = MagicMock(return_value=True)
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert res[0].exit_flag is True
     assert res[0].exit_type == ExitType.CUSTOM_EXIT
     assert res[0].exit_reason == "custom_exit"
 
     strategy.custom_exit = MagicMock(return_value="hello world")
 
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert res[0].exit_type == ExitType.CUSTOM_EXIT
     assert res[0].exit_flag is True
     assert res[0].exit_reason == "hello world"
 
     caplog.clear()
     strategy.custom_exit = MagicMock(return_value="h" * CUSTOM_TAG_MAX_LENGTH * 2)
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert res[0].exit_type == ExitType.CUSTOM_EXIT
     assert res[0].exit_flag is True
     assert res[0].exit_reason == "h" * (CUSTOM_TAG_MAX_LENGTH)
-    assert log_has_re("Custom exit reason returned from custom_exit is too long.*", caplog)
+    assert log_has_re(
+        "Custom exit reason returned from custom_exit is too long.*", caplog
+    )
 
 
 def test_should_sell(default_conf, fee) -> None:
@@ -855,12 +999,16 @@ def test_should_sell(default_conf, fee) -> None:
         leverage=1.0,
     )
     now = dt_now()
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
 
     assert res == []
     strategy.min_roi_reached = MagicMock(return_value=True)
 
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert len(res) == 1
     assert res == [ExitCheckTuple(exit_type=ExitType.ROI)]
 
@@ -869,7 +1017,9 @@ def test_should_sell(default_conf, fee) -> None:
         return_value=ExitCheckTuple(exit_type=ExitType.STOP_LOSS)
     )
 
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert len(res) == 2
     assert res == [
         ExitCheckTuple(exit_type=ExitType.STOP_LOSS),
@@ -878,7 +1028,9 @@ def test_should_sell(default_conf, fee) -> None:
 
     strategy.custom_exit = MagicMock(return_value="hello world")
     # custom-exit and exit-signal is first
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=False, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=False, low=None, high=None
+    )
     assert len(res) == 3
     assert res == [
         ExitCheckTuple(exit_type=ExitType.CUSTOM_EXIT, exit_reason="hello world"),
@@ -890,7 +1042,9 @@ def test_should_sell(default_conf, fee) -> None:
         return_value=ExitCheckTuple(exit_type=ExitType.TRAILING_STOP_LOSS)
     )
     # Regular exit signal
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=True, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=True, low=None, high=None
+    )
     assert len(res) == 3
     assert res == [
         ExitCheckTuple(exit_type=ExitType.EXIT_SIGNAL),
@@ -900,7 +1054,9 @@ def test_should_sell(default_conf, fee) -> None:
 
     # Regular exit signal, no ROI
     strategy.min_roi_reached = MagicMock(return_value=False)
-    res = strategy.should_exit(trade, 1, now, enter=False, exit_=True, low=None, high=None)
+    res = strategy.should_exit(
+        trade, 1, now, enter=False, exit_=True, low=None, high=None
+    )
     assert len(res) == 2
     assert res == [
         ExitCheckTuple(exit_type=ExitType.EXIT_SIGNAL),
@@ -1059,18 +1215,26 @@ def test_is_pair_locked(default_conf):
 
     # latest candle is from 14:25 (lock should be lifted)
     # Since this is the "new candle" available at 14:30
-    assert not strategy.is_pair_locked(pair, candle_date=lock_time + timedelta(minutes=-4))
+    assert not strategy.is_pair_locked(
+        pair, candle_date=lock_time + timedelta(minutes=-4)
+    )
 
     # Should not be locked after time expired
-    assert not strategy.is_pair_locked(pair, candle_date=lock_time + timedelta(minutes=10))
+    assert not strategy.is_pair_locked(
+        pair, candle_date=lock_time + timedelta(minutes=10)
+    )
 
     # Change timeframe to 15m
     strategy.timeframe = "15m"
     # Candle from 14:14 - lock goes until 14:30
     assert strategy.is_pair_locked(pair, candle_date=lock_time + timedelta(minutes=-16))
-    assert strategy.is_pair_locked(pair, candle_date=lock_time + timedelta(minutes=-15, seconds=-2))
+    assert strategy.is_pair_locked(
+        pair, candle_date=lock_time + timedelta(minutes=-15, seconds=-2)
+    )
     # Candle from 14:15 - lock goes until 14:30
-    assert not strategy.is_pair_locked(pair, candle_date=lock_time + timedelta(minutes=-15))
+    assert not strategy.is_pair_locked(
+        pair, candle_date=lock_time + timedelta(minutes=-15)
+    )
 
 
 def test_is_informative_pairs_callback(default_conf):
@@ -1123,11 +1287,14 @@ def test_auto_hyperopt_interface(default_conf):
     # Invalid parameter space
     strategy.__class__.exit22_rsi = IntParameter([0, 10], default=5, space="all")
     with pytest.raises(
-        DependencyException, match=r"'all' is not a valid space\. Parameter: exit22_rsi\."
+        DependencyException,
+        match=r"'all' is not a valid space\. Parameter: exit22_rsi\.",
     ):
         detect_all_parameters(strategy.__class__)
 
-    strategy.__class__.exit22_rsi = IntParameter([0, 10], default=5, space="hello:world:22")
+    strategy.__class__.exit22_rsi = IntParameter(
+        [0, 10], default=5, space="hello:world:22"
+    )
     with pytest.raises(
         DependencyException,
         match=r"'hello:world:22' is not a valid space\. Parameter: exit22_rsi\.",
@@ -1150,7 +1317,14 @@ def test_ft_set_api_params(default_conf, caplog):
     strategy = StrategyResolver.load_strategy(default_conf)
 
     strategy.ft_set_api_params(
-        [{"name": "sell_rsi", "space": "sell", "param_type": "IntParameter", "value": 60}]
+        [
+            {
+                "name": "sell_rsi",
+                "space": "sell",
+                "param_type": "IntParameter",
+                "value": 60,
+            }
+        ]
     )
     assert strategy.ft_used_params == {"sell": {"sell_rsi": 60}}
     strategy.ft_load_hyper_params(False)
@@ -1178,11 +1352,19 @@ def test_ft_set_api_params(default_conf, caplog):
             r"'sell_minusdi' is not loaded \(load=False\)",
         ),
         (
-            {"name": "protection_enabled", "param_type": "BooleanParameter", "value": "yes"},
+            {
+                "name": "protection_enabled",
+                "param_type": "BooleanParameter",
+                "value": "yes",
+            },
             r"'protection_enabled' must be one of \[True, False\]",
         ),
         (
-            {"name": "protection_enabled", "param_type": "BooleanParameter", "value": None},
+            {
+                "name": "protection_enabled",
+                "param_type": "BooleanParameter",
+                "value": None,
+            },
             r"'protection_enabled' must be one of \[True, False\]",
         ),
     ]
@@ -1206,7 +1388,14 @@ def test_ft_set_api_params(default_conf, caplog):
 
     # Values outside of the parameter range are applied, but warned about
     strategy.ft_set_api_params(
-        [{"name": "sell_rsi", "space": "sell", "param_type": "IntParameter", "value": 10000}]
+        [
+            {
+                "name": "sell_rsi",
+                "space": "sell",
+                "param_type": "IntParameter",
+                "value": 10000,
+            }
+        ]
     )
     assert strategy.ft_used_params == {"sell": {"sell_rsi": 10000}}
     assert log_has(
@@ -1247,7 +1436,8 @@ def test_auto_hyperopt_interface_loadparams(default_conf, mocker, caplog):
         },
     }
     mocker.patch(
-        "freqtrade.strategy.hyper.HyperoptTools.load_params_from_file", return_value=expected_result
+        "freqtrade.strategy.hyper.HyperoptTools.load_params_from_file",
+        return_value=expected_result,
     )
     PairLocks.timeframe = default_conf["timeframe"]
     strategy = StrategyResolver.load_strategy(default_conf)
@@ -1265,9 +1455,12 @@ def test_auto_hyperopt_interface_loadparams(default_conf, mocker, caplog):
     }
 
     mocker.patch(
-        "freqtrade.strategy.hyper.HyperoptTools.load_params_from_file", return_value=expected_result
+        "freqtrade.strategy.hyper.HyperoptTools.load_params_from_file",
+        return_value=expected_result,
     )
-    with pytest.raises(OperationalException, match=r"Invalid parameter file provided\."):
+    with pytest.raises(
+        OperationalException, match=r"Invalid parameter file provided\."
+    ):
         StrategyResolver.load_strategy(default_conf)
 
     mocker.patch(
@@ -1282,8 +1475,7 @@ def test_auto_hyperopt_interface_loadparams(default_conf, mocker, caplog):
 def test_auto_hyperopt_params_shared_base_class(default_conf, tmp_path):
     # Parameters defined on a base class in a separate module must not leak between strategies.
     # The base module is imported via sys.modules - so its class is not re-created per load.
-    (tmp_path / "ft_shared_base.py").write_text(
-        dedent("""
+    (tmp_path / "ft_shared_base.py").write_text(dedent("""
     from freqtrade.strategy import IStrategy, IntParameter
     class SharedBase(IStrategy):
         buy_params = {}
@@ -1291,16 +1483,13 @@ def test_auto_hyperopt_params_shared_base_class(default_conf, tmp_path):
         def populate_indicators(self, dataframe, metadata): return dataframe
         def populate_entry_trend(self, dataframe, metadata): return dataframe
         def populate_exit_trend(self, dataframe, metadata): return dataframe
-    """)
-    )
+    """))
     for name in ("ChildWithParams", "ChildNoParams"):
-        (tmp_path / f"{name.lower()}.py").write_text(
-            dedent(f"""
+        (tmp_path / f"{name.lower()}.py").write_text(dedent(f"""
         from ft_shared_base import SharedBase
         class {name}(SharedBase):
             pass
-        """)
-        )
+        """))
     (tmp_path / "childwithparams.json").write_text(
         '{"strategy_name": "ChildWithParams", "params": {"buy": {"buy_rsi": 40}}}'
     )
@@ -1343,7 +1532,9 @@ def test_pandas_warning_direct(ohlcv_history, function, raises, recwarn):
     else:
         # Ignore ResourceWarnings - the GC may clean up resources from
         # unrelated tests while this test is running.
-        warnings = [w for w in recwarn.list if not issubclass(w.category, ResourceWarning)]
+        warnings = [
+            w for w in recwarn.list if not issubclass(w.category, ResourceWarning)
+        ]
         assert len(warnings) == 0, f"warnings: {', '.join(str(w) for w in warnings)}"
 
         getattr(_STRATEGY, function)(df, {"pair": "ETH/BTC"})

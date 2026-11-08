@@ -2,7 +2,6 @@ import logging
 
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,18 +35,23 @@ def _hyperopt_filter_epochs_trade(epochs: list, trade_count: int):
     """
     Filter epochs with trade-counts > trades
     """
-    return [x for x in epochs if x["results_metrics"].get("total_trades", 0) > trade_count]
+    return [
+        x for x in epochs if x["results_metrics"].get("total_trades", 0) > trade_count
+    ]
 
 
 def _hyperopt_filter_epochs_trade_count(epochs: list, filteroptions: dict) -> list:
     if filteroptions["filter_min_trades"] > 0:
-        epochs = _hyperopt_filter_epochs_trade(epochs, filteroptions["filter_min_trades"])
+        epochs = _hyperopt_filter_epochs_trade(
+            epochs, filteroptions["filter_min_trades"]
+        )
 
     if filteroptions["filter_max_trades"] > 0:
         epochs = [
             x
             for x in epochs
-            if x["results_metrics"].get("total_trades") < filteroptions["filter_max_trades"]
+            if x["results_metrics"].get("total_trades")
+            < filteroptions["filter_max_trades"]
         ]
     return epochs
 
@@ -65,10 +69,18 @@ def _hyperopt_filter_epochs_duration(epochs: list, filteroptions: dict) -> list:
 
     if filteroptions["filter_min_avg_time"] is not None:
         epochs = _hyperopt_filter_epochs_trade(epochs, 0)
-        epochs = [x for x in epochs if get_duration_value(x) > filteroptions["filter_min_avg_time"]]
+        epochs = [
+            x
+            for x in epochs
+            if get_duration_value(x) > filteroptions["filter_min_avg_time"]
+        ]
     if filteroptions["filter_max_avg_time"] is not None:
         epochs = _hyperopt_filter_epochs_trade(epochs, 0)
-        epochs = [x for x in epochs if get_duration_value(x) < filteroptions["filter_max_avg_time"]]
+        epochs = [
+            x
+            for x in epochs
+            if get_duration_value(x) < filteroptions["filter_max_avg_time"]
+        ]
 
     return epochs
 
@@ -113,10 +125,14 @@ def _hyperopt_filter_epochs_objective(epochs: list, filteroptions: dict) -> list
     if filteroptions["filter_min_objective"] is not None:
         epochs = _hyperopt_filter_epochs_trade(epochs, 0)
 
-        epochs = [x for x in epochs if x["loss"] < filteroptions["filter_min_objective"]]
+        epochs = [
+            x for x in epochs if x["loss"] < filteroptions["filter_min_objective"]
+        ]
     if filteroptions["filter_max_objective"] is not None:
         epochs = _hyperopt_filter_epochs_trade(epochs, 0)
 
-        epochs = [x for x in epochs if x["loss"] > filteroptions["filter_max_objective"]]
+        epochs = [
+            x for x in epochs if x["loss"] > filteroptions["filter_max_objective"]
+        ]
 
     return epochs

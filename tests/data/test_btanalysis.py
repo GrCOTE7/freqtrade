@@ -72,8 +72,12 @@ def test_load_backtest_metadata(mocker, testdatadir):
     res = load_backtest_metadata(testdatadir / "nonexistent.file.json")
     assert res == {}
 
-    mocker.patch("freqtrade.data.btanalysis.bt_fileutils.get_backtest_metadata_filename")
-    mocker.patch("freqtrade.data.btanalysis.bt_fileutils.json_load", side_effect=Exception())
+    mocker.patch(
+        "freqtrade.data.btanalysis.bt_fileutils.get_backtest_metadata_filename"
+    )
+    mocker.patch(
+        "freqtrade.data.btanalysis.bt_fileutils.json_load", side_effect=Exception()
+    )
     with pytest.raises(
         OperationalException, match=r"Unexpected error.*loading backtest metadata\."
     ):
@@ -82,7 +86,9 @@ def test_load_backtest_metadata(mocker, testdatadir):
 
 def test_load_backtest_data_old_format(testdatadir, mocker):
     filename = testdatadir / "backtest-result_test222.json"
-    mocker.patch("freqtrade.data.btanalysis.bt_fileutils.load_backtest_stats", return_value=[])
+    mocker.patch(
+        "freqtrade.data.btanalysis.bt_fileutils.load_backtest_stats", return_value=[]
+    )
 
     with pytest.raises(
         OperationalException,
@@ -125,10 +131,14 @@ def test_load_backtest_data_multi(testdatadir):
         bt_data2 = load_backtest_data(str(filename), strategy=strategy)
         assert bt_data.equals(bt_data2)
 
-    with pytest.raises(ValueError, match=r"Strategy XYZ not available in the backtest result\."):
+    with pytest.raises(
+        ValueError, match=r"Strategy XYZ not available in the backtest result\."
+    ):
         load_backtest_data(filename, strategy="XYZ")
 
-    with pytest.raises(ValueError, match=r"Detected backtest result with more than one strategy.*"):
+    with pytest.raises(
+        ValueError, match=r"Detected backtest result with more than one strategy.*"
+    ):
         load_backtest_data(filename)
 
 
@@ -137,7 +147,9 @@ def test_load_backtest_data_multi(testdatadir):
 def test_load_trades_from_db(default_conf, fee, is_short, mocker):
     create_mock_trades(fee, is_short)
     # remove init so it does not init again
-    init_mock = mocker.patch("freqtrade.data.btanalysis.bt_fileutils.init_db", MagicMock())
+    init_mock = mocker.patch(
+        "freqtrade.data.btanalysis.bt_fileutils.init_db", MagicMock()
+    )
 
     trades = load_trades_from_db(db_url=default_conf["db_url"])
     assert init_mock.call_count == 1
@@ -150,7 +162,9 @@ def test_load_trades_from_db(default_conf, fee, is_short, mocker):
     for col in BT_DATA_COLUMNS:
         if col not in ["index", "open_at_end"]:
             assert col in trades.columns
-    trades = load_trades_from_db(db_url=default_conf["db_url"], strategy=CURRENT_TEST_STRATEGY)
+    trades = load_trades_from_db(
+        db_url=default_conf["db_url"], strategy=CURRENT_TEST_STRATEGY
+    )
     assert len(trades) == 4
     trades = load_trades_from_db(db_url=default_conf["db_url"], strategy="NoneStrategy")
     assert len(trades) == 0
@@ -161,7 +175,9 @@ def test_extract_trades_of_period(testdatadir):
     # 2018-11-14 06:07:00
     timerange = TimeRange("date", None, 1510639620, 0)
 
-    data = load_pair_history(pair=pair, timeframe="1m", datadir=testdatadir, timerange=timerange)
+    data = load_pair_history(
+        pair=pair, timeframe="1m", datadir=testdatadir, timerange=timerange
+    )
 
     trades = DataFrame(
         {
@@ -201,7 +217,9 @@ def test_load_trades(default_conf, mocker):
     db_mock = mocker.patch(
         "freqtrade.data.btanalysis.bt_fileutils.load_trades_from_db", MagicMock()
     )
-    bt_mock = mocker.patch("freqtrade.data.btanalysis.bt_fileutils.load_backtest_data", MagicMock())
+    bt_mock = mocker.patch(
+        "freqtrade.data.btanalysis.bt_fileutils.load_backtest_data", MagicMock()
+    )
 
     load_trades(
         "DB",
@@ -308,7 +326,10 @@ def test_get_backtest_wallet_change(tmp_path):
     assert wallet_df.loc[0, "__date_ts"] == int(df.loc[0, "date"].timestamp() * 1000)
     assert list(wallet_df["balance"]) == [1.0, 1.1]
 
-    assert get_backtest_wallet_change(tmp_path / "backtest-result.feather", "TestStrategy") is None
+    assert (
+        get_backtest_wallet_change(tmp_path / "backtest-result.feather", "TestStrategy")
+        is None
+    )
     assert get_backtest_wallet_change(zip_file, "UnknownStrategy") is None
 
 
@@ -316,7 +337,9 @@ def _store_strategy_zip(tmp_path, dtappendix, strategy_params=None):
     """Helper to store a backtest result containing StrategyTestV3 and return the zip path."""
     from freqtrade.optimize.optimize_reports import store_backtest_results
 
-    strategy_file = Path(__file__).parent.parent / "strategy" / "strats" / "strategy_test_v3.py"
+    strategy_file = (
+        Path(__file__).parent.parent / "strategy" / "strats" / "strategy_test_v3.py"
+    )
     store_backtest_results(
         {"exportdirectory": tmp_path, "original_config": {}},
         {"metadata": {}, "strategy": {}, "strategy_comparison": []},
@@ -342,7 +365,12 @@ def test_get_backtest_strategy_params(tmp_path, caplog):
     # Strategy not contained in the zip
     assert get_backtest_strategy_params(zip_file, "UnknownStrategy") == {}
     # Legacy json results don't contain parameters
-    assert get_backtest_strategy_params(tmp_path / "backtest-result.json", "StrategyTestV3") == {}
+    assert (
+        get_backtest_strategy_params(
+            tmp_path / "backtest-result.json", "StrategyTestV3"
+        )
+        == {}
+    )
 
     # Zip without a parameter file
     zip_file = _store_strategy_zip(tmp_path, "2024_01_01_15_05_26")
@@ -383,7 +411,9 @@ def test_backtest_strategy_dir(tmp_path, default_conf):
     # Without stored parameters, the strategy's own buy_params apply
     zip_file = _store_strategy_zip(tmp_path, "2024_01_01_15_05_26")
     with backtest_strategy_dir(zip_file, "StrategyTestV3") as directory:
-        assert [x.name for x in directory.iterdir()] == [f"{zip_file.stem}_StrategyTestV3.py"]
+        assert [x.name for x in directory.iterdir()] == [
+            f"{zip_file.stem}_StrategyTestV3.py"
+        ]
         default_conf["strategy_path"] = str(directory)
         strategy = StrategyResolver.load_strategy(default_conf)
     assert strategy._ft_params_from_file == {}

@@ -7,7 +7,6 @@ import rapidjson
 from freqtrade.constants import ENV_VAR_PREFIX
 from freqtrade.misc import deep_merge_dicts
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +54,8 @@ def _flat_vars_to_nested_dict(env_dict: dict[str, Any], prefix: str) -> dict[str
 
             # Check if any ccxt config key is in the key parts
             preserve_case = key_parts[0].lower() == "exchange" and any(
-                ccxt_key in [part.lower() for part in key_parts] for ccxt_key in ccxt_config_keys
+                ccxt_key in [part.lower() for part in key_parts]
+                for ccxt_key in ccxt_config_keys
             )
 
             for i, k in enumerate(reversed(key_parts)):

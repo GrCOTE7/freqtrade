@@ -10,7 +10,6 @@ from freqtrade.misc import dataframe_to_json, json_to_dataframe
 from freqtrade.rpc.api_server.ws.proxy import WebSocketProxy
 from freqtrade.rpc.api_server.ws_schemas import WSMessageSchemaType
 
-
 logger = logging.getLogger(__name__)
 
 

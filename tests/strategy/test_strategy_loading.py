@@ -103,7 +103,9 @@ def test_load_strategy_skip_other_files(caplog, default_conf, tmp_path):
     s = StrategyResolver._load_strategy("StrategyTestV3", config=default_conf)
     assert isinstance(s, IStrategy)
 
-    assert log_has_re(r"Skipping .* as it does not contain class StrategyTestV3\.", caplog)
+    assert log_has_re(
+        r"Skipping .* as it does not contain class StrategyTestV3\.", caplog
+    )
 
 
 def test_load_not_found_strategy(default_conf, tmp_path):
@@ -164,7 +166,9 @@ def test_strategy_can_short(caplog, default_conf):
     strat = StrategyResolver.load_strategy(default_conf)
     assert isinstance(strat, IStrategy)
     default_conf["strategy"] = "StrategyTestV3Futures"
-    with pytest.raises(ImportError, match="Short strategies cannot run in spot markets"):
+    with pytest.raises(
+        ImportError, match="Short strategies cannot run in spot markets"
+    ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["trading_mode"] = "futures"
@@ -174,7 +178,9 @@ def test_strategy_can_short(caplog, default_conf):
 
 def test_strategy_override_minimal_roi(caplog, default_conf):
     caplog.set_level(logging.INFO)
-    default_conf.update({"strategy": CURRENT_TEST_STRATEGY, "minimal_roi": {"20": 0.1, "0": 0.5}})
+    default_conf.update(
+        {"strategy": CURRENT_TEST_STRATEGY, "minimal_roi": {"20": 0.1, "0": 0.5}}
+    )
     strategy = StrategyResolver.load_strategy(default_conf)
 
     assert strategy.minimal_roi[0] == 0.5
@@ -190,7 +196,9 @@ def test_strategy_override_stoploss(caplog, default_conf):
     strategy = StrategyResolver.load_strategy(default_conf)
 
     assert strategy.stoploss == -0.5
-    assert log_has("Override strategy 'stoploss' with value from the configuration: -0.5.", caplog)
+    assert log_has(
+        "Override strategy 'stoploss' with value from the configuration: -0.5.", caplog
+    )
 
 
 def test_strategy_override_max_open_trades(caplog, default_conf):
@@ -200,7 +208,8 @@ def test_strategy_override_max_open_trades(caplog, default_conf):
 
     assert strategy.max_open_trades == 7
     assert log_has(
-        "Override strategy 'max_open_trades' with value from the configuration: 7.", caplog
+        "Override strategy 'max_open_trades' with value from the configuration: 7.",
+        caplog,
     )
 
 
@@ -212,7 +221,8 @@ def test_strategy_override_trailing_stop(caplog, default_conf):
     assert strategy.trailing_stop
     assert isinstance(strategy.trailing_stop, bool)
     assert log_has(
-        "Override strategy 'trailing_stop' with value from the configuration: True.", caplog
+        "Override strategy 'trailing_stop' with value from the configuration: True.",
+        caplog,
     )
 
 
@@ -250,13 +260,17 @@ def test_strategy_override_timeframe(caplog, default_conf):
 
     assert strategy.timeframe == 60
     assert strategy.stake_currency == "ETH"
-    assert log_has("Override strategy 'timeframe' with value from the configuration: 60.", caplog)
+    assert log_has(
+        "Override strategy 'timeframe' with value from the configuration: 60.", caplog
+    )
 
 
 def test_strategy_override_process_only_new_candles(caplog, default_conf):
     caplog.set_level(logging.INFO)
 
-    default_conf.update({"strategy": CURRENT_TEST_STRATEGY, "process_only_new_candles": False})
+    default_conf.update(
+        {"strategy": CURRENT_TEST_STRATEGY, "process_only_new_candles": False}
+    )
     strategy = StrategyResolver.load_strategy(default_conf)
 
     assert not strategy.process_only_new_candles
@@ -289,7 +303,9 @@ def test_strategy_override_order_types(caplog, default_conf):
         caplog,
     )
 
-    default_conf.update({"strategy": CURRENT_TEST_STRATEGY, "order_types": {"exit": "market"}})
+    default_conf.update(
+        {"strategy": CURRENT_TEST_STRATEGY, "order_types": {"exit": "market"}}
+    )
     # Raise error for invalid configuration
     with pytest.raises(
         ImportError,
@@ -359,7 +375,8 @@ def test_strategy_override_use_exit_signal(caplog, default_conf):
     assert not strategy.use_exit_signal
     assert isinstance(strategy.use_exit_signal, bool)
     assert log_has(
-        "Override strategy 'use_exit_signal' with value from the configuration: False.", caplog
+        "Override strategy 'use_exit_signal' with value from the configuration: False.",
+        caplog,
     )
 
 
@@ -388,7 +405,8 @@ def test_strategy_override_use_exit_profit_only(caplog, default_conf):
     assert strategy.exit_profit_only
     assert isinstance(strategy.exit_profit_only, bool)
     assert log_has(
-        "Override strategy 'exit_profit_only' with value from the configuration: True.", caplog
+        "Override strategy 'exit_profit_only' with value from the configuration: True.",
+        caplog,
     )
 
 
@@ -422,7 +440,11 @@ def test_strategy_max_open_trades_infinity_from_strategy(caplog, default_conf):
 def test_strategy_max_open_trades_infinity_from_config(caplog, default_conf, mocker):
     caplog.set_level(logging.INFO)
     default_conf.update(
-        {"strategy": CURRENT_TEST_STRATEGY, "max_open_trades": -1, "exchange": "binance"}
+        {
+            "strategy": CURRENT_TEST_STRATEGY,
+            "max_open_trades": -1,
+            "exchange": "binance",
+        }
     )
 
     configuration = Configuration(args=default_conf)
@@ -438,7 +460,9 @@ def test_strategy_max_open_trades_infinity_from_config(caplog, default_conf, moc
 @pytest.mark.filterwarnings("ignore:deprecated")
 def test_missing_implements(default_conf, caplog):
     default_location = Path(__file__).parent / "strats"
-    default_conf.update({"strategy": "StrategyTestV2", "strategy_path": default_location})
+    default_conf.update(
+        {"strategy": "StrategyTestV2", "strategy_path": default_location}
+    )
     StrategyResolver.load_strategy(default_conf)
 
     log_has_re(r"DEPRECATED: .*use_sell_signal.*use_exit_signal.", caplog)
@@ -452,7 +476,9 @@ def test_missing_implements(default_conf, caplog):
     default_conf["trading_mode"] = "spot"
 
     default_location = Path(__file__).parent / "strats/broken_strats"
-    default_conf.update({"strategy": "TestStrategyNoImplements", "strategy_path": default_location})
+    default_conf.update(
+        {"strategy": "TestStrategyNoImplements", "strategy_path": default_location}
+    )
     with pytest.raises(
         OperationalException, match=r"`populate_entry_trend` or `populate_buy_trend`.*"
     ):
@@ -468,40 +494,51 @@ def test_missing_implements(default_conf, caplog):
     # Futures mode is more strict ...
     default_conf["trading_mode"] = "futures"
 
-    with pytest.raises(OperationalException, match=r"`populate_exit_trend` must be implemented.*"):
+    with pytest.raises(
+        OperationalException, match=r"`populate_exit_trend` must be implemented.*"
+    ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["strategy"] = "TestStrategyNoImplements"
-    with pytest.raises(OperationalException, match=r"`populate_entry_trend` must be implemented.*"):
+    with pytest.raises(
+        OperationalException, match=r"`populate_entry_trend` must be implemented.*"
+    ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["strategy"] = "TestStrategyImplementCustomSell"
     with pytest.raises(
-        OperationalException, match=r"Please migrate your implementation of `custom_sell`.*"
+        OperationalException,
+        match=r"Please migrate your implementation of `custom_sell`.*",
     ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["strategy"] = "TestStrategyImplementBuyTimeout"
     with pytest.raises(
-        OperationalException, match=r"Please migrate your implementation of `check_buy_timeout`.*"
+        OperationalException,
+        match=r"Please migrate your implementation of `check_buy_timeout`.*",
     ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["strategy"] = "TestStrategyImplementSellTimeout"
     with pytest.raises(
-        OperationalException, match=r"Please migrate your implementation of `check_sell_timeout`.*"
+        OperationalException,
+        match=r"Please migrate your implementation of `check_sell_timeout`.*",
     ):
         StrategyResolver.load_strategy(default_conf)
 
     default_conf["strategy"] = "TestStrategyAdjustOrderPrice"
-    with pytest.raises(OperationalException, match=r"If you implement `adjust_order_price`.*"):
+    with pytest.raises(
+        OperationalException, match=r"If you implement `adjust_order_price`.*"
+    ):
         StrategyResolver.load_strategy(default_conf)
 
 
 def test_call_deprecated_function(default_conf):
     default_location = Path(__file__).parent / "strats/broken_strats/"
     del default_conf["timeframe"]
-    default_conf.update({"strategy": "TestStrategyLegacyV1", "strategy_path": default_location})
+    default_conf.update(
+        {"strategy": "TestStrategyLegacyV1", "strategy_path": default_location}
+    )
     with pytest.raises(
         OperationalException, match=r"Strategy Interface v1 is no longer supported.*"
     ):

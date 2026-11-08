@@ -45,7 +45,6 @@ from tests.conftest_trades_usdt import (
     mock_trade_usdt_7,
 )
 
-
 logging.getLogger("").setLevel(logging.INFO)
 
 
@@ -69,7 +68,8 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line(
-        "markers", "longrun: mark test that is running slowly and should not be run regularly"
+        "markers",
+        "longrun: mark test that is running slowly and should not be run regularly",
     )
     if not config.option.longrun:
         config.option.markexpr = "not longrun"
@@ -134,11 +134,14 @@ def generate_trades_history(n_rows, start_date: datetime | None = None, days=5):
     _start_timestamp = start_date.timestamp()
     _end_timestamp = pd.to_datetime(end_date).timestamp()
 
-    random_timestamps_in_seconds = np.random.uniform(_start_timestamp, _end_timestamp, n_rows)
+    random_timestamps_in_seconds = np.random.uniform(
+        _start_timestamp, _end_timestamp, n_rows
+    )
     timestamp = pd.to_datetime(random_timestamps_in_seconds, unit="s")
 
     trade_id = [
-        f"a{np.random.randint(1e6, 1e7 - 1)}cd{np.random.randint(100, 999)}" for _ in range(n_rows)
+        f"a{np.random.randint(1e6, 1e7 - 1)}cd{np.random.randint(100, 999)}"
+        for _ in range(n_rows)
     ]
 
     side = np.random.choice(["buy", "sell"], n_rows)
@@ -186,10 +189,14 @@ def generate_test_data(
     else:
         tf_mins = timeframe_to_minutes(timeframe)
         if tf_mins >= 1:
-            date = pd.date_range(start, periods=size, freq=f"{tf_mins}min", tz="UTC", unit="ms")
+            date = pd.date_range(
+                start, periods=size, freq=f"{tf_mins}min", tz="UTC", unit="ms"
+            )
         else:
             tf_secs = timeframe_to_seconds(timeframe)
-            date = pd.date_range(start, periods=size, freq=f"{tf_secs}s", tz="UTC", unit="ms")
+            date = pd.date_range(
+                start, periods=size, freq=f"{tf_secs}s", tz="UTC", unit="ms"
+            )
     df = pd.DataFrame(
         {
             "date": date,
@@ -204,21 +211,30 @@ def generate_test_data(
     return df
 
 
-def generate_test_data_raw(timeframe: str, size: int, start: str = "2020-07-05", random_seed=42):
+def generate_test_data_raw(
+    timeframe: str, size: int, start: str = "2020-07-05", random_seed=42
+):
     """Generates data in the ohlcv format used by ccxt"""
     df = generate_test_data(timeframe, size, start, random_seed)
     df["date"] = df.loc[:, "date"].dt.as_unit("ms").astype("int64")
-    return [list(x) for x in zip(*(df[x].values.tolist() for x in df.columns), strict=False)]
+    return [
+        list(x) for x in zip(*(df[x].values.tolist() for x in df.columns), strict=False)
+    ]
 
 
 def patched_configuration_load_config_file(mocker, config) -> None:
     mocker.patch(
-        "freqtrade.configuration.load_config.load_config_file", lambda *args, **kwargs: config
+        "freqtrade.configuration.load_config.load_config_file",
+        lambda *args, **kwargs: config,
     )
 
 
 def patch_exchange(
-    mocker, api_mock=None, exchange="binance", mock_markets=True, mock_supported_modes=True
+    mocker,
+    api_mock=None,
+    exchange="binance",
+    mock_markets=True,
+    mock_supported_modes=True,
 ) -> None:
     mocker.patch(f"{EXMS}.validate_config", MagicMock())
     mocker.patch(f"{EXMS}.validate_timeframes", MagicMock())
@@ -256,11 +272,18 @@ def patch_exchange(
     else:
         mocker.patch(f"{EXMS}.get_fee", return_value=0.0025)
         mocker.patch(f"{EXMS}._init_ccxt", MagicMock())
-        mocker.patch(f"{EXMS}.timeframes", PropertyMock(return_value=["5m", "15m", "1h", "1d"]))
+        mocker.patch(
+            f"{EXMS}.timeframes", PropertyMock(return_value=["5m", "15m", "1h", "1d"])
+        )
 
 
 def get_patched_exchange(
-    mocker, config, api_mock=None, exchange="binance", mock_markets=True, mock_supported_modes=True
+    mocker,
+    config,
+    api_mock=None,
+    exchange="binance",
+    mock_markets=True,
+    mock_supported_modes=True,
 ) -> Exchange:
     patch_exchange(mocker, api_mock, exchange, mock_markets, mock_supported_modes)
     config["exchange"]["name"] = exchange
@@ -529,7 +552,10 @@ def patch_torch_initlogs(mocker) -> None:
 @pytest.fixture(autouse=True)
 def user_dir(mocker, tmp_path) -> Path:
     user_dir = tmp_path / "user_data"
-    mocker.patch("freqtrade.configuration.configuration.create_userdata_dir", return_value=user_dir)
+    mocker.patch(
+        "freqtrade.configuration.configuration.create_userdata_dir",
+        return_value=user_dir,
+    )
     return user_dir
 
 
@@ -549,11 +575,23 @@ def patch_coingecko(mocker) -> None:
     :return: None
     """
 
-    tickermock = MagicMock(return_value={"bitcoin": {"usd": 12345.0}, "ethereum": {"usd": 12345.0}})
+    tickermock = MagicMock(
+        return_value={"bitcoin": {"usd": 12345.0}, "ethereum": {"usd": 12345.0}}
+    )
     listmock = MagicMock(
         return_value=[
-            {"id": "bitcoin", "name": "Bitcoin", "symbol": "btc", "website_slug": "bitcoin"},
-            {"id": "ethereum", "name": "Ethereum", "symbol": "eth", "website_slug": "ethereum"},
+            {
+                "id": "bitcoin",
+                "name": "Bitcoin",
+                "symbol": "btc",
+                "website_slug": "bitcoin",
+            },
+            {
+                "id": "ethereum",
+                "name": "Ethereum",
+                "symbol": "eth",
+                "website_slug": "ethereum",
+            },
         ]
     )
     mocker.patch.multiple(
@@ -1554,7 +1592,12 @@ def get_markets():
                         "filterType": "PRICE_FILTER",
                         "tickSize": "0.0100",
                     },
-                    {"stepSize": "1", "filterType": "LOT_SIZE", "maxQty": "1000000", "minQty": "1"},
+                    {
+                        "stepSize": "1",
+                        "filterType": "LOT_SIZE",
+                        "maxQty": "1000000",
+                        "minQty": "1",
+                    },
                     {
                         "stepSize": "1",
                         "filterType": "MARKET_LOT_SIZE",
@@ -2043,7 +2086,11 @@ def ohlcv_history_list():
 @pytest.fixture
 def ohlcv_history(ohlcv_history_list):
     return ohlcv_to_dataframe(
-        ohlcv_history_list, "5m", pair="UNITTEST/BTC", fill_missing=True, drop_incomplete=False
+        ohlcv_history_list,
+        "5m",
+        pair="UNITTEST/BTC",
+        fill_missing=True,
+        drop_incomplete=False,
     )
 
 
@@ -2446,11 +2493,51 @@ def trades_for_order():
 def trades_history():
     return [
         [1565798389463, "12618132aa9", None, "buy", 0.019627, 0.04, 0.00078508],
-        [1565798399629, "1261813bb30", None, "buy", 0.019627, 0.244, 0.004788987999999999],
-        [1565798399752, "1261813cc31", None, "sell", 0.019626, 0.011, 0.00021588599999999999],
-        [1565798399862, "126181cc332", None, "sell", 0.019626, 0.011, 0.00021588599999999999],
-        [1565798399862, "126181cc333", None, "sell", 0.019626, 0.012, 0.00021588599999999999],
-        [1565798399872, "1261aa81334", None, "sell", 0.019626, 0.011, 0.00021588599999999999],
+        [
+            1565798399629,
+            "1261813bb30",
+            None,
+            "buy",
+            0.019627,
+            0.244,
+            0.004788987999999999,
+        ],
+        [
+            1565798399752,
+            "1261813cc31",
+            None,
+            "sell",
+            0.019626,
+            0.011,
+            0.00021588599999999999,
+        ],
+        [
+            1565798399862,
+            "126181cc332",
+            None,
+            "sell",
+            0.019626,
+            0.011,
+            0.00021588599999999999,
+        ],
+        [
+            1565798399862,
+            "126181cc333",
+            None,
+            "sell",
+            0.019626,
+            0.012,
+            0.00021588599999999999,
+        ],
+        [
+            1565798399872,
+            "1261aa81334",
+            None,
+            "sell",
+            0.019626,
+            0.011,
+            0.00021588599999999999,
+        ],
     ]
 
 
@@ -2465,7 +2552,15 @@ def trades_history_df(trades_history):
 def fetch_trades_result():
     return [
         {
-            "info": ["0.01962700", "0.04000000", "1565798399.4631551", "b", "m", "", "126181329"],
+            "info": [
+                "0.01962700",
+                "0.04000000",
+                "1565798399.4631551",
+                "b",
+                "m",
+                "",
+                "126181329",
+            ],
             "timestamp": 1565798399463,
             "datetime": "2019-08-14T15:59:59.463Z",
             "symbol": "ETH/BTC",
@@ -2480,7 +2575,15 @@ def fetch_trades_result():
             "fee": None,
         },
         {
-            "info": ["0.01962700", "0.24400000", "1565798399.6291551", "b", "m", "", "126181330"],
+            "info": [
+                "0.01962700",
+                "0.24400000",
+                "1565798399.6291551",
+                "b",
+                "m",
+                "",
+                "126181330",
+            ],
             "timestamp": 1565798399629,
             "datetime": "2019-08-14T15:59:59.629Z",
             "symbol": "ETH/BTC",
@@ -2495,7 +2598,15 @@ def fetch_trades_result():
             "fee": None,
         },
         {
-            "info": ["0.01962600", "0.01100000", "1565798399.7521551", "s", "m", "", "126181331"],
+            "info": [
+                "0.01962600",
+                "0.01100000",
+                "1565798399.7521551",
+                "s",
+                "m",
+                "",
+                "126181331",
+            ],
             "timestamp": 1565798399752,
             "datetime": "2019-08-14T15:59:59.752Z",
             "symbol": "ETH/BTC",
@@ -2510,7 +2621,15 @@ def fetch_trades_result():
             "fee": None,
         },
         {
-            "info": ["0.01962600", "0.01100000", "1565798399.8621551", "s", "m", "", "126181332"],
+            "info": [
+                "0.01962600",
+                "0.01100000",
+                "1565798399.8621551",
+                "s",
+                "m",
+                "",
+                "126181332",
+            ],
             "timestamp": 1565798399862,
             "datetime": "2019-08-14T15:59:59.862Z",
             "symbol": "ETH/BTC",

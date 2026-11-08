@@ -18,7 +18,6 @@ from freqtrade.persistence.models import PairLock
 from freqtrade.persistence.trade_model import Order
 from tests.conftest import log_has
 
-
 spot, margin, futures = TradingMode.SPOT, TradingMode.MARGIN, TradingMode.FUTURES
 
 
@@ -47,7 +46,9 @@ def test_init_invalid_db_url():
     with pytest.raises(OperationalException, match=r".*no valid database URL*"):
         init_db("unknown:///some.url")
 
-    with pytest.raises(OperationalException, match=r"Bad db-url.*For in-memory database, pl.*"):
+    with pytest.raises(
+        OperationalException, match=r"Bad db-url.*For in-memory database, pl.*"
+    ):
         init_db("sqlite:///")
 
 
@@ -55,7 +56,9 @@ def test_init_prod_db(default_conf, mocker):
     default_conf.update({"dry_run": False})
     default_conf.update({"db_url": DEFAULT_DB_PROD_URL})
 
-    create_engine_mock = mocker.patch("freqtrade.persistence.models.create_engine", MagicMock())
+    create_engine_mock = mocker.patch(
+        "freqtrade.persistence.models.create_engine", MagicMock()
+    )
 
     init_db(default_conf["db_url"])
     assert create_engine_mock.call_count == 1
@@ -234,7 +237,9 @@ def test_migrate(mocker, default_conf, fee, caplog):
         )
     """
     engine = create_engine("sqlite://")
-    mocker.patch("freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine)
+    mocker.patch(
+        "freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine
+    )
 
     # Create table using the old format
     with engine.begin() as connection:
@@ -276,7 +281,8 @@ def test_migrate(mocker, default_conf, fee, caplog):
     assert log_has("trying trades_bak1", caplog)
     assert log_has("trying trades_bak2", caplog)
     assert log_has(
-        "Running database migration for trades - backup: trades_bak2, orders_bak0", caplog
+        "Running database migration for trades - backup: trades_bak2, orders_bak0",
+        caplog,
     )
     assert log_has("Database migration finished.", caplog)
     assert pytest.approx(trade.open_trade_value) == trade._calc_open_trade_value(
@@ -344,7 +350,9 @@ def test_migrate_too_old(mocker, default_conf, fee, caplog):
         fee=fee.return_value, stake=default_conf.get("stake_amount"), amount=amount
     )
     engine = create_engine("sqlite://")
-    mocker.patch("freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine)
+    mocker.patch(
+        "freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine
+    )
 
     # Create table using the old format
     with engine.begin() as connection:
@@ -352,7 +360,9 @@ def test_migrate_too_old(mocker, default_conf, fee, caplog):
         connection.execute(text(insert_table_old))
 
     # Run init to test migration
-    with pytest.raises(OperationalException, match=r"Your database seems to be very old"):
+    with pytest.raises(
+        OperationalException, match=r"Your database seems to be very old"
+    ):
         init_db(default_conf["db_url"])
 
 
@@ -397,10 +407,12 @@ def test_migrate_set_sequence_ids():
     assert engine.begin.call_count == 1
     assert conn.execute.call_count == 6
     assert (
-        conn.execute.call_args_list[0][0][0].text == "ALTER SEQUENCE orders_id_seq RESTART WITH 22"
+        conn.execute.call_args_list[0][0][0].text
+        == "ALTER SEQUENCE orders_id_seq RESTART WITH 22"
     )
     assert (
-        conn.execute.call_args_list[1][0][0].text == "ALTER SEQUENCE trades_id_seq RESTART WITH 55"
+        conn.execute.call_args_list[1][0][0].text
+        == "ALTER SEQUENCE trades_id_seq RESTART WITH 55"
     )
     assert (
         conn.execute.call_args_list[2][0][0].text
@@ -446,7 +458,9 @@ def test_migrate_pairlocks(mocker, default_conf, fee, caplog):
                         )
                                 """
     create_index1 = "CREATE INDEX ix_pairlocks_pair ON pairlocks (pair)"
-    create_index2 = "CREATE INDEX ix_pairlocks_lock_end_time ON pairlocks (lock_end_time)"
+    create_index2 = (
+        "CREATE INDEX ix_pairlocks_lock_end_time ON pairlocks (lock_end_time)"
+    )
     create_index3 = "CREATE INDEX ix_pairlocks_active ON pairlocks (active)"
     insert_table_old = """INSERT INTO pairlocks (
         id, pair, reason, lock_time, lock_end_time, active)
@@ -457,7 +471,9 @@ def test_migrate_pairlocks(mocker, default_conf, fee, caplog):
         VALUES (2, '*', 'Lock all', '2021-07-12 18:41:03', '2021-07-12 19:00:00', 1)
                           """
     engine = create_engine("sqlite://")
-    mocker.patch("freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine)
+    mocker.patch(
+        "freqtrade.persistence.models.create_engine", lambda *args, **kwargs: engine
+    )
     # Create table using the old format
     with engine.begin() as connection:
         connection.execute(text(create_table_old))
@@ -471,8 +487,17 @@ def test_migrate_pairlocks(mocker, default_conf, fee, caplog):
     init_db(default_conf["db_url"])
 
     assert len(PairLock.get_all_locks().all()) == 2
-    assert len(PairLock.session.scalars(select(PairLock).filter(PairLock.pair == "*")).all()) == 1
-    pairlocks = PairLock.session.scalars(select(PairLock).filter(PairLock.pair == "ETH/BTC")).all()
+    assert (
+        len(
+            PairLock.session.scalars(
+                select(PairLock).filter(PairLock.pair == "*")
+            ).all()
+        )
+        == 1
+    )
+    pairlocks = PairLock.session.scalars(
+        select(PairLock).filter(PairLock.pair == "ETH/BTC")
+    ).all()
     assert len(pairlocks) == 1
     assert pairlocks[0].pair == "ETH/BTC"
     assert pairlocks[0].side == "*"

@@ -10,7 +10,6 @@ from pandas import DataFrame
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.freqai.freqai_interface import IFreqaiModel
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +20,9 @@ class BaseClassifierModel(IFreqaiModel):
     such as prediction_models/XGBoostClassifier.py for guidance.
     """
 
-    def train(self, unfiltered_df: DataFrame, pair: str, dk: FreqaiDataKitchen, **kwargs) -> Any:
+    def train(
+        self, unfiltered_df: DataFrame, pair: str, dk: FreqaiDataKitchen, **kwargs
+    ) -> Any:
         """
         Filter the training data and train a model to it. Train makes heavy use of the datakitchen
         for storing, saving, loading, and analyzing the data.
@@ -31,7 +32,9 @@ class BaseClassifierModel(IFreqaiModel):
         :model: Trained model which can be used to inference (self.predict)
         """
 
-        logger.info(f"-------------------- Starting training {pair} --------------------")
+        logger.info(
+            f"-------------------- Starting training {pair} --------------------"
+        )
 
         start_time = time()
 
@@ -55,14 +58,14 @@ class BaseClassifierModel(IFreqaiModel):
             dk.fit_labels()
         dk.feature_pipeline = self.define_data_pipeline(threads=dk.thread_count)
 
-        (dd["train_features"], dd["train_labels"], dd["train_weights"]) = (
+        dd["train_features"], dd["train_labels"], dd["train_weights"] = (
             dk.feature_pipeline.fit_transform(
                 dd["train_features"], dd["train_labels"], dd["train_weights"]
             )
         )
 
         if self.freqai_info.get("data_split_parameters", {}).get("test_size", 0.1) != 0:
-            (dd["test_features"], dd["test_labels"], dd["test_weights"]) = (
+            dd["test_features"], dd["test_labels"], dd["test_weights"] = (
                 dk.feature_pipeline.transform(
                     dd["test_features"], dd["test_labels"], dd["test_weights"]
                 )
@@ -103,8 +106,10 @@ class BaseClassifierModel(IFreqaiModel):
 
         dk.data_dictionary["prediction_features"] = filtered_df
 
-        dk.data_dictionary["prediction_features"], outliers, _ = dk.feature_pipeline.transform(
-            dk.data_dictionary["prediction_features"], outlier_check=True
+        dk.data_dictionary["prediction_features"], outliers, _ = (
+            dk.feature_pipeline.transform(
+                dk.data_dictionary["prediction_features"], outlier_check=True
+            )
         )
 
         predictions = self.model.predict(dk.data_dictionary["prediction_features"])
@@ -113,9 +118,13 @@ class BaseClassifierModel(IFreqaiModel):
 
         pred_df = DataFrame(predictions, columns=dk.label_list)
 
-        predictions_prob = self.model.predict_proba(dk.data_dictionary["prediction_features"])
+        predictions_prob = self.model.predict_proba(
+            dk.data_dictionary["prediction_features"]
+        )
         if self.CONV_WIDTH == 1:
-            predictions_prob = np.reshape(predictions_prob, (-1, len(self.model.classes_)))
+            predictions_prob = np.reshape(
+                predictions_prob, (-1, len(self.model.classes_))
+            )
         pred_df_prob = DataFrame(predictions_prob, columns=self.model.classes_)
 
         pred_df = pd.concat([pred_df, pred_df_prob], axis=1)

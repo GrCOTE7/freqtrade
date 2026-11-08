@@ -8,7 +8,14 @@ import ccxt
 from pandas import DataFrame
 
 from freqtrade.candle_columns import get_candle_columns
-from freqtrade.enums import TRADE_MODES, CandleType, MarginMode, PriceType, RunMode, TradingMode
+from freqtrade.enums import (
+    TRADE_MODES,
+    CandleType,
+    MarginMode,
+    PriceType,
+    RunMode,
+    TradingMode,
+)
 from freqtrade.exceptions import DDosProtection, OperationalException, TemporaryError
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.binance_public_data import (
@@ -22,7 +29,6 @@ from freqtrade.exchange.exchange_utils_timeframe import timeframe_to_msecs
 from freqtrade.misc import deep_merge_dicts, json_load
 from freqtrade.util import FtTTLCache
 from freqtrade.util.datetime_helpers import dt_from_ts, dt_ts
-
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +117,9 @@ class Binance(Exchange):
         cached: bool = False,
         market_type: TradingMode | None = None,
     ) -> Tickers:
-        tickers = super().get_tickers(symbols=symbols, cached=cached, market_type=market_type)
+        tickers = super().get_tickers(
+            symbols=symbols, cached=cached, market_type=market_type
+        )
         if self.trading_mode == TradingMode.FUTURES:
             # Binance's future result has no bid/ask values.
             # Therefore we must fetch that from fetch_bids_asks and combine the two results.
@@ -172,7 +180,11 @@ class Binance(Exchange):
         Does not work for other exchanges, which don't return the earliest data when called with "0"
         :param candle_type: Candle type to use (spot, futures, funding_rate, ...)
         """
-        if is_new_pair and candle_type in (CandleType.SPOT, CandleType.FUTURES, CandleType.MARK):
+        if is_new_pair and candle_type in (
+            CandleType.SPOT,
+            CandleType.FUTURES,
+            CandleType.MARK,
+        ):
             with self._loop_lock:
                 x = self.loop.run_until_complete(
                     self._async_get_candle_history(pair, timeframe, candle_type, 0)
@@ -198,7 +210,10 @@ class Binance(Exchange):
             # only download timeframes with significant improvements,
             # otherwise fall back to rest API
             not (
-                (candle_type == CandleType.SPOT and timeframe in ["1s", "1m", "3m", "5m"])
+                (
+                    candle_type == CandleType.SPOT
+                    and timeframe in ["1s", "1m", "3m", "5m"]
+                )
                 or (
                     candle_type == CandleType.FUTURES
                     and timeframe in ["1m", "3m", "5m", "15m", "30m"]
@@ -280,7 +295,9 @@ class Binance(Exchange):
         """
         return open_date.minute == 0 and open_date.second < 15
 
-    def fetch_funding_rates(self, symbols: list[str] | None = None) -> dict[str, dict[str, float]]:
+    def fetch_funding_rates(
+        self, symbols: list[str] | None = None
+    ) -> dict[str, dict[str, float]]:
         """
         Fetch funding rates for the given symbols.
         :param symbols: List of symbols to fetch funding rates for
@@ -341,7 +358,9 @@ class Binance(Exchange):
 
         # mm_ratio: Binance's formula specifies maintenance margin rate which is mm_ratio * 100%
         # maintenance_amt: (CUM) Maintenance Amount of position
-        mm_ratio, maintenance_amt = self.get_maintenance_ratio_and_amt(pair, stake_amount)
+        mm_ratio, maintenance_amt = self.get_maintenance_ratio_and_amt(
+            pair, stake_amount
+        )
 
         if self.margin_mode == MarginMode.CROSS:
             mm_ex_1: float = 0.0
@@ -378,7 +397,8 @@ class Binance(Exchange):
 
         if self.trading_mode == TradingMode.FUTURES:
             return (
-                (wallet_balance + cross_vars + maintenance_amt) - (side_1 * amount * open_rate)
+                (wallet_balance + cross_vars + maintenance_amt)
+                - (side_1 * amount * open_rate)
             ) / ((amount * mm_ratio) - (side_1 * amount))
         else:
             raise OperationalException(
@@ -388,7 +408,9 @@ class Binance(Exchange):
     def load_leverage_tiers(self) -> dict[str, list[dict]]:
         if self.trading_mode == TradingMode.FUTURES:
             if self._config["dry_run"]:
-                leverage_tiers_path = Path(__file__).parent / "binance_leverage_tiers.json"
+                leverage_tiers_path = (
+                    Path(__file__).parent / "binance_leverage_tiers.json"
+                )
                 with leverage_tiers_path.open() as json_file:
                     return json_load(json_file)
             else:
@@ -415,7 +437,9 @@ class Binance(Exchange):
     async def _async_get_trade_history_id(
         self, pair: str, until: int, since: int, from_id: str | None = None
     ) -> tuple[str, list[list]]:
-        logger.info(f"Fetching trades for {pair} from Binance, {from_id=}, {since=}, {until=}")
+        logger.info(
+            f"Fetching trades for {pair} from Binance, {from_id=}, {since=}, {until=}"
+        )
 
         if (
             not self._config["exchange"].get("only_from_ccxt", False)
@@ -438,7 +462,11 @@ class Binance(Exchange):
                     logger.warning(f"Could not determine listing date for {pair}: {e}")
 
             _, res = await download_archive_trades(
-                CandleType.FUTURES if self.trading_mode == "futures" else CandleType.SPOT,
+                (
+                    CandleType.FUTURES
+                    if self.trading_mode == "futures"
+                    else CandleType.SPOT
+                ),
                 pair,
                 since_ms=since,
                 until_ms=until,
@@ -466,7 +494,9 @@ class Binance(Exchange):
         )
 
     def _check_delisting_futures(self, pair: str) -> datetime | None:
-        delivery_time = self.markets.get(pair, {}).get("info", {}).get("deliveryDate", None)
+        delivery_time = (
+            self.markets.get(pair, {}).get("info", {}).get("deliveryDate", None)
+        )
         if delivery_time:
             if isinstance(delivery_time, str) and (delivery_time != ""):
                 delivery_time = int(delivery_time)
@@ -474,7 +504,9 @@ class Binance(Exchange):
             # Binance set a very high delivery time for all perpetuals.
             # We compare with delivery time of BTC/USDT:USDT which assumed to never be delisted
             btc_delivery_time = (
-                self.markets.get("BTC/USDT:USDT", {}).get("info", {}).get("deliveryDate", None)
+                self.markets.get("BTC/USDT:USDT", {})
+                .get("info", {})
+                .get("deliveryDate", None)
             )
 
             if delivery_time == btc_delivery_time:
@@ -526,7 +558,9 @@ class Binance(Exchange):
         except ccxt.BaseError as e:
             raise OperationalException(e) from e
 
-    def _get_spot_pair_delist_time(self, pair: str, refresh: bool = False) -> datetime | None:
+    def _get_spot_pair_delist_time(
+        self, pair: str, refresh: bool = False
+    ) -> datetime | None:
         """
         Get the delisting time for a pair if it will be delisted
         :param pair: Pair to get the delisting time for

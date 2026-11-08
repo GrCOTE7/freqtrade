@@ -194,8 +194,12 @@ def test_trade_custom_data_no_wildcards(fee, use_db):
 
 def test_trade_custom_data_strategy_compat(mocker, default_conf_usdt, fee):
     mocker.patch(f"{EXMS}.get_rate", return_value=0.50)
-    mocker.patch("freqtrade.freqtradebot.FreqtradeBot.get_real_amount", return_value=None)
-    mocker.patch("freqtrade.freqtradebot.FreqtradeBot.handle_cancel_exit", return_value=True)
+    mocker.patch(
+        "freqtrade.freqtradebot.FreqtradeBot.get_real_amount", return_value=None
+    )
+    mocker.patch(
+        "freqtrade.freqtradebot.FreqtradeBot.handle_cancel_exit", return_value=True
+    )
     default_conf_usdt["minimal_roi"] = {"0": 100}
 
     freqtrade = get_patched_freqtradebot(mocker, default_conf_usdt)
@@ -249,10 +253,14 @@ def test_trade_custom_data_strategy_backtest_compat(mocker, default_conf_usdt, f
             "minimal_roi": {"0": 100},
         }
     )
-    default_conf_usdt["pairlists"] = [{"method": "StaticPairList", "allow_inactive": True}]
+    default_conf_usdt["pairlists"] = [
+        {"method": "StaticPairList", "allow_inactive": True}
+    ]
     backtesting = Backtesting(default_conf_usdt)
 
-    df = generate_test_data(default_conf_usdt["timeframe"], 100, "2022-01-01 00:00:00+00:00")
+    df = generate_test_data(
+        default_conf_usdt["timeframe"], 100, "2022-01-01 00:00:00+00:00"
+    )
 
     pair_exp = "XRP/USDT:USDT"
 

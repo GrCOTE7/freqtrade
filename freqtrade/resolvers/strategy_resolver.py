@@ -12,13 +12,19 @@ from os import walk
 from pathlib import Path
 from typing import Any
 
-from freqtrade.configuration.config_validation import validate_migrated_strategy_settings
-from freqtrade.constants import REQUIRED_ORDERTIF, REQUIRED_ORDERTYPES, USERPATH_STRATEGIES, Config
+from freqtrade.configuration.config_validation import (
+    validate_migrated_strategy_settings,
+)
+from freqtrade.constants import (
+    REQUIRED_ORDERTIF,
+    REQUIRED_ORDERTYPES,
+    USERPATH_STRATEGIES,
+    Config,
+)
 from freqtrade.enums import TradingMode
 from freqtrade.exceptions import OperationalException
 from freqtrade.resolvers.iresolver import IResolver
 from freqtrade.strategy.interface import IStrategy
-
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +88,9 @@ class StrategyResolver(IResolver):
             ("max_open_trades", float("inf")),
         ]
         for attribute, default in attributes:
-            StrategyResolver._override_attribute_helper(strategy, config, attribute, default)
+            StrategyResolver._override_attribute_helper(
+                strategy, config, attribute, default
+            )
 
         # Loop this list again to have output combined
         for attribute, _ in attributes:
@@ -95,7 +103,9 @@ class StrategyResolver(IResolver):
         return strategy
 
     @staticmethod
-    def _override_attribute_helper(strategy, config: Config, attribute: str, default: Any):
+    def _override_attribute_helper(
+        strategy, config: Config, attribute: str, default: Any
+    ):
         """
         Override attributes in the strategy.
         Prevalence:
@@ -135,7 +145,9 @@ class StrategyResolver(IResolver):
         if hasattr(strategy, "minimal_roi"):
             strategy.minimal_roi = dict(
                 sorted(
-                    {int(key): value for (key, value) in strategy.minimal_roi.items()}.items(),
+                    {
+                        int(key): value for (key, value) in strategy.minimal_roi.items()
+                    }.items(),
                     key=lambda t: t[0],
                 )
             )
@@ -176,15 +188,23 @@ class StrategyResolver(IResolver):
     def validate_strategy(strategy: IStrategy) -> IStrategy:
         if strategy.config.get("trading_mode", TradingMode.SPOT) != TradingMode.SPOT:
             # Require new method
-            warn_deprecated_setting(strategy, "sell_profit_only", "exit_profit_only", True)
-            warn_deprecated_setting(strategy, "sell_profit_offset", "exit_profit_offset", True)
-            warn_deprecated_setting(strategy, "use_sell_signal", "use_exit_signal", True)
+            warn_deprecated_setting(
+                strategy, "sell_profit_only", "exit_profit_only", True
+            )
+            warn_deprecated_setting(
+                strategy, "sell_profit_offset", "exit_profit_offset", True
+            )
+            warn_deprecated_setting(
+                strategy, "use_sell_signal", "use_exit_signal", True
+            )
             warn_deprecated_setting(
                 strategy, "ignore_roi_if_buy_signal", "ignore_roi_if_entry_signal", True
             )
 
             if not check_override(strategy, IStrategy, "populate_entry_trend"):
-                raise OperationalException("`populate_entry_trend` must be implemented.")
+                raise OperationalException(
+                    "`populate_entry_trend` must be implemented."
+                )
             if not check_override(strategy, IStrategy, "populate_exit_trend"):
                 raise OperationalException("`populate_exit_trend` must be implemented.")
             if check_override(strategy, IStrategy, "check_buy_timeout"):
@@ -207,15 +227,17 @@ class StrategyResolver(IResolver):
             # TODO: Implementing one of the following methods should show a deprecation warning
             #  buy_trend and sell_trend, custom_sell
             warn_deprecated_setting(strategy, "sell_profit_only", "exit_profit_only")
-            warn_deprecated_setting(strategy, "sell_profit_offset", "exit_profit_offset")
+            warn_deprecated_setting(
+                strategy, "sell_profit_offset", "exit_profit_offset"
+            )
             warn_deprecated_setting(strategy, "use_sell_signal", "use_exit_signal")
             warn_deprecated_setting(
                 strategy, "ignore_roi_if_buy_signal", "ignore_roi_if_entry_signal"
             )
 
-            if not check_override(strategy, IStrategy, "populate_buy_trend") and not check_override(
-                strategy, IStrategy, "populate_entry_trend"
-            ):
+            if not check_override(
+                strategy, IStrategy, "populate_buy_trend"
+            ) and not check_override(strategy, IStrategy, "populate_entry_trend"):
                 raise OperationalException(
                     "`populate_entry_trend` or `populate_buy_trend` must be implemented."
                 )
@@ -266,7 +288,8 @@ class StrategyResolver(IResolver):
         """
         if config.get("recursive_strategy_search", False):
             extra_dirs: list[str] = [
-                path[0] for path in walk(f"{config['user_data_dir']}/{USERPATH_STRATEGIES}")
+                path[0]
+                for path in walk(f"{config['user_data_dir']}/{USERPATH_STRATEGIES}")
             ]  # sub-directories
         else:
             extra_dirs = []
@@ -286,7 +309,9 @@ class StrategyResolver(IResolver):
                 temp = Path(tempfile.mkdtemp("freq", "strategy"))
                 name = strat[0] + ".py"
 
-                temp.joinpath(name).write_text(urlsafe_b64decode(strat[1]).decode("utf-8"))
+                temp.joinpath(name).write_text(
+                    urlsafe_b64decode(strat[1]).decode("utf-8")
+                )
                 temp.joinpath("__init__.py").touch()
 
                 strategy_name = strat[0]

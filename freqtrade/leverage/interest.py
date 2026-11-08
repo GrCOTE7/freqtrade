@@ -3,7 +3,6 @@ from math import ceil
 from freqtrade.exceptions import OperationalException
 from freqtrade.util import FtPrecise
 
-
 one = FtPrecise(1.0)
 four = FtPrecise(4.0)
 twenty_four = FtPrecise(24.0)
@@ -33,4 +32,6 @@ def interest(
         # Rounded based on https://kraken-fees-calculator.github.io/
         return borrowed * rate * (one + FtPrecise(ceil(hours / four)))
     else:
-        raise OperationalException(f"Leverage not available on {exchange_name} with freqtrade")
+        raise OperationalException(
+            f"Leverage not available on {exchange_name} with freqtrade"
+        )

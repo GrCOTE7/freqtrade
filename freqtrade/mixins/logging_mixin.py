@@ -22,7 +22,9 @@ class LoggingMixin:
         self.refresh_period = refresh_period
         self._log_cache: FtTTLCache = FtTTLCache(maxsize=1024, ttl=self.refresh_period)
 
-    def log_once(self, message: str, logmethod: Callable, force_show: bool = False) -> None:
+    def log_once(
+        self, message: str, logmethod: Callable, force_show: bool = False
+    ) -> None:
         """
         Logs message - not more often than "refresh_period" to avoid log spamming
         Logs the log-message as debug as well to simplify debugging.

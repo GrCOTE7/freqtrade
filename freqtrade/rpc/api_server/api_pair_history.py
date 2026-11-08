@@ -14,7 +14,6 @@ from freqtrade.rpc.api_server.api_schemas import (
 from freqtrade.rpc.api_server.deps import get_config, get_exchange
 from freqtrade.rpc.rpc import RPC
 
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -38,12 +37,16 @@ def pair_history(
             "timeframe": timeframe,
             "strategy": strategy,
             "timerange": timerange,
-            "freqaimodel": freqaimodel if freqaimodel else config_loc.get("freqaimodel"),
+            "freqaimodel": (
+                freqaimodel if freqaimodel else config_loc.get("freqaimodel")
+            ),
         }
     )
     validate_config_consistency(config_loc)
     try:
-        return RPC._rpc_analysed_history_full(config_loc, pair, timeframe, exchange, None, False)
+        return RPC._rpc_analysed_history_full(
+            config_loc, pair, timeframe, exchange, None, False
+        )
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 
@@ -59,7 +62,9 @@ def pair_history_filtered(payload: PairHistoryRequest, config=Depends(get_config
             "strategy": payload.strategy,
             "timerange": payload.timerange,
             "freqaimodel": (
-                payload.freqaimodel if payload.freqaimodel else config_loc.get("freqaimodel")
+                payload.freqaimodel
+                if payload.freqaimodel
+                else config_loc.get("freqaimodel")
             ),
         }
     )

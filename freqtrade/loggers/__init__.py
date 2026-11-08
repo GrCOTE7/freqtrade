@@ -12,7 +12,6 @@ from freqtrade.loggers.buffering_handler import FTBufferingHandler
 from freqtrade.loggers.ft_rich_handler import FtRichHandler
 from freqtrade.loggers.rich_console import get_rich_console
 
-
 # from freqtrade.loggers.std_err_stream_handler import FTStdErrStreamHandler
 
 
@@ -93,7 +92,9 @@ def _set_log_levels(
     # Set default levels for third party libraries
     third_party_loggers = {
         "freqtrade": logging.INFO if verbosity < 1 else logging.DEBUG,
-        "freqtrade.exchange.exchange_ws": logging.INFO if verbosity <= 1 else logging.DEBUG,
+        "freqtrade.exchange.exchange_ws": (
+            logging.INFO if verbosity <= 1 else logging.DEBUG
+        ),
         "requests": logging.INFO if verbosity <= 1 else logging.DEBUG,
         "urllib3": logging.INFO if verbosity <= 1 else logging.DEBUG,
         "asyncio": logging.INFO if verbosity <= 1 else logging.DEBUG,
@@ -138,10 +139,16 @@ def _create_log_config(config: Config) -> dict[str, Any]:
             log_config["handlers"]["syslog"] = {
                 "class": "logging.handlers.SysLogHandler",
                 "formatter": "syslog_format",
-                "address": (s[1], int(s[2])) if len(s) > 2 else s[1] if len(s) > 1 else "/dev/log",
+                "address": (
+                    (s[1], int(s[2]))
+                    if len(s) > 2
+                    else s[1] if len(s) > 1 else "/dev/log"
+                ),
             }
 
-            _add_formatter(log_config, "syslog_format", "%(name)s - %(levelname)s - %(message)s")
+            _add_formatter(
+                log_config, "syslog_format", "%(name)s - %(levelname)s - %(message)s"
+            )
             _add_root_handler(log_config, "syslog")
 
         elif s[0] == "journald":  # pragma: no cover
@@ -164,7 +171,9 @@ def _create_log_config(config: Config) -> dict[str, Any]:
                 "formatter": "journald_format",
             }
 
-            _add_formatter(log_config, "journald_format", "%(name)s - %(levelname)s - %(message)s")
+            _add_formatter(
+                log_config, "journald_format", "%(name)s - %(levelname)s - %(message)s"
+            )
             _add_root_handler(log_config, "journald")
 
         else:
@@ -184,7 +193,10 @@ def _create_log_config(config: Config) -> dict[str, Any]:
 
     # Dynamically update some handlers
     for handler_config in log_config.get("handlers", {}).values():
-        if handler_config.get("class") == "freqtrade.loggers.ft_rich_handler.FtRichHandler":
+        if (
+            handler_config.get("class")
+            == "freqtrade.loggers.ft_rich_handler.FtRichHandler"
+        ):
             handler_config["console"] = error_console
         elif handler_config.get("class") == "logging.handlers.RotatingFileHandler":
             logfile_path = Path(handler_config["filename"])

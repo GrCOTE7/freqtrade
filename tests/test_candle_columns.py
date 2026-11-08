@@ -15,7 +15,14 @@ from freqtrade.enums import CandleType
 def test_default_dataframe_columns_reexport():
     # Re-exported from constants for backwards compatibility
     assert DEFAULT_DATAFRAME_COLUMNS is OHLCV_COLUMNS
-    assert DEFAULT_DATAFRAME_COLUMNS == ["date", "open", "high", "low", "close", "volume"]
+    assert DEFAULT_DATAFRAME_COLUMNS == [
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -27,7 +34,10 @@ def test_default_dataframe_columns_reexport():
         (CandleType.INDEX, OHLCV_COLUMNS),
         (CandleType.PREMIUMINDEX, OHLCV_COLUMNS),
         (CandleType.FUNDING_RATE, ["date", "funding_rate"]),
-        (CandleType.OPEN_INTEREST, ["date", "open_interest_amount", "open_interest_value"]),
+        (
+            CandleType.OPEN_INTEREST,
+            ["date", "open_interest_amount", "open_interest_value"],
+        ),
         # DataProvider and informative pairs pass plain strings / None for spot
         ("", OHLCV_COLUMNS),
         (None, OHLCV_COLUMNS),

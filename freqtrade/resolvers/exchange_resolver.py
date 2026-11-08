@@ -11,7 +11,6 @@ from freqtrade.constants import Config, ExchangeConfig
 from freqtrade.exchange import MAP_EXCHANGE_CHILDCLASS, Exchange
 from freqtrade.resolvers.iresolver import IResolver
 
-
 logger = logging.getLogger(__name__)
 
 

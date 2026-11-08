@@ -44,7 +44,9 @@ class TensorboardCallback(BaseCallback):
         local_info = self.locals["infos"][0]
 
         if hasattr(self.training_env, "envs"):
-            tensorboard_metrics = self.training_env.envs[0].unwrapped.tensorboard_metrics
+            tensorboard_metrics = self.training_env.envs[
+                0
+            ].unwrapped.tensorboard_metrics
 
         else:
             # For RL-multiproc - usage of [0] might need to be evaluated
@@ -56,6 +58,8 @@ class TensorboardCallback(BaseCallback):
 
         for category in tensorboard_metrics:
             for metric in tensorboard_metrics[category]:
-                self.logger.record(f"{category}/{metric}", tensorboard_metrics[category][metric])
+                self.logger.record(
+                    f"{category}/{metric}", tensorboard_metrics[category][metric]
+                )
 
         return True

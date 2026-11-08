@@ -6,8 +6,11 @@ import logging
 
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Ticker
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +23,9 @@ class PriceFilter(IPairList):
 
         self._low_price_ratio = self._pairlistconfig.get("low_price_ratio", 0)
         if self._low_price_ratio < 0:
-            raise OperationalException("PriceFilter requires low_price_ratio to be >= 0")
+            raise OperationalException(
+                "PriceFilter requires low_price_ratio to be >= 0"
+            )
         self._min_price = self._pairlistconfig.get("min_price", 0)
         if self._min_price < 0:
             raise OperationalException("PriceFilter requires min_price to be >= 0")
@@ -107,7 +112,12 @@ class PriceFilter(IPairList):
         :param ticker: ticker dict as returned from ccxt.fetch_ticker
         :return: True if the pair can stay, false if it should be removed
         """
-        if ticker and "last" in ticker and ticker["last"] is not None and ticker.get("last") != 0:
+        if (
+            ticker
+            and "last" in ticker
+            and ticker["last"] is not None
+            and ticker.get("last") != 0
+        ):
             price: float = ticker["last"]
         else:
             self.log_once(

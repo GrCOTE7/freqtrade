@@ -2,7 +2,6 @@ import logging
 import signal
 from typing import Any
 
-
 logger = logging.getLogger(__name__)
 
 

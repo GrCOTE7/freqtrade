@@ -12,8 +12,12 @@ from freqtrade.persistence.trade_model import Order
 from freqtrade.plugins.protectionmanager import ProtectionManager
 from tests.conftest import get_patched_freqtradebot, log_has_re
 
-
-AVAILABLE_PROTECTIONS = ["CooldownPeriod", "LowProfitPairs", "MaxDrawdown", "StoplossGuard"]
+AVAILABLE_PROTECTIONS = [
+    "CooldownPeriod",
+    "LowProfitPairs",
+    "MaxDrawdown",
+    "StoplossGuard",
+]
 
 
 def generate_mock_trade(
@@ -103,15 +107,35 @@ def test_protectionmanager(mocker, default_conf):
         if not handler.has_global_stop:
             assert handler.global_stop(datetime.now(UTC), "*", 1000.0) is None
         if not handler.has_local_stop:
-            assert handler.stop_per_pair("XRP/BTC", datetime.now(UTC), "*", 1000.0) is None
+            assert (
+                handler.stop_per_pair("XRP/BTC", datetime.now(UTC), "*", 1000.0) is None
+            )
 
 
 @pytest.mark.parametrize(
     "protconf,expected",
     [
         ([], None),
-        ([{"method": "StoplossGuard", "lookback_period": 2000, "stop_duration_candles": 10}], None),
-        ([{"method": "StoplossGuard", "lookback_period_candles": 20, "stop_duration": 10}], None),
+        (
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period": 2000,
+                    "stop_duration_candles": 10,
+                }
+            ],
+            None,
+        ),
+        (
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "stop_duration": 10,
+                }
+            ],
+            None,
+        ),
         (
             [
                 {
@@ -146,11 +170,23 @@ def test_protectionmanager(mocker, default_conf):
             r"Protections must specify either `unlock_at`, `stop_duration` or.*",
         ),
         (
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "unlock_at": "20:02"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "unlock_at": "20:02",
+                }
+            ],
             None,
         ),
         (
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "unlock_at": "55:102"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "unlock_at": "55:102",
+                }
+            ],
             "Invalid date format for unlock_at: 55:102.",
         ),
     ],
@@ -170,77 +206,151 @@ def test_validate_protections(protconf, expected):
             "1m",
             20,
             10,
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "stop_duration": 10}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "stop_duration": 10,
+                }
+            ],
         ),
         (
             "5m",
             100,
             15,
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "stop_duration": 15}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "stop_duration": 15,
+                }
+            ],
         ),
         (
             "1h",
             1200,
             40,
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "stop_duration": 40}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "stop_duration": 40,
+                }
+            ],
         ),
         (
             "1d",
             1440,
             5,
-            [{"method": "StoplossGuard", "lookback_period_candles": 1, "stop_duration": 5}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 1,
+                    "stop_duration": 5,
+                }
+            ],
         ),
         (
             "1m",
             20,
             5,
-            [{"method": "StoplossGuard", "lookback_period": 20, "stop_duration_candles": 5}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period": 20,
+                    "stop_duration_candles": 5,
+                }
+            ],
         ),
         (
             "5m",
             15,
             25,
-            [{"method": "StoplossGuard", "lookback_period": 15, "stop_duration_candles": 5}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period": 15,
+                    "stop_duration_candles": 5,
+                }
+            ],
         ),
         (
             "1h",
             50,
             600,
-            [{"method": "StoplossGuard", "lookback_period": 50, "stop_duration_candles": 10}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period": 50,
+                    "stop_duration_candles": 10,
+                }
+            ],
         ),
         (
             "1h",
             60,
             540,
-            [{"method": "StoplossGuard", "lookback_period_candles": 1, "stop_duration_candles": 9}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 1,
+                    "stop_duration_candles": 9,
+                }
+            ],
         ),
         (
             "1m",
             20,
             "01:00",
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "unlock_at": "01:00"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "unlock_at": "01:00",
+                }
+            ],
         ),
         (
             "5m",
             100,
             "02:00",
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "unlock_at": "02:00"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "unlock_at": "02:00",
+                }
+            ],
         ),
         (
             "1h",
             1200,
             "03:00",
-            [{"method": "StoplossGuard", "lookback_period_candles": 20, "unlock_at": "03:00"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 20,
+                    "unlock_at": "03:00",
+                }
+            ],
         ),
         (
             "1d",
             1440,
             "04:00",
-            [{"method": "StoplossGuard", "lookback_period_candles": 1, "unlock_at": "04:00"}],
+            [
+                {
+                    "method": "StoplossGuard",
+                    "lookback_period_candles": 1,
+                    "unlock_at": "04:00",
+                }
+            ],
         ),
     ],
 )
-def test_protections_init(default_conf, timeframe, expected_lookback, expected_stop, protconf):
+def test_protections_init(
+    default_conf, timeframe, expected_lookback, expected_stop, protconf
+):
     """
     Test the initialization of protections with different configurations, including unlock_at.
     """
@@ -259,7 +369,12 @@ def test_protections_init(default_conf, timeframe, expected_lookback, expected_s
 def test_stoploss_guard(mocker, default_conf, fee, caplog, is_short):
     # Active for both sides (long and short)
     default_conf["_strategy_protections"] = [
-        {"method": "StoplossGuard", "lookback_period": 60, "stop_duration": 40, "trade_limit": 3}
+        {
+            "method": "StoplossGuard",
+            "lookback_period": 60,
+            "stop_duration": 40,
+            "trade_limit": 3,
+        }
     ]
     freqtrade = get_patched_freqtradebot(mocker, default_conf)
     message = r"Trading stopped due to .*"
@@ -329,7 +444,9 @@ def test_stoploss_guard(mocker, default_conf, fee, caplog, is_short):
 @pytest.mark.parametrize("only_per_pair", [False, True])
 @pytest.mark.parametrize("only_per_side", [False, True])
 @pytest.mark.usefixtures("init_persistence")
-def test_stoploss_guard_perpair(mocker, default_conf, fee, caplog, only_per_pair, only_per_side):
+def test_stoploss_guard_perpair(
+    mocker, default_conf, fee, caplog, only_per_pair, only_per_side
+):
     default_conf["_strategy_protections"] = [
         {
             "method": "StoplossGuard",
@@ -410,7 +527,9 @@ def test_stoploss_guard_perpair(mocker, default_conf, fee, caplog, only_per_pair
     )
     freqtrade.protections.stop_per_pair(pair)
     assert freqtrade.protections.global_stop() != only_per_pair
-    assert PairLocks.is_pair_locked(pair, side=check_side) != (only_per_side and only_per_pair)
+    assert PairLocks.is_pair_locked(pair, side=check_side) != (
+        only_per_side and only_per_pair
+    )
     assert PairLocks.is_global_lock(side=check_side) != only_per_pair
     if only_per_side:
         assert not PairLocks.is_pair_locked(pair, side="*")
@@ -730,7 +849,9 @@ def test_LowProfitPairs_mixed_sides(
     if only_per_side:
         assert freqtrade.protections.stop_per_pair(pair, side="long") is None
     assert PairLocks.is_pair_locked(pair, side="long") == (expected_lock_side == "*")
-    assert PairLocks.is_pair_locked(pair, side="short") == (expected_lock_side is not None)
+    assert PairLocks.is_pair_locked(pair, side="short") == (
+        expected_lock_side is not None
+    )
     assert PairLocks.is_pair_locked(pair, side="*") == (expected_lock_side == "*")
     assert freqtrade.protections.global_stop() is None
     assert not PairLocks.is_global_lock()
@@ -752,7 +873,9 @@ def test_MaxDrawdown_ratio_mode(mocker, default_conf, fee, caplog):
     starting_balance = 0.05
 
     assert not freqtrade.protections.global_stop(starting_balance=starting_balance)
-    assert not freqtrade.protections.stop_per_pair("XRP/BTC", starting_balance=starting_balance)
+    assert not freqtrade.protections.stop_per_pair(
+        "XRP/BTC", starting_balance=starting_balance
+    )
     caplog.clear()
 
     generate_mock_trade(
@@ -785,7 +908,9 @@ def test_MaxDrawdown_ratio_mode(mocker, default_conf, fee, caplog):
     Trade.commit()
     # No losing trade yet ... so max_drawdown will raise exception
     assert not freqtrade.protections.global_stop(starting_balance=starting_balance)
-    assert not freqtrade.protections.stop_per_pair("XRP/BTC", starting_balance=starting_balance)
+    assert not freqtrade.protections.stop_per_pair(
+        "XRP/BTC", starting_balance=starting_balance
+    )
 
     generate_mock_trade(
         "XRP/BTC",
@@ -798,7 +923,9 @@ def test_MaxDrawdown_ratio_mode(mocker, default_conf, fee, caplog):
     )
     # Not locked with one trade
     assert not freqtrade.protections.global_stop(starting_balance=starting_balance)
-    assert not freqtrade.protections.stop_per_pair("XRP/BTC", starting_balance=starting_balance)
+    assert not freqtrade.protections.stop_per_pair(
+        "XRP/BTC", starting_balance=starting_balance
+    )
     assert not PairLocks.is_pair_locked("XRP/BTC")
     assert not PairLocks.is_global_lock()
 
@@ -815,7 +942,9 @@ def test_MaxDrawdown_ratio_mode(mocker, default_conf, fee, caplog):
 
     # Not locked with 1 trade (2nd trade is outside of lookback_period)
     assert not freqtrade.protections.global_stop(starting_balance=starting_balance)
-    assert not freqtrade.protections.stop_per_pair("XRP/BTC", starting_balance=starting_balance)
+    assert not freqtrade.protections.stop_per_pair(
+        "XRP/BTC", starting_balance=starting_balance
+    )
     assert not PairLocks.is_pair_locked("XRP/BTC")
     assert not PairLocks.is_global_lock()
     assert not log_has_re(message, caplog)
@@ -847,7 +976,9 @@ def test_MaxDrawdown_ratio_mode(mocker, default_conf, fee, caplog):
         profit_rate=0.2,
     )
     Trade.commit()
-    assert not freqtrade.protections.stop_per_pair("XRP/BTC", starting_balance=starting_balance)
+    assert not freqtrade.protections.stop_per_pair(
+        "XRP/BTC", starting_balance=starting_balance
+    )
     # local lock not supported
     assert not PairLocks.is_pair_locked("XRP/BTC")
     assert freqtrade.protections.global_stop(starting_balance=starting_balance)
@@ -892,7 +1023,9 @@ def test_MaxDrawdown_equity_mode(mocker, default_conf, fee):
     [("ratios", True), ("equity", False)],
 )
 @pytest.mark.usefixtures("init_persistence")
-def test_MaxDrawdown_mode_comparison(mocker, default_conf, fee, calculation_mode, expected_locked):
+def test_MaxDrawdown_mode_comparison(
+    mocker, default_conf, fee, calculation_mode, expected_locked
+):
     default_conf["_strategy_protections"] = [
         {
             "method": "MaxDrawdown",
@@ -956,18 +1089,24 @@ def test_MaxDrawdown_threshold_boundary(mocker, default_conf, calculation_mode):
         }
     ]
     freqtrade = get_patched_freqtradebot(mocker, default_conf)
-    handler = next(p for p in freqtrade.protections._protection_handlers if p.name == "MaxDrawdown")
+    handler = next(
+        p for p in freqtrade.protections._protection_handlers if p.name == "MaxDrawdown"
+    )
     md_globals = handler._max_drawdown.__globals__
 
     now = datetime.now(UTC)
     trades_in_window = [
         SimpleNamespace(
-            close_date_utc=now - timedelta(minutes=10), close_profit_abs=-1.0, close_profit=-0.1
+            close_date_utc=now - timedelta(minutes=10),
+            close_profit_abs=-1.0,
+            close_profit=-0.1,
         )
     ]
     all_closed_trades = [
         SimpleNamespace(
-            close_date_utc=now - timedelta(minutes=1500), close_profit_abs=5.0, close_profit=0.2
+            close_date_utc=now - timedelta(minutes=1500),
+            close_profit_abs=5.0,
+            close_profit=0.2,
         ),
         trades_in_window[0],
     ]
@@ -982,7 +1121,9 @@ def test_MaxDrawdown_threshold_boundary(mocker, default_conf, calculation_mode):
         side_effect=proxy_side_effect,
     )
     calc_mock = mocker.Mock(
-        return_value=SimpleNamespace(relative_account_drawdown=threshold, drawdown_abs=threshold)
+        return_value=SimpleNamespace(
+            relative_account_drawdown=threshold, drawdown_abs=threshold
+        )
     )
     mocker.patch.dict(md_globals, {"calculate_max_drawdown": calc_mock})
 
@@ -1009,18 +1150,24 @@ def test_MaxDrawdown_calculation_mode_dispatch(
         }
     ]
     freqtrade = get_patched_freqtradebot(mocker, default_conf)
-    handler = next(p for p in freqtrade.protections._protection_handlers if p.name == "MaxDrawdown")
+    handler = next(
+        p for p in freqtrade.protections._protection_handlers if p.name == "MaxDrawdown"
+    )
     md_globals = handler._max_drawdown.__globals__
 
     now = datetime.now(UTC)
     trades_in_window = [
         SimpleNamespace(
-            close_date_utc=now - timedelta(minutes=10), close_profit_abs=-1.0, close_profit=-0.1
+            close_date_utc=now - timedelta(minutes=10),
+            close_profit_abs=-1.0,
+            close_profit=-0.1,
         )
     ]
     all_closed_trades = [
         SimpleNamespace(
-            close_date_utc=now - timedelta(minutes=1500), close_profit_abs=5.0, close_profit=0.2
+            close_date_utc=now - timedelta(minutes=1500),
+            close_profit_abs=5.0,
+            close_profit=0.2,
         ),
         trades_in_window[0],
     ]
@@ -1110,7 +1257,11 @@ def test_MaxDrawdown_calculation_mode_dispatch(
             None,
         ),
         (
-            {"method": "LowProfitPairs", "lookback_period_candles": 11, "stop_duration": 60},
+            {
+                "method": "LowProfitPairs",
+                "lookback_period_candles": 11,
+                "stop_duration": 60,
+            },
             (
                 "[{'LowProfitPairs': 'LowProfitPairs - Low Profit Protection, locks pairs with "
                 "profit < 0.0 within 11 candles.'}]"
@@ -1118,7 +1269,11 @@ def test_MaxDrawdown_calculation_mode_dispatch(
             None,
         ),
         (
-            {"method": "MaxDrawdown", "lookback_period_candles": 20, "stop_duration": 60},
+            {
+                "method": "MaxDrawdown",
+                "lookback_period_candles": 20,
+                "stop_duration": 60,
+            },
             (
                 "[{'MaxDrawdown': 'MaxDrawdown - Max drawdown protection, stop trading "
                 "if drawdown is > 0.0 within 20 candles.'}]"
@@ -1148,7 +1303,11 @@ def test_MaxDrawdown_calculation_mode_dispatch(
             None,
         ),
         (
-            {"method": "LowProfitPairs", "lookback_period_candles": 11, "unlock_at": "03:00"},
+            {
+                "method": "LowProfitPairs",
+                "lookback_period_candles": 11,
+                "unlock_at": "03:00",
+            },
             (
                 "[{'LowProfitPairs': 'LowProfitPairs - Low Profit Protection, locks pairs with "
                 "profit < 0.0 within 11 candles.'}]"
@@ -1156,7 +1315,11 @@ def test_MaxDrawdown_calculation_mode_dispatch(
             None,
         ),
         (
-            {"method": "MaxDrawdown", "lookback_period_candles": 20, "unlock_at": "04:00"},
+            {
+                "method": "MaxDrawdown",
+                "lookback_period_candles": 20,
+                "unlock_at": "04:00",
+            },
             (
                 "[{'MaxDrawdown': 'MaxDrawdown - Max drawdown protection, stop trading "
                 "if drawdown is > 0.0 within 20 candles.'}]"

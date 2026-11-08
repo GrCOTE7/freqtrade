@@ -13,13 +13,19 @@ def get_tick_size_over_time(candles: DataFrame) -> Series:
     for col in ["open", "high", "low", "close"]:
         candles[f"{col}_count"] = (
             candles[col]
-            .apply(format_float_positional, precision=14, unique=False, fractional=False, trim="-")
+            .apply(
+                format_float_positional,
+                precision=14,
+                unique=False,
+                fractional=False,
+                trim="-",
+            )
             .str.extract(r"\.(\d*[1-9])")[0]
             .str.len()
         )
-    candles["max_count"] = candles[["open_count", "close_count", "high_count", "low_count"]].max(
-        axis=1
-    )
+    candles["max_count"] = candles[
+        ["open_count", "close_count", "high_count", "low_count"]
+    ].max(axis=1)
 
     candles1 = candles.set_index("date", drop=True)
     # Group by month and calculate the average number of significant digits

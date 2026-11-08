@@ -5,8 +5,11 @@ import logging
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.misc import safe_value_nested
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +20,9 @@ class PairInformationFilter(IPairList):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self._selection_mode: str = self._pairlistconfig.get("selection_mode", "whitelist")
+        self._selection_mode: str = self._pairlistconfig.get(
+            "selection_mode", "whitelist"
+        )
         self._info_key: str = self._pairlistconfig.get("info_key", "")
         self._info_compare_value = self._pairlistconfig.get("info_compare_value")
 
@@ -85,11 +90,14 @@ class PairInformationFilter(IPairList):
         # loop through and add them to either list based on the market info check
         for pair in pairlist:
             market = self._exchange.markets[pair]
-            value = safe_value_nested(market, self._info_key, default_missing, preserve_none=True)
+            value = safe_value_nested(
+                market, self._info_key, default_missing, preserve_none=True
+            )
             # Booleans must not match numbers, even though Python considers True == 1.
             if (
                 value is not default_missing
-                and isinstance(value, bool) == isinstance(self._info_compare_value, bool)
+                and isinstance(value, bool)
+                == isinstance(self._info_compare_value, bool)
                 and value == self._info_compare_value
             ):
                 whitelist_pairlist.append(pair)

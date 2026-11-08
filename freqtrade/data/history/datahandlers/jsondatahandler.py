@@ -11,7 +11,6 @@ from freqtrade.enums import CandleType, TradingMode
 
 from .idatahandler import IDataHandler
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +18,9 @@ class JsonDataHandler(IDataHandler):
     _use_zip = False
 
     @classmethod
-    def _normalize_columns(cls, data: DataFrame, pair: str, candle_type: CandleType) -> DataFrame:
+    def _normalize_columns(
+        cls, data: DataFrame, pair: str, candle_type: CandleType
+    ) -> DataFrame:
         """
         json data is stored as a positional list of lists ("values" orient), so column
         names are never persisted - the layout can only be told apart by its width.
@@ -52,7 +53,11 @@ class JsonDataHandler(IDataHandler):
         )
 
     def _ohlcv_load(
-        self, pair: str, timeframe: str, timerange: TimeRange | None, candle_type: CandleType
+        self,
+        pair: str,
+        timeframe: str,
+        timerange: TimeRange | None,
+        candle_type: CandleType,
     ) -> DataFrame:
         """
         Internal method used to load data for one pair from disk.
@@ -66,11 +71,17 @@ class JsonDataHandler(IDataHandler):
         :param candle_type: Candle type to use (spot, futures, funding_rate, ...)
         :return: DataFrame with ohlcv data, or empty DataFrame
         """
-        filename = self._pair_data_filename(self._datadir, pair, timeframe, candle_type=candle_type)
+        filename = self._pair_data_filename(
+            self._datadir, pair, timeframe, candle_type=candle_type
+        )
         if not filename.exists():
             # Fallback mode for 1M files
             filename = self._pair_data_filename(
-                self._datadir, pair, timeframe, candle_type=candle_type, no_timeframe_modify=True
+                self._datadir,
+                pair,
+                timeframe,
+                candle_type=candle_type,
+                no_timeframe_modify=True,
             )
             if not filename.exists():
                 return self._empty_ohlcv_df(candle_type)
@@ -81,7 +92,9 @@ class JsonDataHandler(IDataHandler):
             logger.error(f"Could not load data for {pair}.")
             return self._empty_ohlcv_df(candle_type)
         pairdata = pairdata.astype(dtype=get_candle_dtypes(candle_type))
-        pairdata["date"] = to_datetime(pairdata["date"], unit="ms", utc=True).dt.as_unit("ms")
+        pairdata["date"] = to_datetime(
+            pairdata["date"], unit="ms", utc=True
+        ).dt.as_unit("ms")
         return pairdata
 
     def ohlcv_append(
@@ -96,7 +109,9 @@ class JsonDataHandler(IDataHandler):
         """
         raise NotImplementedError()
 
-    def _trades_store(self, pair: str, data: DataFrame, trading_mode: TradingMode) -> None:
+    def _trades_store(
+        self, pair: str, data: DataFrame, trading_mode: TradingMode
+    ) -> None:
         """
         Store trades data (list of Dicts) to file
         :param pair: Pair - used for filename

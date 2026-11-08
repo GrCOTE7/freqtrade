@@ -11,7 +11,11 @@ from pathlib import Path
 from typing import Any
 
 from freqtrade.constants import Config
-from freqtrade.exceptions import ConfigurationError, DependencyException, OperationalException
+from freqtrade.exceptions import (
+    ConfigurationError,
+    DependencyException,
+    OperationalException,
+)
 from freqtrade.misc import deep_merge_dicts
 from freqtrade.optimize.hyperopt_tools import HyperoptTools
 from freqtrade.strategy.parameters import (
@@ -20,7 +24,6 @@ from freqtrade.strategy.parameters import (
     DecimalParameter,
     NumericParameter,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +69,9 @@ class HyperStrategyMixin:
             if isinstance(attr, BaseParameter):
                 setattr(self, attr_name, deepcopy(attr))
 
-    def enumerate_parameters(self, space: str | None = None) -> Iterator[tuple[str, BaseParameter]]:
+    def enumerate_parameters(
+        self, space: str | None = None
+    ) -> Iterator[tuple[str, BaseParameter]]:
         """
         Find all optimizable parameters and return (name, attr) iterator.
         :param space: parameter space to filter for, or None for all spaces.
@@ -101,7 +106,8 @@ class HyperStrategyMixin:
                 "trailing_stop_positive", getattr(self, "trailing_stop_positive", None)
             )
             self.trailing_stop_positive_offset = trailing.get(
-                "trailing_stop_positive_offset", getattr(self, "trailing_stop_positive_offset", 0)
+                "trailing_stop_positive_offset",
+                getattr(self, "trailing_stop_positive_offset", 0),
             )
             self.trailing_only_offset_is_reached = trailing.get(
                 "trailing_only_offset_is_reached",
@@ -122,9 +128,12 @@ class HyperStrategyMixin:
 
         for space in self._ft_hyper_params:
             params_values = deep_merge_dicts(
-                used_params.get(space, {}), deepcopy(getattr(self, f"{space}_params", {}))
+                used_params.get(space, {}),
+                deepcopy(getattr(self, f"{space}_params", {})),
             )
-            self._ft_set_param(self._ft_hyper_params[space], params_values, space, hyperopt)
+            self._ft_set_param(
+                self._ft_hyper_params[space], params_values, space, hyperopt
+            )
 
     @property
     def ft_used_params(self) -> SpaceParamValues:
@@ -133,7 +142,9 @@ class HyperStrategyMixin:
         Parameters from the parameter file, with API overrides applied on top.
         Does not contain parameter defaults or values from the `<space>_params` attributes.
         """
-        return deep_merge_dicts(self.__ft_params_from_api, deepcopy(self._ft_params_from_file))
+        return deep_merge_dicts(
+            self.__ft_params_from_api, deepcopy(self._ft_params_from_file)
+        )
 
     def ft_set_api_params(self, params: list[dict[str, Any]] | None) -> None:
         """
@@ -147,7 +158,9 @@ class HyperStrategyMixin:
         if not self._ft_hyper_params:
             self._ft_hyper_params = detect_all_parameters(self)
 
-        strategy_parameters = {name: param for name, param in self.enumerate_parameters()}
+        strategy_parameters = {
+            name: param for name, param in self.enumerate_parameters()
+        }
         grouped_values: dict[str, dict[str, Any]] = defaultdict(dict)
 
         for param_data in params:
@@ -161,14 +174,21 @@ class HyperStrategyMixin:
 
             strategy_param = strategy_parameters.get(name)
             if strategy_param is None:
-                raise ConfigurationError(f"{base_warning} '{name}' is not a strategy parameter.")
+                raise ConfigurationError(
+                    f"{base_warning} '{name}' is not a strategy parameter."
+                )
             if strategy_param.param_type != param_type:
                 raise ConfigurationError(
                     f"{base_warning} '{name}' is a {strategy_param.param_type}, not a {param_type}."
                 )
             if not strategy_param.load:
-                raise ConfigurationError(f"{base_warning} '{name}' is not loaded (load=False).")
-            if not strategy_param.space or strategy_param.space not in self._ft_hyper_params:
+                raise ConfigurationError(
+                    f"{base_warning} '{name}' is not loaded (load=False)."
+                )
+            if (
+                not strategy_param.space
+                or strategy_param.space not in self._ft_hyper_params
+            ):
                 raise ConfigurationError(f"{base_warning} '{name}' has no valid space.")
             if (
                 isinstance(strategy_param, CategoricalParameter)
@@ -215,7 +235,11 @@ class HyperStrategyMixin:
         return {}
 
     def _ft_set_param(
-        self, params: SpaceParams, param_values: dict, space: str, hyperopt: bool = False
+        self,
+        params: SpaceParams,
+        param_values: dict,
+        space: str,
+        hyperopt: bool = False,
     ) -> None:
         """
         Set optimizable parameter values.
@@ -242,7 +266,9 @@ class HyperStrategyMixin:
                         f'Default value "{param.value}" used.'
                     )
             else:
-                logger.info(f"Strategy Parameter(default): {param_name} = {param.value}")
+                logger.info(
+                    f"Strategy Parameter(default): {param_name} = {param.value}"
+                )
 
     def get_no_optimize_params(self) -> dict[str, dict]:
         """
@@ -278,7 +304,9 @@ def detect_all_parameters(
                     attr.space = space
                     break
         if attr.space is None:
-            raise DependencyException(f"Cannot determine parameter space for {attr_name}.")
+            raise DependencyException(
+                f"Cannot determine parameter space for {attr_name}."
+            )
 
         if attr.space in ("all", "default") or attr.space.isidentifier() is False:
             raise DependencyException(

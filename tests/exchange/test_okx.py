@@ -194,29 +194,45 @@ def test_okx_ohlcv_candle_limit(default_conf, mocker):
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.MARK) == 100
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE) == 100
 
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == 300
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time) == 300
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == 100
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time) == 100
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.SPOT, start_time) == 300
+        )
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, start_time)
+            == 300
+        )
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.MARK, start_time) == 100
+        )
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.FUNDING_RATE, start_time)
+            == 100
+        )
         one_call = int(
             (
-                datetime.now(UTC) - timedelta(minutes=290 * timeframe_to_minutes(timeframe))
+                datetime.now(UTC)
+                - timedelta(minutes=290 * timeframe_to_minutes(timeframe))
             ).timestamp()
             * 1000
         )
 
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.SPOT, one_call) == 300
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, one_call) == 300
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, one_call) == 300
+        )
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.MARK, one_call) == 100
 
         one_call = int(
             (
-                datetime.now(UTC) - timedelta(minutes=320 * timeframe_to_minutes(timeframe))
+                datetime.now(UTC)
+                - timedelta(minutes=320 * timeframe_to_minutes(timeframe))
             ).timestamp()
             * 1000
         )
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.SPOT, one_call) == 300
-        assert exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, one_call) == 300
+        assert (
+            exchange.ohlcv_candle_limit(timeframe, CandleType.FUTURES, one_call) == 300
+        )
         assert exchange.ohlcv_candle_limit(timeframe, CandleType.MARK, one_call) == 100
 
 
@@ -243,15 +259,33 @@ def test_get_maintenance_ratio_and_amt_okx(
         mocker, default_conf, api_mock, exchange="okx", mock_markets=okx_markets
     )
     # ETH: maxSz * 0.1 ETH * 2409.27 - tiers end at 1204635, 2409270 and 6023175 USDT
-    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 1_000_000) == (0.004, None)
-    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 2_000_000) == (0.005, None)
-    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 5_000_000) == (0.0075, None)
+    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 1_000_000) == (
+        0.004,
+        None,
+    )
+    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 2_000_000) == (
+        0.005,
+        None,
+    )
+    assert exchange.get_maintenance_ratio_and_amt("ETH/USDT:USDT", 5_000_000) == (
+        0.0075,
+        None,
+    )
 
     # ADA: maxSz * 100 ADA * 0.2196 - tiers end at 48312, 98820 and 219600 USDT
     assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 1) == (0.01, None)
-    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 40_000) == (0.01, None)
-    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 50_000) == (0.015, None)
-    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 200_000) == (0.03, None)
+    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 40_000) == (
+        0.01,
+        None,
+    )
+    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 50_000) == (
+        0.015,
+        None,
+    )
+    assert exchange.get_maintenance_ratio_and_amt("ADA/USDT:USDT", 200_000) == (
+        0.03,
+        None,
+    )
 
 
 def test_get_max_leverage_okx_contract_tiers(
@@ -280,7 +314,9 @@ def test_get_max_leverage_okx_contract_tiers(
     assert exchange.get_max_leverage("ETH/USDT:USDT", 12000) == 100.0
     assert exchange.get_max_leverage("ETH/USDT:USDT", 13000) == 66.66
     # Last tier: 25000 contracts * 0.1 ETH * 2409.27 = 6023175 USDT
-    assert exchange.get_max_pair_stake_amount("ETH/USDT:USDT", 2409.27) == pytest.approx(6023175)
+    assert exchange.get_max_pair_stake_amount(
+        "ETH/USDT:USDT", 2409.27
+    ) == pytest.approx(6023175)
     assert "TTT/USDT:USDT" not in exchange._leverage_tiers
 
 
@@ -298,7 +334,9 @@ def test_get_max_pair_stake_amount_okx(default_conf, mocker, leverage_tiers):
     assert exchange.get_max_pair_stake_amount("BTC/USDT:USDT", 1.0) == 1000000000
     assert exchange.get_max_pair_stake_amount("BTC/USDT:USDT", 1.0, 10.0) == 100000000
 
-    assert exchange.get_max_pair_stake_amount("TTT/USDT:USDT", 1.0) == float("inf")  # Not in tiers
+    assert exchange.get_max_pair_stake_amount("TTT/USDT:USDT", 1.0) == float(
+        "inf"
+    )  # Not in tiers
 
 
 @pytest.mark.parametrize(
@@ -343,7 +381,9 @@ def test_additional_exchange_init_okx(default_conf, mocker):
         ]
     )
     default_conf["dry_run"] = False
-    exchange = get_patched_exchange(mocker, default_conf, exchange="okx", api_mock=api_mock)
+    exchange = get_patched_exchange(
+        mocker, default_conf, exchange="okx", api_mock=api_mock
+    )
     assert api_mock.fetch_accounts.call_count == 0
     exchange.trading_mode = TradingMode.FUTURES
     # Default to netOnly
@@ -378,7 +418,12 @@ def test_additional_exchange_init_okx(default_conf, mocker):
     default_conf["trading_mode"] = "futures"
     default_conf["margin_mode"] = "isolated"
     ccxt_exceptionhandlers(
-        mocker, default_conf, api_mock, "okx", "additional_exchange_init", "fetch_accounts"
+        mocker,
+        default_conf,
+        api_mock,
+        "okx",
+        "additional_exchange_init",
+        "fetch_accounts",
     )
 
 
@@ -471,7 +516,8 @@ def test_load_leverage_tiers_okx(
         ],
     }
     filename = (
-        default_conf["datadir"] / f"futures/leverage_tiers_{default_conf['stake_currency']}.json"
+        default_conf["datadir"]
+        / f"futures/leverage_tiers_{default_conf['stake_currency']}.json"
     )
     assert filename.is_file()
 
@@ -575,7 +621,9 @@ def test_fetch_stoploss_order_okx(default_conf, mocker):
 
     default_conf["dry_run"] = True
     exchange = get_patched_exchange(mocker, default_conf, api_mock, exchange="okx")
-    dro_mock = mocker.patch(f"{EXMS}.fetch_dry_run_order", MagicMock(return_value={"id": "123455"}))
+    dro_mock = mocker.patch(
+        f"{EXMS}.fetch_dry_run_order", MagicMock(return_value={"id": "123455"})
+    )
 
     api_mock.fetch_order.reset_mock()
     api_mock.fetch_open_orders.reset_mock()
@@ -660,7 +708,9 @@ def test_stoploss_cancel_okx(mocker, default_conf):
         ),
     ],
 )
-def test__get_stop_params_okx(mocker, default_conf, trading_mode, margin_mode, expected):
+def test__get_stop_params_okx(
+    mocker, default_conf, trading_mode, margin_mode, expected
+):
     default_conf["trading_mode"] = trading_mode
     default_conf["margin_mode"] = margin_mode
     exchange = get_patched_exchange(mocker, default_conf, exchange="okx")

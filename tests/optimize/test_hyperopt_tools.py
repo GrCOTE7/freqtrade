@@ -288,8 +288,12 @@ def test_show_epoch_details(capsys):
     # re.match(r"Pairs for .*", captured.out)
     assert re.search(r"^\s+trailing_stop = True$", captured.out, re.MULTILINE)
     assert re.search(r"^\s+trailing_stop_positive = 0.02$", captured.out, re.MULTILINE)
-    assert re.search(r"^\s+trailing_stop_positive_offset = 0.04$", captured.out, re.MULTILINE)
-    assert re.search(r"^\s+trailing_only_offset_is_reached = True$", captured.out, re.MULTILINE)
+    assert re.search(
+        r"^\s+trailing_stop_positive_offset = 0.04$", captured.out, re.MULTILINE
+    )
+    assert re.search(
+        r"^\s+trailing_only_offset_is_reached = True$", captured.out, re.MULTILINE
+    )
 
     assert "# ROI parameters:" in captured.out
     assert re.search(r"^\s+minimal_roi = \{$", captured.out, re.MULTILINE)
@@ -301,16 +305,13 @@ def test__pprint_dict():
     non_params = {"buy_notoptimied": 55}
 
     x = HyperoptTools._pprint_dict(params, non_params)
-    assert (
-        x
-        == """{
+    assert x == """{
     "buy_std": 1.2,
     "buy_rsi": 31,
     "buy_enable": True,
     "buy_what": "asdf",
     "buy_notoptimied": 55,  # value loaded from strategy
 }"""
-    )
 
 
 def test_get_strategy_filename(default_conf, tmp_path):
@@ -362,7 +363,9 @@ def test_export_params(tmp_path):
 def test_try_export_params(default_conf, tmp_path, caplog, mocker):
     default_conf["disableparamexport"] = False
     default_conf["user_data_dir"] = tmp_path
-    export_mock = mocker.patch("freqtrade.optimize.hyperopt_tools.HyperoptTools.export_params")
+    export_mock = mocker.patch(
+        "freqtrade.optimize.hyperopt_tools.HyperoptTools.export_params"
+    )
 
     filename = tmp_path / f"{CURRENT_TEST_STRATEGY}.json"
     assert not filename.is_file()
@@ -439,15 +442,23 @@ def test_params_print(capsys):
     assert re.search("minimal_roi = {\n", captured.out)
     assert re.search('"20": 0.01\n', captured.out)
 
-    HyperoptTools._params_pretty_print(params, "trailing", "Trailing stop:", non_optimized)
+    HyperoptTools._params_pretty_print(
+        params, "trailing", "Trailing stop:", non_optimized
+    )
     captured = capsys.readouterr()
     assert re.search("# Trailing stop:", captured.out)
     assert re.search("trailing_stop = False  # value loaded.*\n", captured.out)
     assert re.search("trailing_stop_positive = 0.05  # value loaded.*\n", captured.out)
-    assert re.search("trailing_stop_positive_offset = 0.1  # value loaded.*\n", captured.out)
-    assert re.search("trailing_only_offset_is_reached = True  # value loaded.*\n", captured.out)
+    assert re.search(
+        "trailing_stop_positive_offset = 0.1  # value loaded.*\n", captured.out
+    )
+    assert re.search(
+        "trailing_only_offset_is_reached = True  # value loaded.*\n", captured.out
+    )
 
-    HyperoptTools._params_pretty_print(params, "max_open_trades", "Max Open Trades:", non_optimized)
+    HyperoptTools._params_pretty_print(
+        params, "max_open_trades", "Max Open Trades:", non_optimized
+    )
     captured = capsys.readouterr()
 
     assert re.search("# Max Open Trades:", captured.out)
