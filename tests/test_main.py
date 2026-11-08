@@ -9,7 +9,11 @@ import pytest
 
 from freqtrade.commands import Arguments
 from freqtrade.enums import State
-from freqtrade.exceptions import ConfigurationError, FreqtradeException, OperationalException
+from freqtrade.exceptions import (
+    ConfigurationError,
+    FreqtradeException,
+    OperationalException,
+)
 from freqtrade.freqtradebot import FreqtradeBot
 from freqtrade.main import main
 from freqtrade.worker import Worker
@@ -85,14 +89,18 @@ def test_main_fatal_exception(mocker, default_conf, caplog) -> None:
     # Test Main + the KeyboardInterrupt exception
     with pytest.raises(SystemExit):
         main(args)
-    assert log_has("Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog)
+    assert log_has(
+        "Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog
+    )
     assert log_has("Fatal exception!", caplog)
 
 
 def test_main_keyboard_interrupt(mocker, default_conf, caplog) -> None:
     patch_exchange(mocker)
     mocker.patch("freqtrade.freqtradebot.FreqtradeBot.cleanup", MagicMock())
-    mocker.patch("freqtrade.worker.Worker._worker", MagicMock(side_effect=KeyboardInterrupt))
+    mocker.patch(
+        "freqtrade.worker.Worker._worker", MagicMock(side_effect=KeyboardInterrupt)
+    )
     patched_configuration_load_config_file(mocker, default_conf)
     mocker.patch("freqtrade.freqtradebot.RPCManager", MagicMock())
     mocker.patch("freqtrade.wallets.Wallets.update", MagicMock())
@@ -103,7 +111,9 @@ def test_main_keyboard_interrupt(mocker, default_conf, caplog) -> None:
     # Test Main + the KeyboardInterrupt exception
     with pytest.raises(SystemExit):
         main(args)
-    assert log_has("Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog)
+    assert log_has(
+        "Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog
+    )
     assert log_has("SIGINT received, aborting ...", caplog)
 
 
@@ -111,7 +121,8 @@ def test_main_operational_exception(mocker, default_conf, caplog) -> None:
     patch_exchange(mocker)
     mocker.patch("freqtrade.freqtradebot.FreqtradeBot.cleanup", MagicMock())
     mocker.patch(
-        "freqtrade.worker.Worker._worker", MagicMock(side_effect=FreqtradeException("Oh snap!"))
+        "freqtrade.worker.Worker._worker",
+        MagicMock(side_effect=FreqtradeException("Oh snap!")),
     )
     patched_configuration_load_config_file(mocker, default_conf)
     mocker.patch("freqtrade.wallets.Wallets.update", MagicMock())
@@ -123,7 +134,9 @@ def test_main_operational_exception(mocker, default_conf, caplog) -> None:
     # Test Main + the KeyboardInterrupt exception
     with pytest.raises(SystemExit):
         main(args)
-    assert log_has("Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog)
+    assert log_has(
+        "Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog
+    )
     assert log_has("Oh snap!", caplog)
 
 
@@ -197,7 +210,9 @@ def test_main_reload_config(mocker, default_conf, caplog) -> None:
     with pytest.raises(SystemExit):
         main(["trade", "-c", "tests/testdata/testconfigs/main_test_config.json"])
 
-    assert log_has("Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog)
+    assert log_has(
+        "Using config: tests/testdata/testconfigs/main_test_config.json ...", caplog
+    )
     assert worker_mock.call_count == 4
     assert reconfigure_mock.call_count == 1
     assert isinstance(worker.freqtrade, FreqtradeBot)
@@ -207,7 +222,8 @@ def test_reconfigure(mocker, default_conf) -> None:
     patch_exchange(mocker)
     mocker.patch("freqtrade.freqtradebot.FreqtradeBot.cleanup", MagicMock())
     mocker.patch(
-        "freqtrade.worker.Worker._worker", MagicMock(side_effect=OperationalException("Oh snap!"))
+        "freqtrade.worker.Worker._worker",
+        MagicMock(side_effect=OperationalException("Oh snap!")),
     )
     mocker.patch("freqtrade.wallets.Wallets.update", MagicMock())
     patched_configuration_load_config_file(mocker, default_conf)

@@ -6,7 +6,6 @@ from pandas import DataFrame
 
 from freqtrade.strategy import DecimalParameter, IntParameter, IStrategy
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,7 +39,9 @@ class freqai_test_strat(IStrategy):
     linear_roi_offset = DecimalParameter(
         0.00, 0.02, default=0.005, space="sell", optimize=False, load=True
     )
-    max_roi_time_long = IntParameter(0, 800, default=400, space="sell", optimize=False, load=True)
+    max_roi_time_long = IntParameter(
+        0, 800, default=400, space="sell", optimize=False, load=True
+    )
 
     def feature_engineering_expand_all(
         self, dataframe: DataFrame, period: int, metadata: dict, **kwargs
@@ -51,14 +52,18 @@ class freqai_test_strat(IStrategy):
 
         return dataframe
 
-    def feature_engineering_expand_basic(self, dataframe: DataFrame, metadata: dict, **kwargs):
+    def feature_engineering_expand_basic(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ):
         dataframe["%-pct-change"] = dataframe["close"].pct_change()
         dataframe["%-raw_volume"] = dataframe["volume"]
         dataframe["%-raw_price"] = dataframe["close"]
 
         return dataframe
 
-    def feature_engineering_standard(self, dataframe: DataFrame, metadata: dict, **kwargs):
+    def feature_engineering_standard(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ):
         dataframe["%-day_of_week"] = dataframe["date"].dt.day_of_week
         dataframe["%-hour_of_day"] = dataframe["date"].dt.hour
 
@@ -81,33 +86,51 @@ class freqai_test_strat(IStrategy):
 
         dataframe = self.freqai.start(dataframe, metadata, self)
 
-        dataframe["target_roi"] = dataframe["&-s_close_mean"] + dataframe["&-s_close_std"] * 1.25
-        dataframe["sell_roi"] = dataframe["&-s_close_mean"] - dataframe["&-s_close_std"] * 1.25
+        dataframe["target_roi"] = (
+            dataframe["&-s_close_mean"] + dataframe["&-s_close_std"] * 1.25
+        )
+        dataframe["sell_roi"] = (
+            dataframe["&-s_close_mean"] - dataframe["&-s_close_std"] * 1.25
+        )
         return dataframe
 
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
-        enter_long_conditions = [df["do_predict"] == 1, df["&-s_close"] > df["target_roi"]]
+        enter_long_conditions = [
+            df["do_predict"] == 1,
+            df["&-s_close"] > df["target_roi"],
+        ]
 
         if enter_long_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_long_conditions), ["enter_long", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_long_conditions),
+                ["enter_long", "enter_tag"],
             ] = (1, "long")
 
-        enter_short_conditions = [df["do_predict"] == 1, df["&-s_close"] < df["sell_roi"]]
+        enter_short_conditions = [
+            df["do_predict"] == 1,
+            df["&-s_close"] < df["sell_roi"],
+        ]
 
         if enter_short_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_short_conditions), ["enter_short", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_short_conditions),
+                ["enter_short", "enter_tag"],
             ] = (1, "short")
 
         return df
 
     def populate_exit_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
-        exit_long_conditions = [df["do_predict"] == 1, df["&-s_close"] < df["sell_roi"] * 0.25]
+        exit_long_conditions = [
+            df["do_predict"] == 1,
+            df["&-s_close"] < df["sell_roi"] * 0.25,
+        ]
         if exit_long_conditions:
             df.loc[reduce(lambda x, y: x & y, exit_long_conditions), "exit_long"] = 1
 
-        exit_short_conditions = [df["do_predict"] == 1, df["&-s_close"] > df["target_roi"] * 0.25]
+        exit_short_conditions = [
+            df["do_predict"] == 1,
+            df["&-s_close"] > df["target_roi"] * 0.25,
+        ]
         if exit_short_conditions:
             df.loc[reduce(lambda x, y: x & y, exit_short_conditions), "exit_short"] = 1
 
