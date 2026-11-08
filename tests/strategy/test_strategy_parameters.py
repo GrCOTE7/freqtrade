@@ -75,7 +75,9 @@ def test_hyperopt_decimal_parameter():
     with pytest.raises(OperationalException, match=r"DecimalParameter space invalid\."):
         DecimalParameter([0, 10], high=7, default=5, space="buy")
 
-    decimalpar = DecimalParameter(low=0.0, high=0.5, default=0.14, decimals=1, space="buy")
+    decimalpar = DecimalParameter(
+        low=0.0, high=0.5, default=0.14, decimals=1, space="buy"
+    )
     assert decimalpar.value == 0.1
     assert isinstance(decimalpar.get_space(""), SKDecimal)
     assert isinstance(decimalpar.range, list)
@@ -86,7 +88,9 @@ def test_hyperopt_decimal_parameter():
     assert len(list(decimalpar.range)) == 6
     assert list(decimalpar.range) == [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
-    decimalpar2 = DecimalParameter(low=0.01, high=0.03, decimals=3, default=0.02, space="buy")
+    decimalpar2 = DecimalParameter(
+        low=0.01, high=0.03, decimals=3, default=0.02, space="buy"
+    )
     decimalpar2.in_space = True
     assert len(list(decimalpar2.range)) == 21
     expected_range = [round(0.01 + i * 0.001, 3) for i in range(21)]
@@ -116,7 +120,9 @@ def test_hyperopt_decimal_parameter():
 )
 def test_decimal_parameter_range_matches_space(low, high, decimals):
     HyperoptStateContainer.set_state(HyperoptState.INDICATORS)
-    par = DecimalParameter(low=low, high=high, decimals=decimals, default=low, space="buy")
+    par = DecimalParameter(
+        low=low, high=high, decimals=decimals, default=low, space="buy"
+    )
     par.in_space = True
     space = par.get_space("")
     # space is SKDecimal - which must align with the parameter's range rounding.
@@ -129,7 +135,9 @@ def test_hyperopt_categorical_parameter():
     HyperoptStateContainer.set_state(HyperoptState.INDICATORS)
     from optuna.distributions import CategoricalDistribution
 
-    with pytest.raises(OperationalException, match=r"CategoricalParameter space must.*"):
+    with pytest.raises(
+        OperationalException, match=r"CategoricalParameter space must.*"
+    ):
         CategoricalParameter(["aa"], default="aa", space="buy")
 
     with pytest.raises(TypeError):
