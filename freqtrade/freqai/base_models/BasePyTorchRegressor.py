@@ -9,7 +9,6 @@ from pandas import DataFrame
 from freqtrade.freqai.base_models.BasePyTorchModel import BasePyTorchModel
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -40,8 +39,10 @@ class BasePyTorchRegressor(BasePyTorchModel):
         )
         dk.data_dictionary["prediction_features"] = filtered_df
 
-        dk.data_dictionary["prediction_features"], outliers, _ = dk.feature_pipeline.transform(
-            dk.data_dictionary["prediction_features"], outlier_check=True
+        dk.data_dictionary["prediction_features"], outliers, _ = (
+            dk.feature_pipeline.transform(
+                dk.data_dictionary["prediction_features"], outlier_check=True
+            )
         )
 
         x = self.data_convertor.convert_x(
@@ -59,7 +60,9 @@ class BasePyTorchRegressor(BasePyTorchModel):
         dk.do_predict = outliers
         return (pred_df, dk.do_predict)
 
-    def train(self, unfiltered_df: DataFrame, pair: str, dk: FreqaiDataKitchen, **kwargs) -> Any:
+    def train(
+        self, unfiltered_df: DataFrame, pair: str, dk: FreqaiDataKitchen, **kwargs
+    ) -> Any:
         """
         Filter the training data and train a model to it. Train makes heavy use of the datakitchen
         for storing, saving, loading, and analyzing the data.
@@ -68,7 +71,9 @@ class BasePyTorchRegressor(BasePyTorchModel):
         :model: Trained model which can be used to inference (self.predict)
         """
 
-        logger.info(f"-------------------- Starting training {pair} --------------------")
+        logger.info(
+            f"-------------------- Starting training {pair} --------------------"
+        )
 
         start_time = time()
 
@@ -86,7 +91,7 @@ class BasePyTorchRegressor(BasePyTorchModel):
         dk.feature_pipeline = self.define_data_pipeline(threads=dk.thread_count)
         dk.label_pipeline = self.define_label_pipeline(threads=dk.thread_count)
 
-        (dd["train_features"], dd["train_labels"], dd["train_weights"]) = (
+        dd["train_features"], dd["train_labels"], dd["train_weights"] = (
             dk.feature_pipeline.fit_transform(
                 dd["train_features"], dd["train_labels"], dd["train_weights"]
             )
@@ -94,7 +99,7 @@ class BasePyTorchRegressor(BasePyTorchModel):
         dd["train_labels"], _, _ = dk.label_pipeline.fit_transform(dd["train_labels"])
 
         if self.freqai_info.get("data_split_parameters", {}).get("test_size", 0.1) != 0:
-            (dd["test_features"], dd["test_labels"], dd["test_weights"]) = (
+            dd["test_features"], dd["test_labels"], dd["test_weights"] = (
                 dk.feature_pipeline.transform(
                     dd["test_features"], dd["test_labels"], dd["test_weights"]
                 )

@@ -767,8 +767,12 @@ EXCHANGES: dict[str, TestExchangeOnlineSetup] = {
     },
 }
 
-EXCHANGES_FUTURES = [exch for exch, params in EXCHANGES.items() if params.get("futures")]
-EXCHANGES_SPOT = [exch for exch, params in EXCHANGES.items() if not params.get("futures_only")]
+EXCHANGES_FUTURES = [
+    exch for exch, params in EXCHANGES.items() if params.get("futures")
+]
+EXCHANGES_SPOT = [
+    exch for exch, params in EXCHANGES.items() if not params.get("futures_only")
+]
 
 
 @pytest.fixture(scope="class")
@@ -800,7 +804,9 @@ def set_test_proxy(config: Config, use_proxy: bool) -> Config:
 
 def get_exchange(exchange_name, exchange_conf, class_mocker):
     exchange_params = EXCHANGES[exchange_name]
-    exchange_conf = set_test_proxy(exchange_conf, exchange_params.get("use_ci_proxy", False))
+    exchange_conf = set_test_proxy(
+        exchange_conf, exchange_params.get("use_ci_proxy", False)
+    )
     exchange_conf["exchange"]["name"] = exchange_name
     exchange_conf["stake_currency"] = exchange_params["stake_currency"]
     class_mocker.patch(f"{EXMS}.ft_additional_exchange_init")
@@ -811,13 +817,17 @@ def get_exchange(exchange_name, exchange_conf, class_mocker):
     return exchange, exchange_name, exchange_params
 
 
-def get_futures_exchange(exchange_name, exchange_conf, class_mocker, load_leverage_tiers=True):
+def get_futures_exchange(
+    exchange_name, exchange_conf, class_mocker, load_leverage_tiers=True
+):
     exchange_params = EXCHANGES[exchange_name]
 
     if exchange_params.get("futures") is not True:
         pytest.skip(f"Exchange {exchange_name} does not support futures.")
     exchange_conf = deepcopy(exchange_conf)
-    exchange_conf = set_test_proxy(exchange_conf, exchange_params.get("use_ci_proxy", False))
+    exchange_conf = set_test_proxy(
+        exchange_conf, exchange_params.get("use_ci_proxy", False)
+    )
     exchange_conf["exchange"]["name"] = exchange_name
     exchange_conf["stake_currency"] = exchange_params["stake_currency"]
     exchange_conf["trading_mode"] = "futures"
@@ -837,7 +847,9 @@ def get_futures_exchange(exchange_name, exchange_conf, class_mocker, load_levera
 
 @pytest.fixture(params=EXCHANGES_SPOT, scope="class")
 def exchange(request, exchange_conf, class_mocker):
-    exchange, name, exchange_params = get_exchange(request.param, exchange_conf, class_mocker)
+    exchange, name, exchange_params = get_exchange(
+        request.param, exchange_conf, class_mocker
+    )
     yield exchange, name, exchange_params
     exchange.close()
 
@@ -868,7 +880,10 @@ def exchange_ws(request, exchange_conf, exchange_mode, class_mocker):
     elif exchange_param.get("futures"):
         # Leverage tiers are not needed for websocket tests, and are slow to load.
         exchange, name, _ = get_futures_exchange(
-            request.param, exchange_conf, class_mocker=class_mocker, load_leverage_tiers=False
+            request.param,
+            exchange_conf,
+            class_mocker=class_mocker,
+            load_leverage_tiers=False,
         )
         pair = exchange_param["futures_pair"]
     else:

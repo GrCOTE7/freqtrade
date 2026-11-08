@@ -31,12 +31,24 @@ from freqtrade.data.history import (
 from freqtrade.data.history.datahandlers import IDataHandler
 from freqtrade.enums import CandleType
 from freqtrade.exchange import timeframe_to_minutes, timeframe_to_seconds
-from tests.conftest import generate_test_data, generate_trades_history, log_has, log_has_re
+from tests.conftest import (
+    generate_test_data,
+    generate_trades_history,
+    log_has,
+    log_has_re,
+)
 from tests.data.test_history import _clean_test_file
 
 
 def test_dataframe_correct_columns(dataframe_1m):
-    assert dataframe_1m.columns.tolist() == ["date", "open", "high", "low", "close", "volume"]
+    assert dataframe_1m.columns.tolist() == [
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    ]
 
 
 def test_ohlcv_to_dataframe(ohlcv_history_list, caplog):
@@ -44,9 +56,13 @@ def test_ohlcv_to_dataframe(ohlcv_history_list, caplog):
 
     caplog.set_level(logging.DEBUG)
     # Test file with BV data
-    dataframe = ohlcv_to_dataframe(ohlcv_history_list, "5m", pair="UNITTEST/BTC", fill_missing=True)
+    dataframe = ohlcv_to_dataframe(
+        ohlcv_history_list, "5m", pair="UNITTEST/BTC", fill_missing=True
+    )
     assert dataframe.columns.tolist() == columns
-    assert log_has("Converting candle (OHLCV) data to dataframe for pair UNITTEST/BTC.", caplog)
+    assert log_has(
+        "Converting candle (OHLCV) data to dataframe for pair UNITTEST/BTC.", caplog
+    )
 
 
 def test_trades_to_ohlcv(trades_history_df, caplog):
@@ -195,7 +211,23 @@ def test_ohlcv_fill_up_missing_data2(caplog):
 
 @pytest.mark.parametrize(
     "timeframe",
-    ["1s", "1m", "5m", "15m", "1h", "2h", "4h", "8h", "12h", "1d", "7d", "1w", "1M", "3M", "1y"],
+    [
+        "1s",
+        "1m",
+        "5m",
+        "15m",
+        "1h",
+        "2h",
+        "4h",
+        "8h",
+        "12h",
+        "1d",
+        "7d",
+        "1w",
+        "1M",
+        "3M",
+        "1y",
+    ],
 )
 def test_ohlcv_to_dataframe_multi(timeframe):
     data = generate_test_data(timeframe, 180)
@@ -227,8 +259,14 @@ def test_ohlcv_to_dataframe_multi(timeframe):
             "close": "last",
             "volume": "sum",
         }
-        dfs = data1.resample(f"{tfs}s", on="date").agg(ohlcv_dict).reset_index(drop=False)
-        dfm = data1.resample(f"{tfm}min", on="date").agg(ohlcv_dict).reset_index(drop=False)
+        dfs = (
+            data1.resample(f"{tfs}s", on="date").agg(ohlcv_dict).reset_index(drop=False)
+        )
+        dfm = (
+            data1.resample(f"{tfm}min", on="date")
+            .agg(ohlcv_dict)
+            .reset_index(drop=False)
+        )
 
         assert dfs.equals(dfm)
         assert dfs.equals(df1)
@@ -355,7 +393,9 @@ def test_ohlcv_drop_incomplete(caplog):
 
 
 def test_trim_dataframe(testdatadir) -> None:
-    data = load_data(datadir=testdatadir, timeframe="1m", pairs=["UNITTEST/BTC"])["UNITTEST/BTC"]
+    data = load_data(datadir=testdatadir, timeframe="1m", pairs=["UNITTEST/BTC"])[
+        "UNITTEST/BTC"
+    ]
     min_date = int(data.iloc[0]["date"].timestamp())
     max_date = int(data.iloc[-1]["date"].timestamp())
     data_modify = data.copy()
@@ -426,8 +466,14 @@ def test_trades_dict_to_list(fetch_trades_result):
 
 def test_convert_trades_format(default_conf, testdatadir, tmp_path):
     files = [
-        {"old": tmp_path / "XRP_ETH-trades.json.gz", "new": tmp_path / "XRP_ETH-trades.json"},
-        {"old": tmp_path / "XRP_OLD-trades.json.gz", "new": tmp_path / "XRP_OLD-trades.json"},
+        {
+            "old": tmp_path / "XRP_ETH-trades.json.gz",
+            "new": tmp_path / "XRP_ETH-trades.json",
+        },
+        {
+            "old": tmp_path / "XRP_OLD-trades.json.gz",
+            "new": tmp_path / "XRP_OLD-trades.json",
+        },
     ]
     for file in files:
         copyfile(testdatadir / file["old"].name, file["old"])
@@ -435,7 +481,9 @@ def test_convert_trades_format(default_conf, testdatadir, tmp_path):
 
     default_conf["datadir"] = tmp_path
 
-    convert_trades_format(default_conf, convert_from="jsongz", convert_to="json", erase=False)
+    convert_trades_format(
+        default_conf, convert_from="jsongz", convert_to="json", erase=False
+    )
 
     for file in files:
         assert file["new"].exists()
@@ -444,7 +492,9 @@ def test_convert_trades_format(default_conf, testdatadir, tmp_path):
         # Remove original file
         file["old"].unlink()
     # Convert back
-    convert_trades_format(default_conf, convert_from="json", convert_to="jsongz", erase=True)
+    convert_trades_format(
+        default_conf, convert_from="json", convert_to="jsongz", erase=True
+    )
     for file in files:
         assert file["old"].exists()
         assert not file["new"].exists()
@@ -467,7 +517,9 @@ def test_convert_trades_format(default_conf, testdatadir, tmp_path):
         ),
     ],
 )
-def test_convert_ohlcv_format(default_conf, testdatadir, tmp_path, file_base, candletype):
+def test_convert_ohlcv_format(
+    default_conf, testdatadir, tmp_path, file_base, candletype
+):
     prependix = "" if candletype == CandleType.SPOT else "futures/"
     files_orig = []
     files_temp = []

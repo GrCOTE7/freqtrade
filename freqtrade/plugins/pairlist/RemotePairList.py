@@ -15,10 +15,13 @@ from freqtrade import __version__
 from freqtrade.configuration.load_config import CONFIG_PARSE_MODE
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.plugins.pairlist.pairlist_helpers import expand_pairlist
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +44,9 @@ class RemotePairList(IPairList):
         self._processing_mode = self._pairlistconfig.get("processing_mode", "filter")
         self._number_pairs: int | None = self._pairlistconfig.get("number_assets", None)
         self._refresh_period: int = self._pairlistconfig.get("refresh_period", 1800)
-        self._keep_pairlist_on_failure = self._pairlistconfig.get("keep_pairlist_on_failure", True)
+        self._keep_pairlist_on_failure = self._pairlistconfig.get(
+            "keep_pairlist_on_failure", True
+        )
         self._pair_cache: FtTTLCache = FtTTLCache(maxsize=1, ttl=self._refresh_period)
         self._pairlist_url = self._pairlistconfig.get("pairlist_url", "")
         self._read_timeout = self._pairlistconfig.get("read_timeout", 60)
@@ -137,7 +142,9 @@ class RemotePairList(IPairList):
 
     def process_json(self, jsonparse) -> list[str]:
         pairlist = jsonparse.get("pairs", [])
-        remote_refresh_period = int(jsonparse.get("refresh_period", self._refresh_period))
+        remote_refresh_period = int(
+            jsonparse.get("refresh_period", self._refresh_period)
+        )
 
         if self._refresh_period < remote_refresh_period:
             self.log_once(
@@ -169,7 +176,9 @@ class RemotePairList(IPairList):
             headers["Authorization"] = f"Bearer {self._bearer_token}"
 
         try:
-            response = requests.get(self._pairlist_url, headers=headers, timeout=self._read_timeout)
+            response = requests.get(
+                self._pairlist_url, headers=headers, timeout=self._read_timeout
+            )
             content_type = response.headers.get("content-type")
             time_elapsed = response.elapsed.total_seconds()
 
@@ -179,7 +188,9 @@ class RemotePairList(IPairList):
                 try:
                     pairlist = self.process_json(jsonparse)
                 except Exception as e:
-                    pairlist = self._handle_error(f"Failed processing JSON data: {type(e)}")
+                    pairlist = self._handle_error(
+                        f"Failed processing JSON data: {type(e)}"
+                    )
             else:
                 pairlist = self._handle_error(
                     f"RemotePairList is not of type JSON. {self._pairlist_url}"
@@ -230,12 +241,18 @@ class RemotePairList(IPairList):
                     with file_path.open() as json_file:
                         try:
                             # Load the JSON data into a dictionary
-                            jsonparse = rapidjson.load(json_file, parse_mode=CONFIG_PARSE_MODE)
+                            jsonparse = rapidjson.load(
+                                json_file, parse_mode=CONFIG_PARSE_MODE
+                            )
                             pairlist = self.process_json(jsonparse)
                         except Exception as e:
-                            pairlist = self._handle_error(f"processing JSON data: {type(e)}")
+                            pairlist = self._handle_error(
+                                f"processing JSON data: {type(e)}"
+                            )
                 else:
-                    pairlist = self._handle_error(f"{self._pairlist_url} does not exist.")
+                    pairlist = self._handle_error(
+                        f"{self._pairlist_url} does not exist."
+                    )
 
             else:
                 # Fetch Pairlist from Remote URL
@@ -301,7 +318,9 @@ class RemotePairList(IPairList):
                 else:
                     filtered.append(pair)
             if filtered:
-                self.log_once(f"Blacklist - Filtered out pairs: {filtered}", logger.info)
+                self.log_once(
+                    f"Blacklist - Filtered out pairs: {filtered}", logger.info
+                )
 
         if self._number_pairs and (self._mode == "whitelist"):
             merged_list = merged_list[: self._number_pairs]

@@ -2,7 +2,6 @@ from datetime import UTC, datetime, timedelta
 
 from freqtrade.persistence.models import Order, Trade
 
-
 MOCK_TRADE_COUNT = 6
 
 
@@ -50,7 +49,9 @@ def mock_trade_1(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_1(is_short), "ETH/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_1(is_short), "ETH/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 
@@ -110,9 +111,13 @@ def mock_trade_2(fee, is_short: bool):
         close_date=datetime.now(tz=UTC) - timedelta(minutes=2),
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_2(is_short), "ETC/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_2(is_short), "ETC/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
-    o = Order.parse_from_ccxt_object(mock_order_2_sell(is_short), "ETC/BTC", exit_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_2_sell(is_short), "ETC/BTC", exit_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 
@@ -172,9 +177,13 @@ def mock_trade_3(fee, is_short: bool):
         close_date=datetime.now(tz=UTC),
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_3(is_short), "XRP/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_3(is_short), "XRP/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
-    o = Order.parse_from_ccxt_object(mock_order_3_sell(is_short), "XRP/BTC", exit_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_3_sell(is_short), "XRP/BTC", exit_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 
@@ -214,7 +223,9 @@ def mock_trade_4(fee, is_short: bool):
         is_short=is_short,
         stop_loss_pct=0.10,
     )
-    o = Order.parse_from_ccxt_object(mock_order_4(is_short), "ETC/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_4(is_short), "ETC/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 
@@ -270,9 +281,13 @@ def mock_trade_5(fee, is_short: bool):
         is_short=is_short,
         stop_loss_pct=0.10,
     )
-    o = Order.parse_from_ccxt_object(mock_order_5(is_short), "XRP/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_5(is_short), "XRP/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
-    o = Order.parse_from_ccxt_object(mock_order_5_stoploss(is_short), "XRP/BTC", "stoploss")
+    o = Order.parse_from_ccxt_object(
+        mock_order_5_stoploss(is_short), "XRP/BTC", "stoploss"
+    )
     trade.orders.append(o)
     return trade
 
@@ -327,9 +342,13 @@ def mock_trade_6(fee, is_short: bool):
         timeframe=5,
         is_short=is_short,
     )
-    o = Order.parse_from_ccxt_object(mock_order_6(is_short), "LTC/BTC", entry_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_6(is_short), "LTC/BTC", entry_side(is_short)
+    )
     trade.orders.append(o)
-    o = Order.parse_from_ccxt_object(mock_order_6_sell(is_short), "LTC/BTC", exit_side(is_short))
+    o = Order.parse_from_ccxt_object(
+        mock_order_6_sell(is_short), "LTC/BTC", exit_side(is_short)
+    )
     trade.orders.append(o)
     return trade
 

@@ -35,9 +35,13 @@ def test_create_fulltimerange(
 
 def test_create_fulltimerange_incorrect_backtest_period(mocker, freqai_conf):
     dk = get_patched_data_kitchen(mocker, freqai_conf)
-    with pytest.raises(OperationalException, match=r"backtest_period_days must be an integer"):
+    with pytest.raises(
+        OperationalException, match=r"backtest_period_days must be an integer"
+    ):
         dk.create_fulltimerange("20220101-20220201", 0.5)
-    with pytest.raises(OperationalException, match=r"backtest_period_days must be positive"):
+    with pytest.raises(
+        OperationalException, match=r"backtest_period_days must be positive"
+    ):
         dk.create_fulltimerange("20220101-20220201", -1)
     shutil.rmtree(Path(dk.full_path))
 
@@ -51,15 +55,23 @@ def test_create_fulltimerange_incorrect_backtest_period(mocker, freqai_conf):
     ],
 )
 def test_split_timerange(
-    mocker, freqai_conf, timerange, train_period_days, backtest_period_days, expected_result
+    mocker,
+    freqai_conf,
+    timerange,
+    train_period_days,
+    backtest_period_days,
+    expected_result,
 ):
     freqai_conf.update({"timerange": "20220101-20220401"})
     dk = get_patched_data_kitchen(mocker, freqai_conf)
-    tr_list, bt_list = dk.split_timerange(timerange, train_period_days, backtest_period_days)
+    tr_list, bt_list = dk.split_timerange(
+        timerange, train_period_days, backtest_period_days
+    )
     assert len(tr_list) == len(bt_list) == expected_result
 
     with pytest.raises(
-        OperationalException, match=r"train_period_days must be an integer greater than 0."
+        OperationalException,
+        match=r"train_period_days must be an integer greater than 0.",
     ):
         dk.split_timerange("20220101-20220201", -1, 0.5)
     shutil.rmtree(Path(dk.full_path))
@@ -99,7 +111,9 @@ def test_make_train_test_datasets(mocker, freqai_conf):
         training_filter=True,
     )
 
-    data_dictionary = freqai.dk.make_train_test_datasets(features_filtered, labels_filtered)
+    data_dictionary = freqai.dk.make_train_test_datasets(
+        features_filtered, labels_filtered
+    )
 
     assert data_dictionary
     assert len(data_dictionary) == 7
@@ -215,10 +229,18 @@ def test_populate_features(mocker, freqai_conf):
     timerange = TimeRange.parse_timerange("20180115-20180130")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
 
-    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(timerange, "LTC/BTC", freqai.dk)
-    mocker.patch.object(strategy, "feature_engineering_expand_all", return_value=base_df["5m"])
+    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(
+        timerange, "LTC/BTC", freqai.dk
+    )
+    mocker.patch.object(
+        strategy, "feature_engineering_expand_all", return_value=base_df["5m"]
+    )
     df = freqai.dk.populate_features(
-        base_df["5m"], "LTC/BTC", strategy, base_dataframes=base_df, corr_dataframes=corr_df
+        base_df["5m"],
+        "LTC/BTC",
+        strategy,
+        base_dataframes=base_df,
+        corr_dataframes=corr_df,
     )
 
     strategy.feature_engineering_expand_all.assert_called_once()

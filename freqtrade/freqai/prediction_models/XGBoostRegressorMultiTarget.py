@@ -7,7 +7,6 @@ from freqtrade.freqai.base_models.BaseRegressionModel import BaseRegressionModel
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.freqai.tensorboard import TBCallback
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -37,8 +36,14 @@ class XGBoostRegressorMultiTarget(BaseRegressionModel):
             eval_set = None
             eval_weights = None
         else:
-            eval_set = [(data_dictionary["test_features"], data_dictionary["test_labels"]), (X, y)]
-            eval_weights = [data_dictionary["test_weights"], data_dictionary["train_weights"]]
+            eval_set = [
+                (data_dictionary["test_features"], data_dictionary["test_labels"]),
+                (X, y),
+            ]
+            eval_weights = [
+                data_dictionary["test_weights"],
+                data_dictionary["train_weights"],
+            ]
 
         sample_weight = data_dictionary["train_weights"]
 

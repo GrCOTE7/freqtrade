@@ -15,7 +15,6 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.misc import deep_merge_dicts, round_dict, safe_value_fallback2
 from freqtrade.optimize.hyperopt_epoch_filters import hyperopt_filter_epochs
 
-
 logger = logging.getLogger(__name__)
 
 NON_OPT_PARAM_APPENDIX = "  # value loaded from strategy"
@@ -72,7 +71,9 @@ class HyperoptTools:
         )
 
     @staticmethod
-    def export_params(params: dict[str, Any], strategy_name: str, filename: Path) -> None:
+    def export_params(
+        params: dict[str, Any], strategy_name: str, filename: Path
+    ) -> None:
         """Generate files"""
         final_params = deepcopy(params["params_not_optimized"])
         final_params = deep_merge_dicts(params["params_details"], final_params)
@@ -102,11 +103,15 @@ class HyperoptTools:
 
     @staticmethod
     def try_export_params(config: Config, strategy_name: str, params: dict):
-        if params.get(FTHYPT_FILEVERSION, 1) >= 2 and not config.get("disableparamexport", False):
+        if params.get(FTHYPT_FILEVERSION, 1) >= 2 and not config.get(
+            "disableparamexport", False
+        ):
             # Export parameters ...
             fn = HyperoptTools.get_strategy_filename(config, strategy_name)
             if fn:
-                HyperoptTools.export_params(params, strategy_name, fn.with_suffix(".json"))
+                HyperoptTools.export_params(
+                    params, strategy_name, fn.with_suffix(".json")
+                )
             else:
                 logger.warning("Strategy not found, not exporting parameter file.")
 
@@ -209,7 +214,9 @@ class HyperoptTools:
             header_str = "Best result"
 
         if not no_header:
-            explanation_str = HyperoptTools._format_explanation_string(results, total_epochs)
+            explanation_str = HyperoptTools._format_explanation_string(
+                results, total_epochs
+            )
             print(f"\n{header_str}:\n\n{explanation_str}\n")
 
         if print_json:
@@ -223,13 +230,27 @@ class HyperoptTools:
                 "trailing",
                 "max_open_trades",
             ]:
-                HyperoptTools._params_update_for_json(result_dict, params, non_optimized, s)
-            print(rapidjson.dumps(result_dict, default=str, number_mode=HYPER_PARAMS_FILE_FORMAT))
+                HyperoptTools._params_update_for_json(
+                    result_dict, params, non_optimized, s
+                )
+            print(
+                rapidjson.dumps(
+                    result_dict, default=str, number_mode=HYPER_PARAMS_FILE_FORMAT
+                )
+            )
 
         else:
             all_spaces = list(params.keys() | non_optimized.keys())
             # Explicitly listed to keep original sort order
-            spaces = ["buy", "sell", "protection", "roi", "stoploss", "trailing", "max_open_trades"]
+            spaces = [
+                "buy",
+                "sell",
+                "protection",
+                "roi",
+                "stoploss",
+                "trailing",
+                "max_open_trades",
+            ]
             spaces += [s for s in all_spaces if s not in spaces]
             lookup = {
                 "roi": "ROI",
@@ -237,7 +258,8 @@ class HyperoptTools:
             }
             for space in spaces:
                 name = lookup.get(
-                    space, space.capitalize() if space in HYPEROPT_BUILTIN_SPACES else space
+                    space,
+                    space.capitalize() if space in HYPEROPT_BUILTIN_SPACES else space,
                 )
 
                 HyperoptTools._params_pretty_print(
@@ -260,7 +282,9 @@ class HyperoptTools:
             elif space == "roi":
                 # Convert keys in min_roi dict to strings because
                 # rapidjson cannot dump dicts with integer keys...
-                result_dict["minimal_roi"] = {str(k): v for k, v in all_space_params.items()}
+                result_dict["minimal_roi"] = {
+                    str(k): v for k, v in all_space_params.items()
+                }
             else:  # 'stoploss', 'trailing'
                 result_dict.update(all_space_params)
 
@@ -284,7 +308,9 @@ class HyperoptTools:
                 stoploss = safe_value_fallback2(space_params, no_params, space, space)
                 result += f"stoploss = {stoploss}{appendix}"
             elif space == "max_open_trades":
-                max_open_trades = safe_value_fallback2(space_params, no_params, space, space)
+                max_open_trades = safe_value_fallback2(
+                    space_params, no_params, space, space
+                )
                 result += f"max_open_trades = {max_open_trades}{appendix}"
             elif space == "roi":
                 result = result[:-1] + f"{appendix}\n"
@@ -338,7 +364,9 @@ class HyperoptTools:
         return bool(results["loss"] < current_best_loss)
 
     @staticmethod
-    def format_results_explanation_string(results_metrics: dict, stake_currency: str) -> str:
+    def format_results_explanation_string(
+        results_metrics: dict, stake_currency: str
+    ) -> str:
         """
         Return the formatted results explanation in a string
         """
@@ -404,7 +432,9 @@ class HyperoptTools:
         ]
         perc_multi = 100
 
-        param_metrics = [("params_dict." + param) for param in results[0]["params_dict"]]
+        param_metrics = [
+            ("params_dict." + param) for param in results[0]["params_dict"]
+        ]
         trials = trials[base_metrics + param_metrics]
 
         base_columns = [
@@ -440,7 +470,9 @@ class HyperoptTools:
         trials["Total profit"] = trials["Total profit"].apply(
             lambda x: f"{x:,.8f}" if x != 0.0 else ""
         )
-        trials["Profit"] = trials["Profit"].apply(lambda x: f"{x:,.2f}" if not isna(x) else "")
+        trials["Profit"] = trials["Profit"].apply(
+            lambda x: f"{x:,.2f}" if not isna(x) else ""
+        )
         trials["Avg profit"] = trials["Avg profit"].apply(
             lambda x: f"{x * perc_multi:,.2f}%" if not isna(x) else ""
         )

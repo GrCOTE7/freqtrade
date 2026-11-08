@@ -13,7 +13,6 @@ from freqtrade.rpc.api_server.api_schemas import (
 )
 from freqtrade.rpc.api_server.deps import get_config
 
-
 logger = logging.getLogger(__name__)
 
 # Private API, protected by authentication and webserver_mode dependency
@@ -75,7 +74,9 @@ def list_freqaimodels(config=Depends(get_config)):
 
 
 @router.get(
-    "/available_pairs", response_model=AvailablePairs, tags=["Candle data", "Download-data"]
+    "/available_pairs",
+    response_model=AvailablePairs,
+    tags=["Candle data", "Download-data"],
 )
 def list_available_pairs(
     timeframe: str | None = None,
@@ -90,7 +91,9 @@ def list_available_pairs(
     if timeframe:
         pair_interval = [pair for pair in pair_interval if pair[1] == timeframe]
     if stake_currency:
-        pair_interval = [pair for pair in pair_interval if pair[0].endswith(stake_currency)]
+        pair_interval = [
+            pair for pair in pair_interval if pair[0].endswith(stake_currency)
+        ]
     if candletype:
         pair_interval = [pair for pair in pair_interval if pair[2] == candletype]
     else:

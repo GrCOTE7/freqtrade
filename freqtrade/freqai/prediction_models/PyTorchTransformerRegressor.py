@@ -115,8 +115,10 @@ class PyTorchTransformerRegressor(BasePyTorchRegressor):
             unfiltered_df, dk.training_features_list, training_filter=False
         )
 
-        dk.data_dictionary["prediction_features"], outliers, _ = dk.feature_pipeline.transform(
-            dk.data_dictionary["prediction_features"], outlier_check=True
+        dk.data_dictionary["prediction_features"], outliers, _ = (
+            dk.feature_pipeline.transform(
+                dk.data_dictionary["prediction_features"], outlier_check=True
+            )
         )
 
         x = self.data_convertor.convert_x(
@@ -149,7 +151,8 @@ class PyTorchTransformerRegressor(BasePyTorchRegressor):
 
         if x.shape[1] > 1:
             zeros_df = pd.DataFrame(
-                np.zeros((x.shape[1] - len(pred_df), len(pred_df.columns))), columns=pred_df.columns
+                np.zeros((x.shape[1] - len(pred_df), len(pred_df.columns))),
+                columns=pred_df.columns,
             )
             pred_df = pd.concat([zeros_df, pred_df], axis=0, ignore_index=True)
         return (pred_df, dk.do_predict)

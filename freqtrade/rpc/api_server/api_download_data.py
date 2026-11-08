@@ -13,7 +13,6 @@ from freqtrade.rpc.api_server.deps import get_config, get_exchange
 from freqtrade.rpc.api_server.webserver_bgwork import ApiBG
 from freqtrade.util import get_progress_tracker
 
-
 logger = logging.getLogger(__name__)
 
 # Private API, protected by authentication and webserver_mode dependency
@@ -50,7 +49,9 @@ def __run_download(job_id: str, config_loc: Config):
 
 @router.post("/download_data", response_model=BgJobStarted)
 def pairlists_evaluate(
-    payload: DownloadDataPayload, background_tasks: BackgroundTasks, config=Depends(get_config)
+    payload: DownloadDataPayload,
+    background_tasks: BackgroundTasks,
+    config=Depends(get_config),
 ):
     if ApiBG.download_data_running:
         raise HTTPException(status_code=400, detail="Data Download is already running.")

@@ -18,7 +18,6 @@ from freqtrade.rpc.api_server.ws.message_stream import MessageStream
 from freqtrade.rpc.rpc import RPC, RPCException, RPCHandler
 from freqtrade.rpc.rpc_types import RPCSendMsg
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,11 +28,15 @@ _OPENAPI_TAGS = [
     {"name": "Auth", "description": "Authentication endpoints."},
     {
         "name": "Info",
-        "description": ("Information endpoints providing general information about the bot."),
+        "description": (
+            "Information endpoints providing general information about the bot."
+        ),
     },
     {
         "name": "Bot-control",
-        "description": (f"Bot control endpoints to start/stop trading - {_TRADE_MODE_ONLY}."),
+        "description": (
+            f"Bot control endpoints to start/stop trading - {_TRADE_MODE_ONLY}."
+        ),
     },
     {
         "name": "Pairlist",
@@ -198,15 +201,24 @@ class ApiServer(RPCHandler):
     def handle_rpc_exception(self, request, exc):
         logger.error(f"API Error calling: {exc}")
         return JSONResponse(
-            status_code=502, content={"error": f"Error querying {request.url.path}: {exc.message}"}
+            status_code=502,
+            content={"error": f"Error querying {request.url.path}: {exc.message}"},
         )
 
     def configure_app(self, app: FastAPI, config):
-        from freqtrade.rpc.api_server.api_analysis import router_lookahead, router_recursive
-        from freqtrade.rpc.api_server.api_auth import http_basic_or_jwt_token, router_login
+        from freqtrade.rpc.api_server.api_analysis import (
+            router_lookahead,
+            router_recursive,
+        )
+        from freqtrade.rpc.api_server.api_auth import (
+            http_basic_or_jwt_token,
+            router_login,
+        )
         from freqtrade.rpc.api_server.api_background_tasks import router as api_bg_tasks
         from freqtrade.rpc.api_server.api_backtest import router as api_backtest
-        from freqtrade.rpc.api_server.api_download_data import router as api_download_data
+        from freqtrade.rpc.api_server.api_download_data import (
+            router as api_download_data,
+        )
         from freqtrade.rpc.api_server.api_pair_history import router as api_pair_history
         from freqtrade.rpc.api_server.api_pairlists import router as api_pairlists
         from freqtrade.rpc.api_server.api_trading import router as api_trading
@@ -301,7 +313,9 @@ class ApiServer(RPCHandler):
 
         logger.info(f"Starting HTTP Server at {rest_ip}:{rest_port}")
         if not ip_address(rest_ip).is_loopback and not running_in_docker():
-            logger.warning("SECURITY WARNING - Local Rest Server listening to external connections")
+            logger.warning(
+                "SECURITY WARNING - Local Rest Server listening to external connections"
+            )
             logger.warning(
                 "SECURITY WARNING - This is insecure please set to your loopback,"
                 "e.g 127.0.0.1 in config.json"

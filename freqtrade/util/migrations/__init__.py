@@ -12,7 +12,9 @@ def migrate_data(config: Config, exchange: Exchange | None = None) -> None:
     migrate_funding_fee_timeframe(config, exchange)
 
 
-def migrate_live_content(config: Config, exchange: Exchange, starting_balance: float) -> None:
+def migrate_live_content(
+    config: Config, exchange: Exchange, starting_balance: float
+) -> None:
     """
     Migrate database content from old formats to new formats
     Used for dry/live mode.

@@ -23,7 +23,11 @@ from freqtrade.data.btanalysis import (
     update_backtest_metadata,
 )
 from freqtrade.enums import BacktestState, RunMode
-from freqtrade.exceptions import ConfigurationError, DependencyException, OperationalException
+from freqtrade.exceptions import (
+    ConfigurationError,
+    DependencyException,
+    OperationalException,
+)
 from freqtrade.ft_types import get_BacktestResultType_default
 from freqtrade.misc import deep_merge_dicts, is_file_in_dir, json_load
 from freqtrade.rpc.api_server.api_pairlists import handleExchangePayload
@@ -44,7 +48,6 @@ from freqtrade.rpc.api_server.webserver_bgwork import ApiBG
 from freqtrade.rpc.rpc import RPC, RPCException
 from freqtrade.util import dt_now
 
-
 logger = logging.getLogger(__name__)
 
 # Private API, protected by authentication and webserver_mode dependency
@@ -55,7 +58,10 @@ def __run_backtest_bg(
     btconfig: Config, job_id: str, strategy_params: list[dict[str, Any]] | None = None
 ):
     from freqtrade.data.metrics import combined_dataframes_with_rel_mean
-    from freqtrade.optimize.optimize_reports import generate_backtest_stats, store_backtest_results
+    from freqtrade.optimize.optimize_reports import (
+        generate_backtest_stats,
+        store_backtest_results,
+    )
     from freqtrade.resolvers import StrategyResolver
 
     job = ApiBG.jobs[job_id]
@@ -144,7 +150,9 @@ def __run_backtest_bg(
                     },
                     # Store the used parameters if the API provided overrides
                     strategy_params=(
-                        {strategy_name: strat.ft_used_params} if strategy_params else None
+                        {strategy_name: strat.ft_used_params}
+                        if strategy_params
+                        else None
                     ),
                 )
                 cachedBt.results["metadata"][strategy_name]["filename"] = str(fn.stem)
@@ -169,7 +177,9 @@ def __run_backtest_bg(
 
 @router.post("/backtest", response_model=BacktestResponse)
 async def api_start_backtest(
-    bt_settings: BacktestRequest, background_tasks: BackgroundTasks, config=Depends(get_config)
+    bt_settings: BacktestRequest,
+    background_tasks: BackgroundTasks,
+    config=Depends(get_config),
 ):
     """Start backtesting if not done so already"""
     if ApiBG.analysis_running:
@@ -206,7 +216,10 @@ async def api_start_backtest(
     ApiBG.bt["job_id"] = job_id
 
     background_tasks.add_task(
-        __run_backtest_bg, btconfig=btconfig, job_id=job_id, strategy_params=strategy_params
+        __run_backtest_bg,
+        btconfig=btconfig,
+        job_id=job_id,
+        strategy_params=strategy_params,
     )
     ApiBG.analysis_running = True
 
@@ -241,7 +254,9 @@ def api_get_backtest():
             "running": True,
             "step": detail.get("description", str(BacktestState.STARTUP)),
             "progress": (
-                max(min(detail.get("progress", 0) / detail_total, 1), 0) if detail_total else 0
+                max(min(detail.get("progress", 0) / detail_total, 1), 0)
+                if detail_total
+                else 0
             ),
             "trade_count": len(LocalTrade.bt_trades),
             "status_msg": "Backtest running",
@@ -329,7 +344,9 @@ def api_backtest_history(config=Depends(get_config)):
 
 
 @router.get("/backtest/history/result", response_model=BacktestResponse)
-def api_backtest_history_result(filename: str, strategy: StrategyName, config=Depends(get_config)):
+def api_backtest_history_result(
+    filename: str, strategy: StrategyName, config=Depends(get_config)
+):
     # Get backtest result history, read from metadata files
     bt_results_base: Path = config["user_data_dir"] / "backtest_results"
     for ext in [".zip", ".json"]:
@@ -394,7 +411,9 @@ def api_update_backtest_history_entry(
     return get_backtest_result(file_abs)
 
 
-@router.get("/backtest/history/{file}/market_change", response_model=BacktestMarketChange)
+@router.get(
+    "/backtest/history/{file}/market_change", response_model=BacktestMarketChange
+)
 def api_get_backtest_market_change(file: str, config=Depends(get_config)):
     bt_results_base: Path = config["user_data_dir"] / "backtest_results"
     for fn in (
@@ -422,19 +441,27 @@ def api_get_backtest_market_change(file: str, config=Depends(get_config)):
     response_model=WalletHistoryResponse,
     tags=["webserver", "backtest"],
 )
-def api_get_backtest_wallet(file: str, strategy: StrategyName, config=Depends(get_config)):
+def api_get_backtest_wallet(
+    file: str, strategy: StrategyName, config=Depends(get_config)
+):
     bt_results_base: Path = config["user_data_dir"] / "backtest_results"
     file_abs = (bt_results_base / file).with_suffix(".zip")
     # Ensure file is in backtest_results directory
     if not is_file_in_dir(file_abs, bt_results_base):
-        raise HTTPException(status_code=400, detail="Unable to retrieve wallet history.")
+        raise HTTPException(
+            status_code=400, detail="Unable to retrieve wallet history."
+        )
 
     results = get_backtest_wallet_change(file_abs, strategy)
     if results is None:
-        raise HTTPException(status_code=404, detail="Unable to retrieve wallet history.")
+        raise HTTPException(
+            status_code=404, detail="Unable to retrieve wallet history."
+        )
     # Consolidate the wallet to the base currency
     results.loc[:, "total_quote"] = results["rate"] * results["balance"]
-    results = results.groupby(["date", "__date_ts"]).agg({"total_quote": "sum"}).reset_index()
+    results = (
+        results.groupby(["date", "__date_ts"]).agg({"total_quote": "sum"}).reset_index()
+    )
 
     return {
         "columns": results.columns.tolist(),
@@ -465,14 +492,19 @@ def api_backtest_pair_history(
     if not is_file_in_dir(file_abs, bt_results_base):
         raise HTTPException(status_code=404, detail="File not found.")
 
-    bt_result = next((r for r in get_backtest_result(file_abs) if r["strategy"] == strategy), None)
+    bt_result = next(
+        (r for r in get_backtest_result(file_abs) if r["strategy"] == strategy), None
+    )
     if bt_result is None:
-        raise HTTPException(status_code=404, detail=f"Strategy {strategy} not found in {file}.")
+        raise HTTPException(
+            status_code=404, detail=f"Strategy {strategy} not found in {file}."
+        )
 
     # Older results may not have these stored in their metadata.
     if not (timeframe := bt_result["timeframe"]):
         raise HTTPException(
-            status_code=422, detail=f"Backtest result {file} does not contain a timeframe."
+            status_code=422,
+            detail=f"Backtest result {file} does not contain a timeframe.",
         )
     timerange = payload.timerange
     if not timerange:
@@ -480,12 +512,18 @@ def api_backtest_pair_history(
         timerange = f"{bt_result['backtest_start_ts']}-{bt_result['backtest_end_ts']}"
 
     config_loc = deepcopy(config)
-    config_loc.update({"strategy": strategy, "timeframe": timeframe, "timerange": timerange})
+    config_loc.update(
+        {"strategy": strategy, "timeframe": timeframe, "timerange": timerange}
+    )
 
     try:
         # Exchange settings of the backtest may differ from the current webserver config.
         bt_config = json_load(
-            StringIO(load_file_from_zip(file_abs, f"{file_abs.stem}_config.json").decode("utf-8"))
+            StringIO(
+                load_file_from_zip(file_abs, f"{file_abs.stem}_config.json").decode(
+                    "utf-8"
+                )
+            )
         )
         handleExchangePayload(
             ExchangeModePayloadMixin(

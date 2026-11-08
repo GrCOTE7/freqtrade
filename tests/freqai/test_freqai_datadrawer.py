@@ -53,7 +53,9 @@ def test_load_all_pairs_histories(mocker, freqai_conf):
         freqai_conf.get("exchange", {}).get("pair_whitelist")
     )
     assert len(freqai.dd.historic_data["ADA/BTC"]) == len(
-        freqai_conf.get("freqai", {}).get("feature_parameters", {}).get("include_timeframes")
+        freqai_conf.get("freqai", {})
+        .get("feature_parameters", {})
+        .get("include_timeframes")
     )
     shutil.rmtree(Path(freqai.dk.full_path))
 
@@ -69,16 +71,22 @@ def test_get_base_and_corr_dataframes(mocker, freqai_conf):
     timerange = TimeRange.parse_timerange("20180110-20180114")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
     sub_timerange = TimeRange.parse_timerange("20180111-20180114")
-    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(sub_timerange, "LTC/BTC", freqai.dk)
+    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(
+        sub_timerange, "LTC/BTC", freqai.dk
+    )
 
     num_tfs = len(
-        freqai_conf.get("freqai", {}).get("feature_parameters", {}).get("include_timeframes")
+        freqai_conf.get("freqai", {})
+        .get("feature_parameters", {})
+        .get("include_timeframes")
     )
 
     assert len(base_df.keys()) == num_tfs
 
     assert len(corr_df.keys()) == len(
-        freqai_conf.get("freqai", {}).get("feature_parameters", {}).get("include_corr_pairlist")
+        freqai_conf.get("freqai", {})
+        .get("feature_parameters", {})
+        .get("include_corr_pairlist")
     )
 
     assert len(corr_df["ADA/BTC"].keys()) == num_tfs
@@ -97,9 +105,13 @@ def test_use_strategy_to_populate_indicators(mocker, freqai_conf):
     timerange = TimeRange.parse_timerange("20180110-20180114")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
     sub_timerange = TimeRange.parse_timerange("20180111-20180114")
-    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(sub_timerange, "LTC/BTC", freqai.dk)
+    corr_df, base_df = freqai.dd.get_base_and_corr_dataframes(
+        sub_timerange, "LTC/BTC", freqai.dk
+    )
 
-    df = freqai.dk.use_strategy_to_populate_indicators(strategy, corr_df, base_df, "LTC/BTC")
+    df = freqai.dk.use_strategy_to_populate_indicators(
+        strategy, corr_df, base_df, "LTC/BTC"
+    )
 
     assert len(df.columns) == 33
     shutil.rmtree(Path(freqai.dk.full_path))
@@ -116,7 +128,9 @@ def test_get_timerange_from_live_historic_predictions(mocker, freqai_conf):
     timerange = TimeRange.parse_timerange("20180126-20180130")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
     sub_timerange = TimeRange.parse_timerange("20180128-20180130")
-    _, base_df = freqai.dd.get_base_and_corr_dataframes(sub_timerange, "ADA/BTC", freqai.dk)
+    _, base_df = freqai.dd.get_base_and_corr_dataframes(
+        sub_timerange, "ADA/BTC", freqai.dk
+    )
     base_df["5m"]["date_pred"] = base_df["5m"]["date"]
     freqai.dd.historic_predictions = {}
     freqai.dd.historic_predictions["ADA/USDT"] = base_df["5m"]
@@ -159,10 +173,14 @@ def test_load_historic_predictions_repairs(mocker, freqai_conf, caplog):
         {
             "date_pred": dupe_dates,
             # numpy scalars written into an object column stay numpy scalars
-            "&-s_close": pd.Series([1.0, 2, np.float64(3.0), 3.5, np.int64(4), 5.0], dtype=object),
+            "&-s_close": pd.Series(
+                [1.0, 2, np.float64(3.0), 3.5, np.int64(4), 5.0], dtype=object
+            ),
             "do_predict": pd.Series([np.int64(1)] * 6, dtype=object),
             # class labels are legitimately non-numeric and must survive untouched
-            "&s-up_or_down": pd.Series(["up", "down", "up", "down", "up", "down"], dtype=object),
+            "&s-up_or_down": pd.Series(
+                ["up", "down", "up", "down", "up", "down"], dtype=object
+            ),
         }
     )
     # an old file may also carry object dtype dates
@@ -191,11 +209,16 @@ def test_load_historic_predictions_repairs(mocker, freqai_conf, caplog):
 
     # no numpy scalars survive - they'd break the API serialization
     assert not any(
-        isinstance(value, np.generic) for row in hist_pred_df.values.tolist() for value in row
+        isinstance(value, np.generic)
+        for row in hist_pred_df.values.tolist()
+        for value in row
     )
 
     # untouched pairs keep working, and get their dtype fixed
-    assert freqai.dd.historic_predictions["ETH/USD"]["date_pred"].dtype == "datetime64[ms, UTC]"
+    assert (
+        freqai.dd.historic_predictions["ETH/USD"]["date_pred"].dtype
+        == "datetime64[ms, UTC]"
+    )
     assert len(freqai.dd.historic_predictions["ETH/USD"]) == 5
 
     shutil.rmtree(Path(freqai.dk.full_path))
@@ -219,7 +242,10 @@ def test_set_initial_return_values(mocker, freqai_conf):
     start_x_plus_1 = "2023-08-30"
     end_x_plus_5 = "2023-09-03"
 
-    historic_data = {"date_pred": pd.date_range(end=end_x, periods=5), "value": range(1, 6)}
+    historic_data = {
+        "date_pred": pd.date_range(end=end_x, periods=5),
+        "value": range(1, 6),
+    }
     new_data = {
         "date": pd.date_range(start=start_x_plus_1, end=end_x_plus_5),
         "value": range(6, 11),
@@ -244,7 +270,8 @@ def test_set_initial_return_values(mocker, freqai_conf):
 
     # compare values in model_return_df with hist_pred_df
     assert (
-        model_return_df["value"].values == hist_pred_df.tail(len(dataframe))["value"].values
+        model_return_df["value"].values
+        == hist_pred_df.tail(len(dataframe))["value"].values
     ).all()
     assert model_return_df.shape[0] == len(dataframe)
 
@@ -271,7 +298,10 @@ def test_set_initial_return_values_warning(mocker, freqai_conf):
     start_x_plus_1 = "2023-09-01"
     end_x_plus_5 = "2023-09-05"
 
-    historic_data = {"date_pred": pd.date_range(end=end_x, periods=5), "value": range(1, 6)}
+    historic_data = {
+        "date_pred": pd.date_range(end=end_x, periods=5),
+        "value": range(1, 6),
+    }
     new_data = {
         "date": pd.date_range(start=start_x_plus_1, end=end_x_plus_5),
         "value": range(6, 11),
@@ -296,7 +326,8 @@ def test_set_initial_return_values_warning(mocker, freqai_conf):
 
     # compare values in model_return_df with hist_pred_df
     assert (
-        model_return_df["value"].values == hist_pred_df.tail(len(dataframe))["value"].values
+        model_return_df["value"].values
+        == hist_pred_df.tail(len(dataframe))["value"].values
     ).all()
     assert model_return_df.shape[0] == len(dataframe)
 
@@ -329,7 +360,9 @@ def test_set_initial_return_values_shifted_index(mocker, freqai_conf, caplog):
     # predictions always come back 0-indexed from IFreqaiModel.predict()
     new_pred_df = pd.DataFrame({"value": range(6, 11)})
     # strategy dataframe carrying a non-0-based index
-    dataframe = pd.DataFrame({"date": new_dates, "value": range(6, 11)}, index=range(301, 306))
+    dataframe = pd.DataFrame(
+        {"date": new_dates, "value": range(6, 11)}, index=range(301, 306)
+    )
 
     # Action
     freqai.dd.set_initial_return_values(pair, new_pred_df, dataframe)
@@ -340,7 +373,9 @@ def test_set_initial_return_values_shifted_index(mocker, freqai_conf, caplog):
     assert model_return_df.shape[0] == len(dataframe)
     assert list(model_return_df["date_pred"]) == list(new_dates)
     # dates do line up - the "instance was offline" warning must not trigger
-    assert not log_has_re("No common dates found between new predictions and historic.*", caplog)
+    assert not log_has_re(
+        "No common dates found between new predictions and historic.*", caplog
+    )
 
     # values must find their way back to the strategy, aligned by date
     result = freqai.dd.attach_return_values_to_return_dataframe(pair, dataframe)
@@ -365,9 +400,9 @@ def test_set_initial_return_values_gap(mocker, freqai_conf, caplog):
     freqai.dk = FreqaiDataKitchen(freqai_conf)
 
     pair = "BTC/USD"
-    all_dates = pd.date_range(start="2023-09-01", periods=10, freq="5min", tz="UTC").astype(
-        "datetime64[ms, UTC]"
-    )
+    all_dates = pd.date_range(
+        start="2023-09-01", periods=10, freq="5min", tz="UTC"
+    ).astype("datetime64[ms, UTC]")
     # historic predictions covering the first 7 candles, with 3 of them missing in the middle
     hist_dates = all_dates[:7].delete([2, 3, 4])
 
@@ -386,7 +421,9 @@ def test_set_initial_return_values_gap(mocker, freqai_conf, caplog):
     assert not hist_pred_df["date_pred"].duplicated().any()
     assert hist_pred_df.shape[0] == len(hist_dates) + 3
     assert hist_pred_df["date_pred"].iloc[-1] == all_dates[-1]
-    assert not log_has_re("No common dates found between new predictions and historic.*", caplog)
+    assert not log_has_re(
+        "No common dates found between new predictions and historic.*", caplog
+    )
 
     # and the (gapped) predictions still merge back onto the strategy dataframe
     result = freqai.dd.attach_return_values_to_return_dataframe(pair, dataframe)
@@ -440,7 +477,9 @@ def test_append_model_predictions_keeps_date_dtype(mocker, freqai_conf):
     )
     predictions = pd.DataFrame({"&-s_close": [2.0] * 5})
 
-    freqai.dd.append_model_predictions(pair, predictions, np.array([1] * 5), dk, dataframe)
+    freqai.dd.append_model_predictions(
+        pair, predictions, np.array([1] * 5), dk, dataframe
+    )
 
     assert freqai.dd.historic_predictions[pair]["date_pred"].dtype.kind == "M"
     assert freqai.dd.model_return_values[pair]["date_pred"].dtype.kind == "M"
@@ -459,11 +498,25 @@ def test_append_model_predictions_keeps_date_dtype(mocker, freqai_conf):
     "hist_idx,strat_idx,calls,expected_idx,expected_preds,expected_warning",
     [
         # the regular case - one new candle gets appended and filled with the prediction
-        ([0, 1, 2, 3, 4], [0, 1, 2, 3, 4, 5], 1, [0, 1, 2, 3, 4, 5], [1.0] * 5 + [2.0], None),
+        (
+            [0, 1, 2, 3, 4],
+            [0, 1, 2, 3, 4, 5],
+            1,
+            [0, 1, 2, 3, 4, 5],
+            [1.0] * 5 + [2.0],
+            None,
+        ),
         # freqtrade only marks a candle as seen once the full strategy callback chain
         # succeeded - an exception raised after FreqAI ran re-analyzes the same candle, which
         # must overwrite its row instead of appending a duplicate date
-        ([0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5], 3, [0, 1, 2, 3, 4, 5], [1.0] * 5 + [2.0], None),
+        (
+            [0, 1, 2, 3, 4, 5],
+            [0, 1, 2, 3, 4, 5],
+            3,
+            [0, 1, 2, 3, 4, 5],
+            [1.0] * 5 + [2.0],
+            None,
+        ),
         # candles the bot skipped (bot not running, slow iteration) get a zeroed placeholder
         # row each and a warning, so no hole is left to merge back as NaN unnoticed
         (
@@ -478,9 +531,22 @@ def test_append_model_predictions_keeps_date_dtype(mocker, freqai_conf):
         ([], [0, 1, 2], 1, [2], [2.0], None),
         # a strategy dataframe ending before the last stored prediction must not append
         # (duplicating a date) nor overwrite (moving a date backwards)
-        ([0, 1, 2, 3], [0, 1], 1, [0, 1, 2, 3], [1.0] * 4, r".*predates the last stored.*"),
+        (
+            [0, 1, 2, 3],
+            [0, 1],
+            1,
+            [0, 1, 2, 3],
+            [1.0] * 4,
+            r".*predates the last stored.*",
+        ),
     ],
-    ids=["new candle", "repeated candle", "skipped candles", "empty history", "stale candle"],
+    ids=[
+        "new candle",
+        "repeated candle",
+        "skipped candles",
+        "empty history",
+        "stale candle",
+    ],
 )
 def test_append_model_predictions_candle_alignment(
     mocker,

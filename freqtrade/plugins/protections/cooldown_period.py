@@ -5,7 +5,6 @@ from freqtrade.constants import LongShort
 from freqtrade.persistence import Trade
 from freqtrade.plugins.protections import IProtection, ProtectionReturn
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +24,9 @@ class CooldownPeriod(IProtection):
         """
         return f"{self.name} - Cooldown period {self.unlock_reason_time_element}."
 
-    def _cooldown_period(self, pair: str, date_now: datetime) -> ProtectionReturn | None:
+    def _cooldown_period(
+        self, pair: str, date_now: datetime
+    ) -> ProtectionReturn | None:
         """
         Get last trade for this pair
         """
@@ -36,12 +37,16 @@ class CooldownPeriod(IProtection):
         #     Trade.pair == pair,
         # ]
         # trade = Trade.get_trades(filters).first()
-        trades = Trade.get_trades_proxy(pair=pair, is_open=False, close_date=look_back_until)
+        trades = Trade.get_trades_proxy(
+            pair=pair, is_open=False, close_date=look_back_until
+        )
         if trades:
             # Get latest trade
             # Ignore type error as we know we only get closed trades.
             trade = max(trades, key=lambda t: t.close_date)  # type: ignore
-            self.log_once(f"Cooldown for {pair} {self.unlock_reason_time_element}.", logger.info)
+            self.log_once(
+                f"Cooldown for {pair} {self.unlock_reason_time_element}.", logger.info
+            )
             until = self.calculate_lock_end([trade])
 
             return ProtectionReturn(

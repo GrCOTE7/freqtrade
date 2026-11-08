@@ -9,7 +9,6 @@ from freqtrade.constants import Config
 from freqtrade.plugins.protections import IProtection
 from freqtrade.resolvers import IResolver
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +20,9 @@ class ProtectionResolver(IResolver):
     object_type = IProtection
     object_type_str = "Protection"
     user_subdir = None
-    initial_search_path = Path(__file__).parent.parent.joinpath("plugins/protections").resolve()
+    initial_search_path = (
+        Path(__file__).parent.parent.joinpath("plugins/protections").resolve()
+    )
 
     @staticmethod
     def load_protection(

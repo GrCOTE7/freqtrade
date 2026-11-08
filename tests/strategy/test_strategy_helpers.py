@@ -7,7 +7,11 @@ import pytest
 from freqtrade.data.dataprovider import DataProvider
 from freqtrade.enums import CandleType, RunMode
 from freqtrade.resolvers.strategy_resolver import StrategyResolver
-from freqtrade.strategy import merge_informative_pair, stoploss_from_absolute, stoploss_from_open
+from freqtrade.strategy import (
+    merge_informative_pair,
+    stoploss_from_absolute,
+    stoploss_from_open,
+)
 from freqtrade.strategy.informative_decorator import (
     InformativeCache,
     InformativeCacheKey,
@@ -283,7 +287,9 @@ def test_stoploss_from_open(side, profitrange):
                     else:
                         current_price = open_price * (1 - current_profit)
                         expected_stop_price = open_price * (1 - desired_stop)
-                        stoploss = stoploss_from_open(desired_stop, current_profit, True)
+                        stoploss = stoploss_from_open(
+                            desired_stop, current_profit, True
+                        )
                         stop_price = current_price * (1 + stoploss)
 
                     assert stoploss >= 0
@@ -311,10 +317,28 @@ def test_stoploss_from_open(side, profitrange):
         ("long", -0.1, 0.1, 1, 0.18181818),
         ("long", 0.1, 0.2, 1, 0.08333333),
         ("long", 0.1, 0.5, 1, 0.266666666),
-        ("long", 0.1, 5, 1, 0.816666666),  # 500% profit, set stoploss to 10% above open price
+        (
+            "long",
+            0.1,
+            5,
+            1,
+            0.816666666,
+        ),  # 500% profit, set stoploss to 10% above open price
         ("long", 0, 5, 10, 3.3333333),  # 500% profit, set stoploss break even
-        ("long", 0.1, 5, 10, 3.26666666),  # 500% profit, set stoploss to 10% above open price
-        ("long", -0.1, 5, 10, 3.3999999),  # 500% profit, set stoploss to 10% belowopen price
+        (
+            "long",
+            0.1,
+            5,
+            10,
+            3.26666666,
+        ),  # 500% profit, set stoploss to 10% above open price
+        (
+            "long",
+            -0.1,
+            5,
+            10,
+            3.3999999,
+        ),  # 500% profit, set stoploss to 10% belowopen price
         ("short", 0, 0.1, 1, 0.1111111),
         ("short", -0.1, 0.1, 1, 0.2222222),
         ("short", 0.1, 0.2, 1, 0.125),
@@ -358,8 +382,14 @@ def test_stoploss_from_absolute():
     assert pytest.approx(stoploss_from_absolute(100, 99, is_short=True)) == 0.01010101
     assert pytest.approx(stoploss_from_absolute(100, 90, is_short=True)) == 0.1111111
     assert pytest.approx(stoploss_from_absolute(100, 1, is_short=True)) == 99.0
-    assert pytest.approx(stoploss_from_absolute(100, 1, is_short=True, leverage=5)) == 495.0
-    assert pytest.approx(stoploss_from_absolute(100, 90, is_short=True, leverage=5)) == 0.55555555
+    assert (
+        pytest.approx(stoploss_from_absolute(100, 1, is_short=True, leverage=5))
+        == 495.0
+    )
+    assert (
+        pytest.approx(stoploss_from_absolute(100, 90, is_short=True, leverage=5))
+        == 0.55555555
+    )
 
 
 @pytest.mark.parametrize("trading_mode", ["futures", "spot"])
@@ -379,8 +409,16 @@ def test_informative_decorator(mocker, default_conf_usdt, trading_mode):
         ("LTC/USDT", "1h", candle_def): test_data_1h,
         ("LTC/BTC", "1h", candle_def): test_data_1h,  # from {base}/BTC
         ("NEO/USDT", "30m", candle_def): test_data_30m,
-        ("NEO/USDT", "5m", CandleType.SPOT): test_data_5m,  # Explicit request with '' as candletype
-        ("NEO/USDT", "15m", candle_def): test_data_5m,  # Explicit request with '' as candletype
+        (
+            "NEO/USDT",
+            "5m",
+            CandleType.SPOT,
+        ): test_data_5m,  # Explicit request with '' as candletype
+        (
+            "NEO/USDT",
+            "15m",
+            candle_def,
+        ): test_data_5m,  # Explicit request with '' as candletype
         ("NEO/USDT", "1h", candle_def): test_data_1h,
         ("ETH/USDT", "1h", candle_def): test_data_1h,
         ("ETH/USDT", "30m", candle_def): test_data_30m,
@@ -392,7 +430,9 @@ def test_informative_decorator(mocker, default_conf_usdt, trading_mode):
     default_conf_usdt["candle_type_def"] = candle_def
     strategy.dp = DataProvider({}, exchange, None)
     mocker.patch.object(
-        strategy.dp, "current_whitelist", return_value=["XRP/USDT", "LTC/USDT", "NEO/USDT"]
+        strategy.dp,
+        "current_whitelist",
+        return_value=["XRP/USDT", "LTC/USDT", "NEO/USDT"],
     )
 
     assert len(strategy._ft_informative) == 7  # Equal to number of decorators used
@@ -416,12 +456,17 @@ def test_informative_decorator(mocker, default_conf_usdt, trading_mode):
 
     def test_historic_ohlcv(pair, timeframe, candle_type):
         return data.get(
-            (pair, timeframe or strategy.timeframe, CandleType.from_string(candle_type)),
+            (
+                pair,
+                timeframe or strategy.timeframe,
+                CandleType.from_string(candle_type),
+            ),
             pd.DataFrame(),
         ).copy()
 
     mocker.patch(
-        "freqtrade.data.dataprovider.DataProvider.historic_ohlcv", side_effect=test_historic_ohlcv
+        "freqtrade.data.dataprovider.DataProvider.historic_ohlcv",
+        side_effect=test_historic_ohlcv,
     )
 
     analyzed = strategy.advise_all_indicators(
@@ -448,12 +493,19 @@ def test_informative_decorator(mocker, default_conf_usdt, trading_mode):
         ValueError, match=r"Informative dataframe for \(ETH\/BTC, 1h, spot\) is empty.*"
     ):
         strategy.advise_all_indicators(
-            {p: data[(p, strategy.timeframe, candle_def)] for p in ("XRP/USDT", "LTC/USDT")}
+            {
+                p: data[(p, strategy.timeframe, candle_def)]
+                for p in ("XRP/USDT", "LTC/USDT")
+            }
         )
 
 
-def _cache_key_factory(asset: str, informative_timeframe: str, effective_timeframe: str):
-    def populate_indicators(strategy, dataframe: pd.DataFrame, metadata: dict) -> pd.DataFrame:
+def _cache_key_factory(
+    asset: str, informative_timeframe: str, effective_timeframe: str
+):
+    def populate_indicators(
+        strategy, dataframe: pd.DataFrame, metadata: dict
+    ) -> pd.DataFrame:
         return dataframe
 
     return InformativeCacheKey(
@@ -472,8 +524,12 @@ def test_informative_cache_expiration_uses_effective_timeframe():
 
     # informative_timeframe and effective_timeframe are crossed between the two keys, so using
     # the wrong one for expiration swaps the two TTLs - and fails the assertions below.
-    key_15m = _cache_key_factory("BTC/USDT", informative_timeframe="1h", effective_timeframe="15m")
-    key_1h = _cache_key_factory("ETH/USDT", informative_timeframe="15m", effective_timeframe="1h")
+    key_15m = _cache_key_factory(
+        "BTC/USDT", informative_timeframe="1h", effective_timeframe="15m"
+    )
+    key_1h = _cache_key_factory(
+        "ETH/USDT", informative_timeframe="15m", effective_timeframe="1h"
+    )
 
     entry = object()
     # Store entries in the cache for 15m and 1h effective timeframes
@@ -514,7 +570,9 @@ def test_analyze_expires_informative_cache(mocker, default_conf_usdt):
     current_time = 0.0
     cache = InformativeCache(maxsize=500, timer=lambda: current_time)
     strategy._ft_informative_cache = cache
-    key_15m = _cache_key_factory("BTC/USDT", informative_timeframe="15m", effective_timeframe="15m")
+    key_15m = _cache_key_factory(
+        "BTC/USDT", informative_timeframe="15m", effective_timeframe="15m"
+    )
     cache[key_15m] = object()
     # Expired entries are hidden from the cache's public API, but only expire() drops them from
     # memory - so the purge itself has to be observed through the call.
@@ -544,17 +602,19 @@ def test_informative_dataframe_fingerprint_nan():
         }
     )
     ct = CandleType.OPEN_INTEREST
-    assert _informative_dataframe_fingerprint(df, ct) == _informative_dataframe_fingerprint(df, ct)
+    assert _informative_dataframe_fingerprint(
+        df, ct
+    ) == _informative_dataframe_fingerprint(df, ct)
 
     # Real changes are still detected - in either column, and in either direction
     changed_amount = df.assign(open_interest_amount=[1.0, 2.0, 4.0])
-    assert _informative_dataframe_fingerprint(df, ct) != _informative_dataframe_fingerprint(
-        changed_amount, ct
-    )
+    assert _informative_dataframe_fingerprint(
+        df, ct
+    ) != _informative_dataframe_fingerprint(changed_amount, ct)
     filled_value = df.assign(open_interest_value=[np.nan, np.nan, 5.0])
-    assert _informative_dataframe_fingerprint(df, ct) != _informative_dataframe_fingerprint(
-        filled_value, ct
-    )
+    assert _informative_dataframe_fingerprint(
+        df, ct
+    ) != _informative_dataframe_fingerprint(filled_value, ct)
     assert _informative_dataframe_fingerprint(filled_value, ct) != (
         _informative_dataframe_fingerprint(df, ct)
     )
@@ -610,18 +670,25 @@ def test_informative_decorator_cache(mocker, default_conf_usdt, runmode, expecte
     exchange = get_patched_exchange(mocker, default_conf_usdt)
     default_conf_usdt["candle_type_def"] = candle_def
     strategy.dp = DataProvider({}, exchange, None)
-    mocker.patch.object(strategy.dp, "current_whitelist", return_value=["XRP/USDT", "LTC/USDT"])
+    mocker.patch.object(
+        strategy.dp, "current_whitelist", return_value=["XRP/USDT", "LTC/USDT"]
+    )
 
     assert len(strategy._ft_informative) == 7  # Equal to number of decorators used
 
     def test_historic_ohlcv(pair, timeframe, candle_type):
         return data.get(
-            (pair, timeframe or strategy.timeframe, CandleType.from_string(candle_type)),
+            (
+                pair,
+                timeframe or strategy.timeframe,
+                CandleType.from_string(candle_type),
+            ),
             pd.DataFrame(),
         ).copy()
 
     mocker.patch(
-        "freqtrade.data.dataprovider.DataProvider.historic_ohlcv", side_effect=test_historic_ohlcv
+        "freqtrade.data.dataprovider.DataProvider.historic_ohlcv",
+        side_effect=test_historic_ohlcv,
     )
 
     _ = strategy.advise_all_indicators(

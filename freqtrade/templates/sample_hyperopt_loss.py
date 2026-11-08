@@ -6,7 +6,6 @@ from pandas import DataFrame
 from freqtrade.constants import Config
 from freqtrade.optimize.hyperopt import IHyperOptLoss
 
-
 # Define some constants:
 
 # set TARGET_TRADES to suit your number concurrent trades so its realistic

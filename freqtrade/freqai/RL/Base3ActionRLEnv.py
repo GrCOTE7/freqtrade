@@ -5,7 +5,6 @@ from gymnasium import spaces
 
 from freqtrade.freqai.RL.BaseEnvironment import BaseEnvironment, Positions
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -123,7 +122,9 @@ class Base3ActionRLEnv(BaseEnvironment):
                 and self.can_short
             )
             or (
-                action == Actions.Buy.value and self._position == Positions.Short and self.can_short
+                action == Actions.Buy.value
+                and self._position == Positions.Short
+                and self.can_short
             )
         )
 
@@ -133,6 +134,12 @@ class Base3ActionRLEnv(BaseEnvironment):
         e.g.: agent wants an Actions.Sell while it is in a Positions.Long
         """
         if self.can_short:
-            return action in [Actions.Buy.value, Actions.Sell.value, Actions.Neutral.value]
+            return action in [
+                Actions.Buy.value,
+                Actions.Sell.value,
+                Actions.Neutral.value,
+            ]
         else:
-            return not (action == Actions.Sell.value and self._position != Positions.Long)
+            return not (
+                action == Actions.Sell.value and self._position != Positions.Long
+            )

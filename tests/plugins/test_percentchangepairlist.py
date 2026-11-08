@@ -166,7 +166,9 @@ def test_volume_change_pair_list_init_wrong_config(mocker, rpl_config):
         pytest.param({}, id="dict"),
     ],
 )
-def test_volume_change_pair_list_init_invalid_sort_direction(mocker, rpl_config, sort_direction):
+def test_volume_change_pair_list_init_invalid_sort_direction(
+    mocker, rpl_config, sort_direction
+):
     rpl_config["pairlists"] = [
         {
             "method": "PercentChangePairList",
@@ -186,7 +188,9 @@ def test_volume_change_pair_list_init_invalid_sort_direction(mocker, rpl_config,
         PairListManager(exchange, rpl_config)
 
 
-def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tickers, time_machine):
+def test_gen_pairlist_with_valid_change_pair_list_config(
+    mocker, rpl_config, tickers, time_machine
+):
     rpl_config["pairlists"] = [
         {
             "method": "PercentChangePairList",
@@ -203,7 +207,9 @@ def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tic
     mock_ohlcv_data = {
         ("ETH/USDT", "1d", CandleType.SPOT): pd.DataFrame(
             ohlcv_to_dataframe(
-                generate_test_data_raw("1d", 100, start.strftime("%Y-%m-%d"), random_seed=12),
+                generate_test_data_raw(
+                    "1d", 100, start.strftime("%Y-%m-%d"), random_seed=12
+                ),
                 "1d",
                 pair="ETH/USDT",
                 fill_missing=True,
@@ -211,7 +217,9 @@ def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tic
         ),
         ("BTC/USDT", "1d", CandleType.SPOT): pd.DataFrame(
             ohlcv_to_dataframe(
-                generate_test_data_raw("1d", 100, start.strftime("%Y-%m-%d"), random_seed=13),
+                generate_test_data_raw(
+                    "1d", 100, start.strftime("%Y-%m-%d"), random_seed=13
+                ),
                 "1d",
                 pair="BTC/USDT",
                 fill_missing=True,
@@ -219,7 +227,9 @@ def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tic
         ),
         ("XRP/USDT", "1d", CandleType.SPOT): pd.DataFrame(
             ohlcv_to_dataframe(
-                generate_test_data_raw("1d", 100, start.strftime("%Y-%m-%d"), random_seed=14),
+                generate_test_data_raw(
+                    "1d", 100, start.strftime("%Y-%m-%d"), random_seed=14
+                ),
                 "1d",
                 pair="XRP/USDT",
                 fill_missing=True,
@@ -227,7 +237,9 @@ def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tic
         ),
         ("NEO/USDT", "1d", CandleType.SPOT): pd.DataFrame(
             ohlcv_to_dataframe(
-                generate_test_data_raw("1d", 100, start.strftime("%Y-%m-%d"), random_seed=15),
+                generate_test_data_raw(
+                    "1d", 100, start.strftime("%Y-%m-%d"), random_seed=15
+                ),
                 "1d",
                 pair="NEO/USDT",
                 fill_missing=True,
@@ -253,7 +265,9 @@ def test_gen_pairlist_with_valid_change_pair_list_config(mocker, rpl_config, tic
         ),
     }
 
-    mocker.patch(f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data))
+    mocker.patch(
+        f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data)
+    )
 
     exchange = get_patched_exchange(mocker, rpl_config, exchange="binance")
     pairlistmanager = PairListManager(exchange, rpl_config)
@@ -320,7 +334,9 @@ def test_filter_pairlist_with_empty_ticker(mocker, rpl_config, tickers, time_mac
         ),
     }
 
-    mocker.patch(f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data))
+    mocker.patch(
+        f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data)
+    )
     exchange = get_patched_exchange(mocker, rpl_config, exchange="binance")
     pairlistmanager = PairListManager(exchange, rpl_config)
 
@@ -328,7 +344,9 @@ def test_filter_pairlist_with_empty_ticker(mocker, rpl_config, tickers, time_mac
         exchange, pairlistmanager, rpl_config, rpl_config["pairlists"][0], 0
     )
 
-    result = remote_pairlist.filter_pairlist(rpl_config["exchange"]["pair_whitelist"], {})
+    result = remote_pairlist.filter_pairlist(
+        rpl_config["exchange"]["pair_whitelist"], {}
+    )
 
     assert len(result) == 2
     assert result == ["XRP/USDT", "ETH/USDT"]
@@ -387,7 +405,9 @@ def test_filter_pairlist_with_max_value_set(mocker, rpl_config, tickers, time_ma
         ),
     }
 
-    mocker.patch(f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data))
+    mocker.patch(
+        f"{EXMS}.refresh_latest_ohlcv", MagicMock(return_value=mock_ohlcv_data)
+    )
     exchange = get_patched_exchange(mocker, rpl_config, exchange="binance")
     pairlistmanager = PairListManager(exchange, rpl_config)
 
@@ -395,7 +415,9 @@ def test_filter_pairlist_with_max_value_set(mocker, rpl_config, tickers, time_ma
         exchange, pairlistmanager, rpl_config, rpl_config["pairlists"][0], 0
     )
 
-    result = remote_pairlist.filter_pairlist(rpl_config["exchange"]["pair_whitelist"], {})
+    result = remote_pairlist.filter_pairlist(
+        rpl_config["exchange"]["pair_whitelist"], {}
+    )
 
     assert len(result) == 1
     assert result == ["ETH/USDT"]

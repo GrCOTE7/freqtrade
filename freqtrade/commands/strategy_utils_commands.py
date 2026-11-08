@@ -5,7 +5,6 @@ from typing import Any
 
 from freqtrade.enums import RunMode
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +20,9 @@ def start_strategy_update(args: dict[str, Any]) -> None:
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
 
     strategy_objs = StrategyResolver.search_all_objects(
-        config, enum_failed=False, recursive=config.get("recursive_strategy_search", False)
+        config,
+        enum_failed=False,
+        recursive=config.get("recursive_strategy_search", False),
     )
 
     filtered_strategy_objs = []
@@ -51,4 +52,6 @@ def start_conversion(strategy_obj, config):
     start = time.perf_counter()
     instance_strategy_updater.start(config, strategy_obj)
     elapsed = time.perf_counter() - start
-    print(f"Conversion of {Path(strategy_obj['location']).name} took {elapsed:.1f} seconds.")
+    print(
+        f"Conversion of {Path(strategy_obj['location']).name} took {elapsed:.1f} seconds."
+    )

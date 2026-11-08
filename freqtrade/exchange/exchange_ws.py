@@ -14,7 +14,6 @@ from freqtrade.exchange.exchange import timeframe_to_seconds
 from freqtrade.exchange.exchange_types import OHLCVResponse, OrderBook
 from freqtrade.util import dt_ts, format_ms_time, format_ms_time_det
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +24,10 @@ class ExchangeWS:
     ob_snapshot_timeout = 1.0
 
     def __init__(
-        self, config: Config, ccxt_object: ccxt.Exchange, orderbook_depth: int | None = None
+        self,
+        config: Config,
+        ccxt_object: ccxt.Exchange,
+        orderbook_depth: int | None = None,
     ) -> None:
         self.config = config
         self._ccxt_object = ccxt_object
@@ -62,7 +64,9 @@ class ExchangeWS:
                 for task in pending:
                     task.cancel()
                 if pending:
-                    self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                    self._loop.run_until_complete(
+                        asyncio.gather(*pending, return_exceptions=True)
+                    )
                 self._loop.run_until_complete(self._loop.shutdown_asyncgens())
                 self._loop.close()
             self._loop_ready.clear()
@@ -99,9 +103,13 @@ class ExchangeWS:
         Reset all connections - avoids "connection-reset" errors that happen after ~9 days
         """
         if self._wait_for_loop() and not self._loop.is_closed():
-            logger.info(f"{'Cleaning up' if cleanup else 'Resetting'} exchange WS connections.")
+            logger.info(
+                f"{'Cleaning up' if cleanup else 'Resetting'} exchange WS connections."
+            )
             try:
-                fut = asyncio.run_coroutine_threadsafe(self._cleanup_async(), loop=self._loop)
+                fut = asyncio.run_coroutine_threadsafe(
+                    self._cleanup_async(), loop=self._loop
+                )
                 fut.result(timeout=10)
             except TimeoutError:
                 logger.warning("Timed out while resetting websocket connections.")
@@ -160,7 +168,9 @@ class ExchangeWS:
         """
         ohlcvs = self.ohlcvs(pair, timeframe)
         with self._state_lock:
-            last_refresh = self._klines_last_refresh.get((pair, timeframe, candle_type), 0)
+            last_refresh = self._klines_last_refresh.get(
+                (pair, timeframe, candle_type), 0
+            )
         return ohlcvs, last_refresh
 
     def cleanup_expired(self) -> None:
@@ -174,7 +184,9 @@ class ExchangeWS:
                 _, timeframe, _ = p
                 timeframe_s = timeframe_to_seconds(timeframe)
                 last_refresh = self._klines_last_request.get(p, 0)
-                if last_refresh > 0 and (dt_ts() - last_refresh) > ((timeframe_s + 20) * 1000):
+                if last_refresh > 0 and (dt_ts() - last_refresh) > (
+                    (timeframe_s + 20) * 1000
+                ):
                     logger.info(f"Removing {p} from OHLCV watchlist.")
                     self._klines_watching.discard(p)
                     # Pop history to avoid getting stale data
@@ -186,7 +198,9 @@ class ExchangeWS:
         with self._state_lock:
             for pair in list(self._ob_watching):
                 last_refresh = self._ob_last_request.get(pair, 0)
-                if last_refresh > 0 and (dt_ts() - last_refresh) > ((self.ob_timeout + 20) * 1000):
+                if last_refresh > 0 and (dt_ts() - last_refresh) > (
+                    (self.ob_timeout + 20) * 1000
+                ):
                     logger.info(f"Removing {pair} from orderbook watchlist")
                     self._ob_watching.discard(pair)
 
@@ -225,7 +239,9 @@ class ExchangeWS:
                 if ob_pair in self._ob_scheduled:
                     continue
                 self._ob_scheduled.add(ob_pair)
-            ob_task = asyncio.create_task(self._continuously_async_watch_orderbook(ob_pair))
+            ob_task = asyncio.create_task(
+                self._continuously_async_watch_orderbook(ob_pair)
+            )
             with self._state_lock:
                 self._background_tasks.add(ob_task)
             ob_task.add_done_callback(partial(self._orderbook_stopped, pair=ob_pair))
@@ -243,11 +259,19 @@ class ExchangeWS:
                 task.result()
         except Exception:
             result = "error"
-            logger.exception(f"Unhandled exception in orderbook watch task callback for {pair}")
+            logger.exception(
+                f"Unhandled exception in orderbook watch task callback for {pair}"
+            )
         finally:
             logger.info(f"{pair} - Orderbook task finished - {result}")
-            if not self._stopping and hasattr(self, "_loop") and not self._loop.is_closed():
-                asyncio.run_coroutine_threadsafe(self._unwatch_orderbook(pair), loop=self._loop)
+            if (
+                not self._stopping
+                and hasattr(self, "_loop")
+                and not self._loop.is_closed()
+            ):
+                asyncio.run_coroutine_threadsafe(
+                    self._unwatch_orderbook(pair), loop=self._loop
+                )
 
             with self._state_lock:
                 self._ob_scheduled.discard(pair)
@@ -262,19 +286,27 @@ class ExchangeWS:
         """
         return endpoint in self._ccxt_object.has and self._ccxt_object.has[endpoint]
 
-    async def _unwatch_ohlcv(self, pair: str, timeframe: str, candle_type: CandleType) -> None:
+    async def _unwatch_ohlcv(
+        self, pair: str, timeframe: str, candle_type: CandleType
+    ) -> None:
         if self._stopping:
             # Unsubscribing from a connection that's going away is pointless.
-            logger.debug("Shutting down - skipping OHLCV unwatch for %s, %s", pair, timeframe)
+            logger.debug(
+                "Shutting down - skipping OHLCV unwatch for %s, %s", pair, timeframe
+            )
             return
         try:
             async with asyncio.timeout(3):
                 if self.exchange_has("unWatchOHLCVForSymbols"):
-                    await self._ccxt_object.un_watch_ohlcv_for_symbols([[pair, timeframe]])
+                    await self._ccxt_object.un_watch_ohlcv_for_symbols(
+                        [[pair, timeframe]]
+                    )
                 elif self.exchange_has("unWatchOHLCV"):
                     await self._ccxt_object.un_watch_ohlcv(pair, timeframe)
                 else:
-                    logger.debug("un_watch_ohlcv not supported for %s, %s", pair, timeframe)
+                    logger.debug(
+                        "un_watch_ohlcv not supported for %s, %s", pair, timeframe
+                    )
 
         except TimeoutError:
             logger.warning(f"Timed out while unwatching OHLCV for {pair}, {timeframe}.")
@@ -283,7 +315,9 @@ class ExchangeWS:
         except ccxt.NetworkError as e:
             # Network errors are common on shutdown so we can ignore them.
             # It's a network error - which most likely means that the connection is already closed.
-            logger.debug("Network error during OHLCV unwatch for %s, %s: %s", pair, timeframe, e)
+            logger.debug(
+                "Network error during OHLCV unwatch for %s, %s: %s", pair, timeframe, e
+            )
         except Exception:
             logger.exception(f"Exception in _unwatch_ohlcv for {pair}, {timeframe},")
 
@@ -332,8 +366,14 @@ class ExchangeWS:
                 f"Unhandled exception in ohlcv watch task callback for {pair}, {timeframe}"
             )
         finally:
-            logger.info(f"{pair}, {timeframe}, {candle_type} - Task finished - {result}")
-            if not self._stopping and hasattr(self, "_loop") and not self._loop.is_closed():
+            logger.info(
+                f"{pair}, {timeframe}, {candle_type} - Task finished - {result}"
+            )
+            if (
+                not self._stopping
+                and hasattr(self, "_loop")
+                and not self._loop.is_closed()
+            ):
                 asyncio.run_coroutine_threadsafe(
                     self._unwatch_ohlcv(pair, timeframe, candle_type), loop=self._loop
                 )
@@ -353,7 +393,9 @@ class ExchangeWS:
         except ccxt.ExchangeClosedByUser:
             logger.debug("Exchange connection closed by user")
         except ccxt.BaseError:
-            logger.exception(f"Exception in continuously_async_watch_orderbook for {pair}")
+            logger.exception(
+                f"Exception in continuously_async_watch_orderbook for {pair}"
+            )
         finally:
             with self._state_lock:
                 self._ob_watching.discard(pair)
@@ -378,17 +420,23 @@ class ExchangeWS:
         except ccxt.ExchangeClosedByUser:
             logger.debug("Exchange connection closed by user")
         except ccxt.BaseError:
-            logger.exception(f"Exception in continuously_async_watch_ohlcv for {pair}, {timeframe}")
+            logger.exception(
+                f"Exception in continuously_async_watch_ohlcv for {pair}, {timeframe}"
+            )
         finally:
             with self._state_lock:
                 self._klines_watching.discard((pair, timeframe, candle_type))
 
-    def schedule_ohlcv(self, pair: str, timeframe: str, candle_type: CandleType) -> None:
+    def schedule_ohlcv(
+        self, pair: str, timeframe: str, candle_type: CandleType
+    ) -> None:
         """
         Schedule a pair/timeframe combination to be watched
         """
         if not self._wait_for_loop():
-            logger.warning(f"Websocket loop not ready. Could not schedule {pair}, {timeframe}.")
+            logger.warning(
+                f"Websocket loop not ready. Could not schedule {pair}, {timeframe}."
+            )
             return
         with self._state_lock:
             self._klines_watching.add((pair, timeframe, candle_type))
@@ -408,7 +456,9 @@ class ExchangeWS:
         Returns cached klines from ccxt's "watch" cache.
         :param candle_ts: timestamp of the end-time of the candle we expect.
         """
-        candles, refresh_date = self.get_ohlcv_with_refresh(pair, timeframe, candle_type)
+        candles, refresh_date = self.get_ohlcv_with_refresh(
+            pair, timeframe, candle_type
+        )
         received_ts = candles[-1][0] if candles else 0
         drop_hint = received_ts >= candle_ts
         if refresh_date and received_ts > refresh_date:
@@ -469,7 +519,9 @@ class ExchangeWS:
         :param limit: Maximum number of entries per side to return.
         """
         if not self._wait_for_loop(timeout=0.2) or self._loop.is_closed():
-            logger.debug("Websocket loop not available - no orderbook snapshot for %s", pair)
+            logger.debug(
+                "Websocket loop not available - no orderbook snapshot for %s", pair
+            )
             return self._empty_orderbook(pair)
         fut = asyncio.run_coroutine_threadsafe(
             self._orderbook_snapshot(pair, limit), loop=self._loop
@@ -483,7 +535,9 @@ class ExchangeWS:
                 f"orderbook for {pair} - falling back to REST."
             )
         except Exception:
-            logger.exception(f"Exception while copying the websocket orderbook for {pair}")
+            logger.exception(
+                f"Exception while copying the websocket orderbook for {pair}"
+            )
         return self._empty_orderbook(pair)
 
     def orderbook_is_fresh(self, pair: str, max_age: float) -> bool:
@@ -501,7 +555,9 @@ class ExchangeWS:
         Schedule a pair to be watched for orderbook updates
         """
         if not self._wait_for_loop():
-            logger.warning(f"Websocket loop not ready. Could not schedule orderbook for {pair}.")
+            logger.warning(
+                f"Websocket loop not ready. Could not schedule orderbook for {pair}."
+            )
             return
         with self._state_lock:
             self._ob_watching.add(pair)

@@ -7,7 +7,6 @@ from rich.text import Text
 
 from freqtrade.loggers.rich_console import get_rich_console
 
-
 type TextOrString = str | Text
 
 
@@ -35,7 +34,9 @@ def print_rich_table(
             )
 
         else:
-            row_to_add: list[str | Text] = [r if isinstance(r, Text) else str(r) for r in row]
+            row_to_add: list[str | Text] = [
+                r if isinstance(r, Text) else str(r) for r in row
+            ]
             table.add_row(*row_to_add)
 
     console = get_rich_console()

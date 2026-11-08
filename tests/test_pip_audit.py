@@ -11,7 +11,6 @@ from pathlib import Path
 
 import pytest
 
-
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
 
@@ -63,7 +62,10 @@ def test_pip_audit_no_vulnerabilities():
         error_output = result.stdout + "\n" + result.stderr
 
         # Check if it's an actual vulnerability vs an error
-        if "vulnerabilities found" in error_output.lower() or '"dependencies"' in result.stdout:
+        if (
+            "vulnerabilities found" in error_output.lower()
+            or '"dependencies"' in result.stdout
+        ):
             pytest.fail(
                 f"pip-audit detected security vulnerabilities!\n\n"
                 f"Output:\n{result.stdout}\n\n"
@@ -78,7 +80,9 @@ def test_pip_audit_no_vulnerabilities():
             )
 
     # Success - no vulnerabilities found
-    assert result.returncode == 0, "pip-audit should return 0 when no vulnerabilities are found"
+    assert (
+        result.returncode == 0
+    ), "pip-audit should return 0 when no vulnerabilities are found"
 
 
 def test_pip_audit_runs_successfully():
@@ -96,7 +100,9 @@ def test_pip_audit_runs_successfully():
             timeout=10,
         )
         assert result.returncode == 0, f"pip-audit --version failed: {result.stderr}"
-        assert "pip-audit" in result.stdout.lower(), "pip-audit version output unexpected"
+        assert (
+            "pip-audit" in result.stdout.lower()
+        ), "pip-audit version output unexpected"
     except FileNotFoundError:
         pytest.fail("pip-audit not installed")
     except subprocess.TimeoutExpired:

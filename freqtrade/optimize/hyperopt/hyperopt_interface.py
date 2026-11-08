@@ -15,7 +15,6 @@ from freqtrade.misc import round_dict
 from freqtrade.optimize.space import Categorical, Dimension, Integer, SKDecimal
 from freqtrade.strategy import IStrategy
 
-
 logger = logging.getLogger(__name__)
 
 type EstimatorType = BaseSampler | str
@@ -39,7 +38,9 @@ class IHyperOpt(ABC):
         # Assign timeframe to be used in hyperopt
         IHyperOpt.timeframe = str(config["timeframe"])
 
-    def generate_estimator(self, dimensions: list[Dimension], **kwargs) -> EstimatorType:
+    def generate_estimator(
+        self, dimensions: list[Dimension], **kwargs
+    ) -> EstimatorType:
         """
         Return base_estimator.
         Can be any of "TPESampler", "GPSampler", "CmaEsSampler", "NSGAIISampler"
@@ -135,13 +136,22 @@ class IHyperOpt(ABC):
             Integer(roi_limits["roi_t2_min"], roi_limits["roi_t2_max"], name="roi_t2"),
             Integer(roi_limits["roi_t3_min"], roi_limits["roi_t3_max"], name="roi_t3"),
             SKDecimal(
-                roi_limits["roi_p1_min"], roi_limits["roi_p1_max"], decimals=3, name="roi_p1"
+                roi_limits["roi_p1_min"],
+                roi_limits["roi_p1_max"],
+                decimals=3,
+                name="roi_p1",
             ),
             SKDecimal(
-                roi_limits["roi_p2_min"], roi_limits["roi_p2_max"], decimals=3, name="roi_p2"
+                roi_limits["roi_p2_min"],
+                roi_limits["roi_p2_max"],
+                decimals=3,
+                name="roi_p2",
             ),
             SKDecimal(
-                roi_limits["roi_p3_min"], roi_limits["roi_p3_max"], decimals=3, name="roi_p3"
+                roi_limits["roi_p3_min"],
+                roi_limits["roi_p3_max"],
+                decimals=3,
+                name="roi_p3",
             ),
         ]
 
@@ -164,9 +174,12 @@ class IHyperOpt(ABC):
             "trailing_stop": params["trailing_stop"],
             "trailing_stop_positive": params["trailing_stop_positive"],
             "trailing_stop_positive_offset": (
-                params["trailing_stop_positive"] + params["trailing_stop_positive_offset_p1"]
+                params["trailing_stop_positive"]
+                + params["trailing_stop_positive_offset_p1"]
             ),
-            "trailing_only_offset_is_reached": params["trailing_only_offset_is_reached"],
+            "trailing_only_offset_is_reached": params[
+                "trailing_only_offset_is_reached"
+            ],
         }
 
     def trailing_space(self) -> list[Dimension]:

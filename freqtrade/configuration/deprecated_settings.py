@@ -7,7 +7,6 @@ import logging
 from freqtrade.constants import Config
 from freqtrade.exceptions import ConfigurationError, OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -89,12 +88,18 @@ def process_temporary_deprecated_settings(config: Config) -> None:
         "ignore_buying_expired_candle_after",
     )
 
-    process_deprecated_setting(config, None, "forcebuy_enable", None, "force_entry_enable")
+    process_deprecated_setting(
+        config, None, "forcebuy_enable", None, "force_entry_enable"
+    )
 
     # New settings
     if config.get("telegram"):
         process_deprecated_setting(
-            config["telegram"], "notification_settings", "sell", "notification_settings", "exit"
+            config["telegram"],
+            "notification_settings",
+            "sell",
+            "notification_settings",
+            "exit",
         )
         process_deprecated_setting(
             config["telegram"],
@@ -111,7 +116,11 @@ def process_temporary_deprecated_settings(config: Config) -> None:
             "exit_cancel",
         )
         process_deprecated_setting(
-            config["telegram"], "notification_settings", "buy", "notification_settings", "entry"
+            config["telegram"],
+            "notification_settings",
+            "buy",
+            "notification_settings",
+            "entry",
         )
         process_deprecated_setting(
             config["telegram"],
@@ -128,14 +137,18 @@ def process_temporary_deprecated_settings(config: Config) -> None:
             "entry_cancel",
         )
     if config.get("webhook"):
-        process_deprecated_setting(config, "webhook", "webhookbuy", "webhook", "webhookentry")
+        process_deprecated_setting(
+            config, "webhook", "webhookbuy", "webhook", "webhookentry"
+        )
         process_deprecated_setting(
             config, "webhook", "webhookbuycancel", "webhook", "webhookentrycancel"
         )
         process_deprecated_setting(
             config, "webhook", "webhookbuyfill", "webhook", "webhookentryfill"
         )
-        process_deprecated_setting(config, "webhook", "webhooksell", "webhook", "webhookexit")
+        process_deprecated_setting(
+            config, "webhook", "webhooksell", "webhook", "webhookexit"
+        )
         process_deprecated_setting(
             config, "webhook", "webhooksellcancel", "webhook", "webhookexitcancel"
         )
@@ -145,19 +158,35 @@ def process_temporary_deprecated_settings(config: Config) -> None:
 
     # Legacy way - having them in experimental ...
 
-    process_removed_setting(config, "experimental", "use_sell_signal", None, "use_exit_signal")
-    process_removed_setting(config, "experimental", "sell_profit_only", None, "exit_profit_only")
     process_removed_setting(
-        config, "experimental", "ignore_roi_if_buy_signal", None, "ignore_roi_if_entry_signal"
+        config, "experimental", "use_sell_signal", None, "use_exit_signal"
+    )
+    process_removed_setting(
+        config, "experimental", "sell_profit_only", None, "exit_profit_only"
+    )
+    process_removed_setting(
+        config,
+        "experimental",
+        "ignore_roi_if_buy_signal",
+        None,
+        "ignore_roi_if_entry_signal",
     )
 
-    process_removed_setting(config, "ask_strategy", "use_sell_signal", None, "use_exit_signal")
-    process_removed_setting(config, "ask_strategy", "sell_profit_only", None, "exit_profit_only")
+    process_removed_setting(
+        config, "ask_strategy", "use_sell_signal", None, "use_exit_signal"
+    )
+    process_removed_setting(
+        config, "ask_strategy", "sell_profit_only", None, "exit_profit_only"
+    )
     process_removed_setting(
         config, "ask_strategy", "sell_profit_offset", None, "exit_profit_offset"
     )
     process_removed_setting(
-        config, "ask_strategy", "ignore_roi_if_buy_signal", None, "ignore_roi_if_entry_signal"
+        config,
+        "ask_strategy",
+        "ignore_roi_if_buy_signal",
+        None,
+        "ignore_roi_if_entry_signal",
     )
     if "ticker_interval" in config:
         raise ConfigurationError(

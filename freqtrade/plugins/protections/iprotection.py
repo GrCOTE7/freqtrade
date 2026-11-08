@@ -10,7 +10,6 @@ from freqtrade.misc import plural
 from freqtrade.mixins import LoggingMixin
 from freqtrade.persistence import LocalTrade
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +37,9 @@ class IProtection(LoggingMixin, ABC):
 
         tf_in_min = timeframe_to_minutes(config["timeframe"])
         if "stop_duration_candles" in protection_config:
-            self._stop_duration_candles = int(protection_config.get("stop_duration_candles", 1))
+            self._stop_duration_candles = int(
+                protection_config.get("stop_duration_candles", 1)
+            )
             self._stop_duration = tf_in_min * self._stop_duration_candles
         elif "unlock_at" in protection_config:
             self._unlock_at = protection_config.get("unlock_at")
@@ -46,7 +47,9 @@ class IProtection(LoggingMixin, ABC):
             self._stop_duration = int(protection_config.get("stop_duration", 60))
 
         if "lookback_period_candles" in protection_config:
-            self._lookback_period_candles = int(protection_config.get("lookback_period_candles", 1))
+            self._lookback_period_candles = int(
+                protection_config.get("lookback_period_candles", 1)
+            )
             self._lookback_period = tf_in_min * self._lookback_period_candles
         else:
             self._lookback_period_candles = None
@@ -126,7 +129,9 @@ class IProtection(LoggingMixin, ABC):
         Get lock end time
         Implicitly uses `self._stop_duration` or `self._unlock_at` depending on the configuration.
         """
-        max_date: datetime = max([trade.close_date for trade in trades if trade.close_date])
+        max_date: datetime = max(
+            [trade.close_date for trade in trades if trade.close_date]
+        )
         # coming from Database, tzinfo is not set.
         if max_date.tzinfo is None:
             max_date = max_date.replace(tzinfo=UTC)

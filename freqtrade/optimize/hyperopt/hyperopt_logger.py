@@ -5,7 +5,6 @@ from queue import Empty
 
 from freqtrade.loggers import get_existing_handlers
 
-
 logger = logging.getLogger(__name__)
 
 

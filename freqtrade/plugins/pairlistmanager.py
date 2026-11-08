@@ -19,12 +19,13 @@ from freqtrade.plugins.pairlist.pairlist_helpers import expand_pairlist
 from freqtrade.resolvers import PairListResolver
 from freqtrade.util import FtTTLCache
 
-
 logger = logging.getLogger(__name__)
 
 
 class PairListManager(LoggingMixin):
-    def __init__(self, exchange, config: Config, dataprovider: DataProvider | None = None) -> None:
+    def __init__(
+        self, exchange, config: Config, dataprovider: DataProvider | None = None
+    ) -> None:
         self._exchange = exchange
         self._config = config
         self._whitelist = self._config["exchange"].get("pair_whitelist")
@@ -48,7 +49,9 @@ class PairListManager(LoggingMixin):
             raise OperationalException("No Pairlist Handlers defined")
 
         if self._tickers_needed and not self._exchange.exchange_has("fetchTickers"):
-            invalid = ". ".join([p.name for p in self._pairlist_handlers if p.needstickers])
+            invalid = ". ".join(
+                [p.name for p in self._pairlist_handlers if p.needstickers]
+            )
 
             raise OperationalException(
                 f"Exchange {self._exchange.name} does not support fetchTickers, therefore the "
@@ -114,7 +117,9 @@ class PairListManager(LoggingMixin):
         eblacklist = self._not_expiring_cache.get("eblacklist")
 
         if not eblacklist:
-            eblacklist = expand_pairlist(self._blacklist, self._exchange.get_markets().keys())
+            eblacklist = expand_pairlist(
+                self._blacklist, self._exchange.get_markets().keys()
+            )
 
             if self._config["runmode"] in (RunMode.BACKTEST, RunMode.HYPEROPT):
                 self._not_expiring_cache["eblacklist"] = eblacklist.copy()
@@ -134,7 +139,9 @@ class PairListManager(LoggingMixin):
     def _get_cached_tickers(self) -> Tickers:
         return self._exchange.get_tickers()
 
-    def refresh_pairlist(self, only_first: bool = False, pairs: list[str] | None = None) -> None:
+    def refresh_pairlist(
+        self, only_first: bool = False, pairs: list[str] | None = None
+    ) -> None:
         """
         Run pairlist through all configured Pairlist Handlers.
 
@@ -193,7 +200,9 @@ class PairListManager(LoggingMixin):
             log_once = partial(self.log_once, logmethod=logmethod)
             for pair in pairlist.copy():
                 if pair in blacklist:
-                    log_once(f"Pair {pair} in your blacklist. Removing it from whitelist...")
+                    log_once(
+                        f"Pair {pair} in your blacklist. Removing it from whitelist..."
+                    )
                     pairlist.remove(pair)
         return pairlist
 
@@ -211,7 +220,9 @@ class PairListManager(LoggingMixin):
         :return: pairlist - whitelisted pairs
         """
         try:
-            whitelist = expand_pairlist(pairlist, self._exchange.get_markets().keys(), keep_invalid)
+            whitelist = expand_pairlist(
+                pairlist, self._exchange.get_markets().keys(), keep_invalid
+            )
         except ValueError as err:
             logger.error(f"Pair whitelist contains an invalid Wildcard: {err}")
             return []

@@ -16,9 +16,12 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.exchange import timeframe_to_minutes
 from freqtrade.exchange.exchange_types import Ticker, Tickers
 from freqtrade.misc import plural
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +152,9 @@ class PercentChangePairList(IPairList):
             _pairlist = [
                 k
                 for k in self._exchange.get_markets(
-                    quote_currencies=[self._stake_currency], tradable_only=True, active_only=True
+                    quote_currencies=[self._stake_currency],
+                    tradable_only=True,
+                    active_only=True,
                 )
             ]
 
@@ -160,7 +165,8 @@ class PercentChangePairList(IPairList):
                     v
                     for k, v in tickers.items()
                     if (
-                        self._exchange.get_pair_quote_currency(k) == self._stake_currency
+                        self._exchange.get_pair_quote_currency(k)
+                        == self._stake_currency
                         and v["symbol"] in _pairlist
                     )
                 ]
@@ -186,15 +192,23 @@ class PercentChangePairList(IPairList):
         ]
         if self._use_range:
             # calculating using lookback_period
-            filtered_tickers = self.fetch_percent_change_from_lookback_period(filtered_tickers)
+            filtered_tickers = self.fetch_percent_change_from_lookback_period(
+                filtered_tickers
+            )
         else:
             # Fetching 24h change by default from supported exchange tickers
-            filtered_tickers = self.fetch_percent_change_from_tickers(filtered_tickers, tickers)
+            filtered_tickers = self.fetch_percent_change_from_tickers(
+                filtered_tickers, tickers
+            )
 
         if self._min_value is not None:
-            filtered_tickers = [v for v in filtered_tickers if v["percentage"] > self._min_value]
+            filtered_tickers = [
+                v for v in filtered_tickers if v["percentage"] > self._min_value
+            ]
         if self._max_value is not None:
-            filtered_tickers = [v for v in filtered_tickers if v["percentage"] < self._max_value]
+            filtered_tickers = [
+                v for v in filtered_tickers if v["percentage"] < self._max_value
+            ]
 
         sorted_tickers = sorted(
             filtered_tickers,
@@ -203,7 +217,9 @@ class PercentChangePairList(IPairList):
         )
 
         # Validate whitelist to only have active market pairs
-        pairs = self._whitelist_for_active_markets([s["symbol"] for s in sorted_tickers])
+        pairs = self._whitelist_for_active_markets(
+            [s["symbol"] for s in sorted_tickers]
+        )
         pairs = self.verify_blacklist(pairs, logmethod=logger.info)
         # Limit pairlist to the requested number of pairs
         pairs = pairs[: self._number_pairs]

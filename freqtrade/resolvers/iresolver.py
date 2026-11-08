@@ -15,7 +15,6 @@ from typing import Any
 from freqtrade.constants import Config
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -138,7 +137,9 @@ class IResolver:
         :param object_name: ClassName of the object to load
         :return: object class
         """
-        logger.debug(f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'")
+        logger.debug(
+            f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'"
+        )
         for entry in sorted(directory.iterdir()):
             # Only consider python files
             if entry.suffix != ".py":
@@ -149,7 +150,9 @@ class IResolver:
                 continue
             module_path = entry.resolve()
             if entry.read_text(encoding="utf-8").find(f"class {object_name}(") == -1:
-                logger.debug(f"Skipping {module_path} as it does not contain class {object_name}.")
+                logger.debug(
+                    f"Skipping {module_path} as it does not contain class {object_name}."
+                )
                 continue
 
             if obj := next(cls._get_valid_object(module_path, object_name), None):
@@ -161,7 +164,12 @@ class IResolver:
 
     @classmethod
     def _load_object(
-        cls, paths: list[Path], *, object_name: str, add_source: bool = False, kwargs: dict
+        cls,
+        paths: list[Path],
+        *,
+        object_name: str,
+        add_source: bool = False,
+        kwargs: dict,
     ) -> Any | None:
         """
         Try to load object from path list.
@@ -173,7 +181,7 @@ class IResolver:
 
         for _path in paths:
             try:
-                (module, module_path) = cls._search_object(
+                module, module_path = cls._search_object(
                     directory=_path, object_name=object_name, add_source=add_source
                 )
                 if module:
@@ -189,7 +197,12 @@ class IResolver:
 
     @classmethod
     def load_object(
-        cls, object_name: str, config: Config, *, kwargs: dict, extra_dir: str | None = None
+        cls,
+        object_name: str,
+        config: Config,
+        *,
+        kwargs: dict,
+        extra_dir: str | None = None,
     ) -> Any:
         """
         Search and loads the specified object as configured in the child class.
@@ -208,7 +221,9 @@ class IResolver:
             config, user_subdir=cls.user_subdir, extra_dirs=extra_dirs
         )
 
-        found_object = cls._load_object(paths=abs_paths, object_name=object_name, kwargs=kwargs)
+        found_object = cls._load_object(
+            paths=abs_paths, object_name=object_name, kwargs=kwargs
+        )
         if found_object:
             return found_object
         raise OperationalException(
@@ -273,7 +288,9 @@ class IResolver:
                 and not entry.name.startswith(".")
             ):
                 objects.extend(
-                    cls._search_all_objects(entry, enum_failed, recursive, basedir or directory)
+                    cls._search_all_objects(
+                        entry, enum_failed, recursive, basedir or directory
+                    )
                 )
             # Only consider python files
             if entry.suffix != ".py":
@@ -289,7 +306,9 @@ class IResolver:
                         "name": obj[0].__name__ if obj is not None else "",
                         "class": obj[0] if obj is not None else None,
                         "location": entry,
-                        "location_rel": cls._build_rel_location(basedir or directory, entry),
+                        "location_rel": cls._build_rel_location(
+                            basedir or directory, entry
+                        ),
                     }
                 )
         return objects

@@ -4,13 +4,21 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any, ClassVar
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func, select
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    select,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from freqtrade.constants import DATETIME_PRINT_FORMAT
 from freqtrade.persistence.base import ModelBase, SessionType
 from freqtrade.util import dt_now
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +39,9 @@ class _CustomData(ModelBase):
 
     # Uniqueness should be ensured over pair, order_id
     # its likely that order_id is unique per Pair on some exchanges.
-    __table_args__ = (UniqueConstraint("ft_trade_id", "cd_key", name="_trade_id_cd_key"),)
+    __table_args__ = (
+        UniqueConstraint("ft_trade_id", "cd_key", name="_trade_id_cd_key"),
+    )
 
     id = mapped_column(Integer, primary_key=True)
     ft_trade_id = mapped_column(Integer, ForeignKey("trades.id"), index=True)
@@ -41,7 +51,9 @@ class _CustomData(ModelBase):
     cd_key: Mapped[str] = mapped_column(String(255), nullable=False)
     cd_type: Mapped[str] = mapped_column(String(25), nullable=False)
     cd_value: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=dt_now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=dt_now
+    )
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     # Empty container value - not persisted, but filled with cd_value on query
@@ -49,10 +61,14 @@ class _CustomData(ModelBase):
 
     def __repr__(self):
         create_time = (
-            self.created_at.strftime(DATETIME_PRINT_FORMAT) if self.created_at is not None else None
+            self.created_at.strftime(DATETIME_PRINT_FORMAT)
+            if self.created_at is not None
+            else None
         )
         update_time = (
-            self.updated_at.strftime(DATETIME_PRINT_FORMAT) if self.updated_at is not None else None
+            self.updated_at.strftime(DATETIME_PRINT_FORMAT)
+            if self.updated_at is not None
+            else None
         )
         return (
             f"CustomData(id={self.id}, key={self.cd_key}, type={self.cd_type}, "

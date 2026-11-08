@@ -29,7 +29,6 @@ from freqtrade.rpc import RPCManager
 from freqtrade.rpc.rpc_types import RPCAnalyzedDFMsg
 from freqtrade.util import PeriodicCache
 
-
 logger = logging.getLogger(__name__)
 
 NO_EXCHANGE_EXCEPTION = "Exchange is not available to DataProvider."
@@ -66,7 +65,9 @@ class DataProvider:
             maxsize=1000, ttl=timeframe_to_seconds(self._default_timeframe)
         )
 
-        self.producers = self._config.get("external_message_consumer", {}).get("producers", [])
+        self.producers = self._config.get("external_message_consumer", {}).get(
+            "producers", []
+        )
         self.external_data_enabled = len(self.producers) > 0
 
     def _set_dataframe_max_index(self, pair: str, limit_index: int):
@@ -118,7 +119,9 @@ class DataProvider:
         """
         return self.__producer_pairs.get(producer_name, []).copy()
 
-    def _emit_df(self, pair_key: PairWithTimeframe, dataframe: DataFrame, new_candle: bool) -> None:
+    def _emit_df(
+        self, pair_key: PairWithTimeframe, dataframe: DataFrame, new_candle: bool
+    ) -> None:
         """
         Send this dataframe as an ANALYZED_DF message to RPC
 
@@ -223,7 +226,9 @@ class DataProvider:
         # CHECK FOR MISSING CANDLES
         # Convert the timeframe to a timedelta for pandas
         timeframe_delta: Timedelta = to_timedelta(timeframe)
-        local_last: Timestamp = existing_df.iloc[-1]["date"]  # We want the last date from our copy
+        local_last: Timestamp = existing_df.iloc[-1][
+            "date"
+        ]  # We want the last date from our copy
         # We want the first date from the incoming
         incoming_first: Timestamp = dataframe.iloc[0]["date"]
 
@@ -295,7 +300,9 @@ class DataProvider:
         """
         self._pairlists = pairlists
 
-    def historic_ohlcv(self, pair: str, timeframe: str, candle_type: str = "") -> DataFrame:
+    def historic_ohlcv(
+        self, pair: str, timeframe: str, candle_type: str = ""
+    ) -> DataFrame:
         """
         Get stored historical candle (OHLCV) data
         :param pair: pair to get the data for
@@ -341,9 +348,13 @@ class DataProvider:
             return self._config.get("startup_candle_count", 0)
         else:
             startup_candles = self._config.get("startup_candle_count", 0)
-            indicator_periods = freqai_config["feature_parameters"]["indicator_periods_candles"]
+            indicator_periods = freqai_config["feature_parameters"][
+                "indicator_periods_candles"
+            ]
             # make sure the startupcandles is at least the set maximum indicator periods
-            self._config["startup_candle_count"] = max(startup_candles, max(indicator_periods))
+            self._config["startup_candle_count"] = max(
+                startup_candles, max(indicator_periods)
+            )
             tf_seconds = timeframe_to_seconds(timeframe)
             train_candles = freqai_config["train_period_days"] * 86400 / tf_seconds
             total_candles = int(self._config["startup_candle_count"] + train_candles)
@@ -389,7 +400,9 @@ class DataProvider:
         else:
             # Get historical OHLCV data (cached on disk).
             timeframe = timeframe or self._config["timeframe"]
-            data = self.historic_ohlcv(pair=pair, timeframe=timeframe, candle_type=candle_type)
+            data = self.historic_ohlcv(
+                pair=pair, timeframe=timeframe, candle_type=candle_type
+            )
             # Cut date to timeframe-specific date.
             # This is necessary to prevent lookahead bias in callbacks through informative pairs.
             if self.__slice_date:
@@ -399,7 +412,9 @@ class DataProvider:
             logger.warning(f"No data found for ({pair}, {timeframe}, {candle_type}).")
         return data
 
-    def get_analyzed_dataframe(self, pair: str, timeframe: str) -> tuple[DataFrame, datetime]:
+    def get_analyzed_dataframe(
+        self, pair: str, timeframe: str
+    ) -> tuple[DataFrame, datetime]:
         """
         Retrieve the analyzed dataframe. Returns the full dataframe in trade mode (live / dry),
         and the last 1000 candles (up to the time evaluated at this moment) in all other modes.
@@ -409,7 +424,11 @@ class DataProvider:
             combination.
             Returns empty dataframe and Epoch 0 (1970-01-01) if no dataframe was cached.
         """
-        pair_key = (pair, timeframe, self._config.get("candle_type_def", CandleType.SPOT))
+        pair_key = (
+            pair,
+            timeframe,
+            self._config.get("candle_type_def", CandleType.SPOT),
+        )
         if pair_key in self.__cached_pairs:
             if self.runmode in (RunMode.DRY_RUN, RunMode.LIVE):
                 df, date = self.__cached_pairs[pair_key]
@@ -443,7 +462,9 @@ class DataProvider:
         if self._pairlists:
             return self._pairlists.whitelist.copy()
         else:
-            raise OperationalException("Dataprovider was not initialized with a pairlist provider.")
+            raise OperationalException(
+                "Dataprovider was not initialized with a pairlist provider."
+            )
 
     def clear_cache(self):
         """
@@ -478,7 +499,9 @@ class DataProvider:
         Refresh latest trades data (if enabled in config)
         """
 
-        use_public_trades = self._config.get("exchange", {}).get("use_public_trades", False)
+        use_public_trades = self._config.get("exchange", {}).get(
+            "use_public_trades", False
+        )
         if use_public_trades and self._exchange:
             self._exchange.refresh_latest_trades(pairlist)
 
@@ -493,7 +516,11 @@ class DataProvider:
         return list(self._exchange._klines.keys())
 
     def ohlcv(
-        self, pair: str, timeframe: str | None = None, copy: bool = True, candle_type: str = ""
+        self,
+        pair: str,
+        timeframe: str | None = None,
+        copy: bool = True,
+        candle_type: str = "",
     ) -> DataFrame:
         """
         Get candle (OHLCV) data for the given pair as DataFrame
@@ -554,7 +581,9 @@ class DataProvider:
                 self._config["datadir"], data_format=self._config["dataformat_trades"]
             )
             trades_df = data_handler.trades_load(
-                pair, self._config.get("trading_mode", TradingMode.SPOT), timerange=timerange
+                pair,
+                self._config.get("trading_mode", TradingMode.SPOT),
+                timerange=timerange,
             )
             return trades_df
 
@@ -641,7 +670,9 @@ class DataProvider:
         try:
             return self._exchange.check_delisting_time(pair)
         except ExchangeError:
-            logger.warning(f"Could not fetch market data for {pair}. Assuming no delisting.")
+            logger.warning(
+                f"Could not fetch market data for {pair}. Assuming no delisting."
+            )
             return None
 
     def get_funding_rate_timeframe(self) -> str:

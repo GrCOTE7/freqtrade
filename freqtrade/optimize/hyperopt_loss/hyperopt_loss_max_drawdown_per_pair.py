@@ -24,7 +24,9 @@ class MaxDrawDownPerPairHyperOptLoss(IHyperOptLoss):
     """
 
     @staticmethod
-    def hyperopt_loss_function(backtest_stats: dict[str, Any], *args, **kwargs) -> float:
+    def hyperopt_loss_function(
+        backtest_stats: dict[str, Any], *args, **kwargs
+    ) -> float:
         """
         Objective function, returns smaller number for better results.
         """

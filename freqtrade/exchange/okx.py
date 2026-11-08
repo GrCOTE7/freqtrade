@@ -16,7 +16,6 @@ from freqtrade.exchange.common import API_RETRY_COUNT, retrier
 from freqtrade.exchange.exchange_types import CcxtOrder, FtHas
 from freqtrade.util import dt_now, dt_ts
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -97,7 +96,9 @@ class Okx(Exchange):
                 accounts = self._api.fetch_accounts()
                 self._log_exchange_response("fetch_accounts", accounts)
                 if len(accounts) > 0:
-                    self.net_only = accounts[0].get("info", {}).get("posMode") == "net_mode"
+                    self.net_only = (
+                        accounts[0].get("info", {}).get("posMode") == "net_mode"
+                    )
         except ccxt.DDoSProtection as e:
             raise DDosProtection(e) from e
         except (ccxt.OperationFailed, ccxt.ExchangeError) as e:
@@ -137,7 +138,9 @@ class Okx(Exchange):
             params["posSide"] = self._get_posSide(side, reduceOnly)
         return params
 
-    def __fetch_leverage_already_set(self, pair: str, leverage: float, side: BuySell) -> bool:
+    def __fetch_leverage_already_set(
+        self, pair: str, leverage: float, side: BuySell
+    ) -> bool:
         try:
             res_lev = self._api.fetch_leverage(
                 symbol=pair,
@@ -155,7 +158,9 @@ class Okx(Exchange):
             return False
 
     @retrier
-    def _lev_prep(self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False):
+    def _lev_prep(
+        self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False
+    ):
         if self.trading_mode != TradingMode.SPOT and self.margin_mode is not None:
             try:
                 res = self._api.set_leverage(
@@ -193,21 +198,31 @@ class Okx(Exchange):
             price = tickers[pair]["last"] if pair in tickers else None
             contract_size = self.markets.get(pair, {}).get("contractSize")
             if not price or not contract_size:
-                logger.warning(f"Could not convert leverage tiers for {pair}, skipping.")
+                logger.warning(
+                    f"Could not convert leverage tiers for {pair}, skipping."
+                )
                 continue
             pair_tiers = []
             for tier in tiers:
                 parsed = self.parse_leverage_tier(tier)
                 # Use Info field for now.
                 # Can be removed once https://github.com/ccxt/ccxt/issues/30864 is resolved.
-                parsed["minNotional"] = float(tier["info"]["minSz"]) * contract_size * price
-                parsed["maxNotional"] = float(tier["info"]["maxSz"]) * contract_size * price
+                parsed["minNotional"] = (
+                    float(tier["info"]["minSz"]) * contract_size * price
+                )
+                parsed["maxNotional"] = (
+                    float(tier["info"]["maxSz"]) * contract_size * price
+                )
                 pair_tiers.append(parsed)
             self._leverage_tiers[pair] = pair_tiers
 
-    def get_max_pair_stake_amount(self, pair: str, price: float, leverage: float = 1.0) -> float:
+    def get_max_pair_stake_amount(
+        self, pair: str, price: float, leverage: float = 1.0
+    ) -> float:
         if self.trading_mode == TradingMode.SPOT:
-            return float("inf")  # Not actually inf, but this probably won't matter for SPOT
+            return float(
+                "inf"
+            )  # Not actually inf, but this probably won't matter for SPOT
 
         if pair not in self._leverage_tiers:
             return float("inf")
@@ -218,7 +233,9 @@ class Okx(Exchange):
             return float("inf")
         return last_max_notional / leverage
 
-    def _get_stop_params(self, side: BuySell, ordertype: str, stop_price: float) -> dict:
+    def _get_stop_params(
+        self, side: BuySell, ordertype: str, stop_price: float
+    ) -> dict:
         params = super()._get_stop_params(side, ordertype, stop_price)
         if self.trading_mode == TradingMode.SPOT:
             params["tdMode"] = "cash"
@@ -227,7 +244,9 @@ class Okx(Exchange):
             params["posSide"] = self._get_posSide(side, True)
         return params
 
-    def _convert_stop_order(self, pair: str, order_id: str, order: CcxtOrder) -> CcxtOrder:
+    def _convert_stop_order(
+        self, pair: str, order_id: str, order: CcxtOrder
+    ) -> CcxtOrder:
         if (
             order.get("status", "open") == "closed"
             and (real_order_id := order.get("info", {}).get("ordId")) is not None
@@ -292,7 +311,9 @@ class Okx(Exchange):
                 ) from e
             except ccxt.BaseError as e:
                 raise OperationalException(e) from e
-        raise RetryableOrderError(f"StoplossOrder not found (pair: {pair} id: {order_id}).")
+        raise RetryableOrderError(
+            f"StoplossOrder not found (pair: {pair} id: {order_id})."
+        )
 
     def _fetch_orders_emulate(self, pair: str, since_ms: int) -> list[CcxtOrder]:
         orders = []
@@ -302,7 +323,9 @@ class Okx(Exchange):
             # Regular fetch_closed_orders only returns 7 days of data.
             # Force usage of "archive" endpoint, which returns 3 months of data.
             params = {"method": "privateGetTradeOrdersHistoryArchive"}
-            orders_hist = self._api.fetch_closed_orders(pair, since=since_ms, params=params)
+            orders_hist = self._api.fetch_closed_orders(
+                pair, since=since_ms, params=params
+            )
             orders.extend(orders_hist)
 
         orders_open = self._api.fetch_open_orders(pair, since=since_ms)

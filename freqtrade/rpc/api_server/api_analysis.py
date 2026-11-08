@@ -9,7 +9,11 @@ from fastapi.exceptions import HTTPException
 
 from freqtrade.constants import Config
 from freqtrade.enums import RunMode
-from freqtrade.exceptions import ConfigurationError, DependencyException, OperationalException
+from freqtrade.exceptions import (
+    ConfigurationError,
+    DependencyException,
+    OperationalException,
+)
 from freqtrade.misc import deep_merge_dicts
 from freqtrade.rpc.api_server.api_schemas import (
     BgJobStarted,
@@ -21,7 +25,6 @@ from freqtrade.rpc.api_server.api_schemas import (
 from freqtrade.rpc.api_server.deps import get_config
 from freqtrade.rpc.api_server.webserver_bgwork import ApiBG
 from freqtrade.util import get_progress_tracker
-
 
 logger = logging.getLogger(__name__)
 
@@ -91,10 +94,14 @@ def __run_analysis_bg(
 
 
 def __run_recursive_analysis_bg(config_loc: Config, job_id: str):
-    from freqtrade.optimize.analysis.recursive_helpers import RecursiveAnalysisSubFunctions
+    from freqtrade.optimize.analysis.recursive_helpers import (
+        RecursiveAnalysisSubFunctions,
+    )
 
     def run_analysis(config_loc: Config, pt: Any) -> dict:
-        config_loc = RecursiveAnalysisSubFunctions.calculate_config_overrides(config_loc)
+        config_loc = RecursiveAnalysisSubFunctions.calculate_config_overrides(
+            config_loc
+        )
         strategy_obj = __resolve_strategy_object(config_loc)
         instance = RecursiveAnalysisSubFunctions.initialize_single_recursive_analysis(
             config_loc, strategy_obj, pt
@@ -165,21 +172,29 @@ def __api_get_status(jobid: str, jobcategory=str):
     }
 
 
-@router_recursive.get("/recursive_analysis/{jobid}", response_model=RecursiveAnalysisResponse)
+@router_recursive.get(
+    "/recursive_analysis/{jobid}", response_model=RecursiveAnalysisResponse
+)
 def api_get_recursive_analysis(jobid: str):
     return __api_get_status(jobid, "recursive_analysis")
 
 
-@router_lookahead.get("/lookahead_analysis/{jobid}", response_model=LookaheadAnalysisResponse)
+@router_lookahead.get(
+    "/lookahead_analysis/{jobid}", response_model=LookaheadAnalysisResponse
+)
 def api_get_lookahead_analysis(jobid: str):
     return __api_get_status(jobid, "lookahead_analysis")
 
 
 def __run_lookahead_analysis_bg(config_loc: Config, job_id: str):
-    from freqtrade.optimize.analysis.lookahead_helpers import LookaheadAnalysisSubFunctions
+    from freqtrade.optimize.analysis.lookahead_helpers import (
+        LookaheadAnalysisSubFunctions,
+    )
 
     def run_analysis(config_loc: Config, pt: Any) -> dict:
-        config_loc = LookaheadAnalysisSubFunctions.calculate_config_overrides(config_loc)
+        config_loc = LookaheadAnalysisSubFunctions.calculate_config_overrides(
+            config_loc
+        )
         strategy_obj = __resolve_strategy_object(config_loc)
         instance = LookaheadAnalysisSubFunctions.initialize_single_lookahead_analysis(
             config_loc, strategy_obj, pt

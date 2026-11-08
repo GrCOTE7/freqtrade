@@ -98,7 +98,11 @@ def test_FtRestClient_call_invalid(caplog):
         ("forceenter", ["XRP/USDT", "short"], {}),
         ("forceenter", ["XRP/USDT", "short", 1.5], {}),
         ("forceenter", ["XRP/USDT", "short", 1.5], {"order_type": "market"}),
-        ("forceenter", ["XRP/USDT", "short", 1.5], {"order_type": "market", "stake_amount": 100}),
+        (
+            "forceenter",
+            ["XRP/USDT", "short", 1.5],
+            {"order_type": "market", "stake_amount": 100},
+        ),
         (
             "forceenter",
             ["XRP/USDT", "short", 1.5],
@@ -156,13 +160,17 @@ def test_ft_client(mocker, capsys, caplog):
     assert "Possible commands" in captured.out
 
     mock = mocker.patch("freqtrade_client.ft_client.FtRestClient._call")
-    args = add_arguments(["--config", "tests/testdata/testconfigs/main_test_config.json", "ping"])
+    args = add_arguments(
+        ["--config", "tests/testdata/testconfigs/main_test_config.json", "ping"]
+    )
     main_exec(args)
     captured = capsys.readouterr()
     assert mock.call_count == 1
 
     with pytest.raises(SystemExit):
-        args = add_arguments(["--config", "tests/testdata/testconfigs/nonexisting.json"])
+        args = add_arguments(
+            ["--config", "tests/testdata/testconfigs/nonexisting.json"]
+        )
         main_exec(args)
 
     assert log_has_re(r"Could not load config file .*nonexisting\.json\.", caplog)
@@ -195,9 +203,13 @@ def test_ft_client(mocker, capsys, caplog):
 )
 def test_ft_client_argparsing(mocker, params, expected_args, expected_kwargs, caplog):
     mocked_method = params.split(" ")[0]
-    mocker.patch("freqtrade_client.ft_client.load_config", return_value={}, autospec=True)
+    mocker.patch(
+        "freqtrade_client.ft_client.load_config", return_value={}, autospec=True
+    )
     mm = mocker.patch(
-        f"freqtrade_client.ft_client.FtRestClient.{mocked_method}", return_value={}, autospec=True
+        f"freqtrade_client.ft_client.FtRestClient.{mocked_method}",
+        return_value={},
+        autospec=True,
     )
     args = add_arguments(params.split(" "))
     if isinstance(expected_kwargs, dict):
@@ -207,5 +219,7 @@ def test_ft_client_argparsing(mocker, params, expected_args, expected_kwargs, ca
         with pytest.raises(expected_kwargs):
             main_exec(args)
 
-        assert log_has_re(f"Error executing command {mocked_method}: got an unexpected .*", caplog)
+        assert log_has_re(
+            f"Error executing command {mocked_method}: got an unexpected .*", caplog
+        )
         mm.assert_not_called()

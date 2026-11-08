@@ -23,8 +23,12 @@ def test_parse_timerange_incorrect():
     assert timerange.stop_fmt == "2015-07-30 00:00:00"
 
     # Added test for unix timestamp - BTC genesis date
-    assert TimeRange("date", None, 1231006505, 0) == TimeRange.parse_timerange("1231006505-")
-    assert TimeRange(None, "date", 0, 1233360000) == TimeRange.parse_timerange("-1233360000")
+    assert TimeRange("date", None, 1231006505, 0) == TimeRange.parse_timerange(
+        "1231006505-"
+    )
+    assert TimeRange(None, "date", 0, 1233360000) == TimeRange.parse_timerange(
+        "-1233360000"
+    )
     timerange = TimeRange.parse_timerange("1231006505-1233360000")
     assert TimeRange("date", "date", 1231006505, 1233360000) == timerange
     assert isinstance(timerange.startdt, datetime)

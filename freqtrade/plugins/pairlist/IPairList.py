@@ -13,7 +13,6 @@ from freqtrade.exchange import Exchange, market_is_active
 from freqtrade.exchange.exchange_types import Ticker, Tickers
 from freqtrade.mixins import LoggingMixin
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -187,7 +186,9 @@ class IPairList(LoggingMixin, ABC):
         """
         lookback_days: int = self._pairlistconfig.get("lookback_days", 0) or 0
         lookback_period: int | None = self._pairlistconfig.get("lookback_period", None)
-        self._lookback_timeframe: str = self._pairlistconfig.get("lookback_timeframe", "1d")
+        self._lookback_timeframe: str = self._pairlistconfig.get(
+            "lookback_timeframe", "1d"
+        )
 
         has_period = (lookback_period or 0) > 0
 
@@ -201,7 +202,9 @@ class IPairList(LoggingMixin, ABC):
         # or if lookback_period provides the range instead.
         min_days = 1 if required and not has_period else 0
         if "lookback_days" in self._pairlistconfig and lookback_days < min_days:
-            raise OperationalException(f"{self.name} requires lookback_days to be >= {min_days}")
+            raise OperationalException(
+                f"{self.name} requires lookback_days to be >= {min_days}"
+            )
 
         # lookback_days implies daily candles
         if lookback_days > 0:
@@ -373,7 +376,10 @@ class IPairList(LoggingMixin, ABC):
                 )
                 continue
 
-            if self._exchange.get_pair_quote_currency(pair) != self._config["stake_currency"]:
+            if (
+                self._exchange.get_pair_quote_currency(pair)
+                != self._config["stake_currency"]
+            ):
                 self.log_once(
                     f"Pair {pair} is not compatible with your stake currency "
                     f"{self._config['stake_currency']}. Removing it from whitelist..",

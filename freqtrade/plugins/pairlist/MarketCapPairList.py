@@ -10,10 +10,13 @@ import math
 from freqtrade.constants import PairPrefixes
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
 from freqtrade.util.coin_gecko import FtCoinGeckoApi
-
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,9 @@ class MarketCapPairList(IPairList):
                 "Supported values are `whitelist` and `blacklist`."
             )
 
-        if (self._mode == "whitelist") and ("number_assets" not in self._pairlistconfig):
+        if (self._mode == "whitelist") and (
+            "number_assets" not in self._pairlistconfig
+        ):
             raise OperationalException(
                 f"{self.name}: `number_assets` not specified. Please check your configuration "
                 'for "pairlist.config.number_assets"'
@@ -43,7 +48,9 @@ class MarketCapPairList(IPairList):
         self._max_rank = self._pairlistconfig.get("max_rank", 30)
         self._refresh_period = self._pairlistconfig.get("refresh_period", 86400)
         self._categories = self._pairlistconfig.get("categories", [])
-        self._marketcap_cache: FtTTLCache = FtTTLCache(maxsize=2, ttl=self._refresh_period)
+        self._marketcap_cache: FtTTLCache = FtTTLCache(
+            maxsize=2, ttl=self._refresh_period
+        )
 
         _coingecko_config = self._config.get("coingecko", {})
 
@@ -128,7 +135,9 @@ class MarketCapPairList(IPairList):
         markets = [
             k
             for k in self._exchange.get_markets(
-                quote_currencies=[self._stake_currency], tradable_only=True, active_only=True
+                quote_currencies=[self._stake_currency],
+                tradable_only=True,
+                active_only=True,
             )
         ]
 
@@ -236,7 +245,9 @@ class MarketCapPairList(IPairList):
 
             for mc_pair in top_marketcap:
                 pair = f"{mc_pair.upper()}/{pair_format}"
-                resolved = self.resolve_marketcap_pair(pair, pairlist, markets, filtered_pairlist)
+                resolved = self.resolve_marketcap_pair(
+                    pair, pairlist, markets, filtered_pairlist
+                )
 
                 if resolved:
                     if not is_whitelist_mode:

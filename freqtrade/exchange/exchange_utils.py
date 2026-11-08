@@ -28,15 +28,19 @@ from freqtrade.exchange.common import (
     SUPPORTED_EXCHANGES,
 )
 from freqtrade.exchange.exchange_types import FtWsEnabled
-from freqtrade.exchange.exchange_utils_timeframe import timeframe_to_minutes, timeframe_to_prev_date
+from freqtrade.exchange.exchange_utils_timeframe import (
+    timeframe_to_minutes,
+    timeframe_to_prev_date,
+)
 from freqtrade.ft_types import TradeModeType, ValidExchangesType
 from freqtrade.util import FtPrecise
-
 
 CcxtModuleType = Any
 
 
-def is_exchange_known_ccxt(exchange_name: str, ccxt_module: CcxtModuleType | None = None) -> bool:
+def is_exchange_known_ccxt(
+    exchange_name: str, ccxt_module: CcxtModuleType | None = None
+) -> bool:
     return exchange_name in ccxt_exchanges(ccxt_module)
 
 
@@ -55,7 +59,9 @@ def available_exchanges(ccxt_module: CcxtModuleType | None = None) -> list[str]:
     return [x for x in exchanges if validate_exchange(x)[0]]
 
 
-def _exchange_has_helper(ex_mod: ccxt.Exchange, required: dict[str, list[str]]) -> list[str]:
+def _exchange_has_helper(
+    ex_mod: ccxt.Exchange, required: dict[str, list[str]]
+) -> list[str]:
     """
     Checks availability of methods (or their replacement)s in ex_mod.has
     :param ex_mod: ccxt Exchange module
@@ -113,7 +119,9 @@ def _build_exchange_list_entry(
 ) -> ValidExchangesType:
     exchange_name = exchange_name.lower()
     valid, comment, comment_fut, ex_mod = validate_exchange(exchange_name)
-    mapped_exchange_name = MAP_EXCHANGE_CHILDCLASS.get(exchange_name, exchange_name).lower()
+    mapped_exchange_name = MAP_EXCHANGE_CHILDCLASS.get(
+        exchange_name, exchange_name
+    ).lower()
     is_alias = getattr(ex_mod, "alias", False)
     result: ValidExchangesType = {
         "name": getattr(ex_mod, "name", exchange_name),
@@ -124,9 +132,11 @@ def _build_exchange_list_entry(
         "comment_futures": comment_fut,
         "dex": getattr(ex_mod, "dex", False),
         "is_alias": is_alias,
-        "alias_for": inspect.getmro(ex_mod.__class__)[1]().id
-        if getattr(ex_mod, "alias", False)
-        else None,
+        "alias_for": (
+            inspect.getmro(ex_mod.__class__)[1]().id
+            if getattr(ex_mod, "alias", False)
+            else None
+        ),
         "trade_modes": [{"trading_mode": "spot", "margin_mode": ""}],
     }
     if resolved := exchangeClasses.get(mapped_exchange_name):
@@ -150,7 +160,9 @@ def list_available_exchanges(all_exchanges: bool) -> list[ValidExchangesType]:
     exchanges = ccxt_exchanges() if all_exchanges else available_exchanges()
     from freqtrade.resolvers.exchange_resolver import ExchangeResolver
 
-    subclassed = {e["name"].lower(): e for e in ExchangeResolver.search_all_objects({}, False)}
+    subclassed = {
+        e["name"].lower(): e for e in ExchangeResolver.search_all_objects({}, False)
+    }
 
     exchanges_valid: list[ValidExchangesType] = [
         _build_exchange_list_entry(e, subclassed) for e in exchanges
@@ -176,7 +188,9 @@ def resolve_ws_enabled(enable_ws: bool | FtWsEnabled | dict[str, bool]) -> FtWsE
     }
 
 
-def date_minus_candles(timeframe: str, candle_count: int, date: datetime | None = None) -> datetime:
+def date_minus_candles(
+    timeframe: str, candle_count: int, date: datetime | None = None
+) -> datetime:
     """
     subtract X candles from a date.
     :param timeframe: timeframe in string format (e.g. "5m")
@@ -188,7 +202,9 @@ def date_minus_candles(timeframe: str, candle_count: int, date: datetime | None 
         date = datetime.now(UTC)
 
     tf_min = timeframe_to_minutes(timeframe)
-    new_date = timeframe_to_prev_date(timeframe, date) - timedelta(minutes=tf_min * candle_count)
+    new_date = timeframe_to_prev_date(timeframe, date) - timedelta(
+        minutes=tf_min * candle_count
+    )
     return new_date
 
 
@@ -245,7 +261,9 @@ def amount_to_precision(
     :return: truncated amount
     """
     if amount_precision is not None and precisionMode is not None:
-        precision = int(amount_precision) if precisionMode != TICK_SIZE else amount_precision
+        precision = (
+            int(amount_precision) if precisionMode != TICK_SIZE else amount_precision
+        )
         # precision must be an int for non-ticksize inputs.
         amount = float(
             decimal_to_precision(
@@ -314,7 +332,10 @@ def __price_to_precision_significant_digits(
     else:
         precise = "{:f}".format(
             dec.quantize(
-                sigfig, rounding=dec_ROUND_DOWN if rounding_mode == ROUND_DOWN else dec_ROUND_UP
+                sigfig,
+                rounding=(
+                    dec_ROUND_DOWN if rounding_mode == ROUND_DOWN else dec_ROUND_UP
+                ),
             )
         )
     return float(precise)
@@ -349,9 +370,11 @@ def price_to_precision(
                 decimal_to_precision(
                     price,
                     rounding_mode,  # rounding mode
-                    int(price_precision)
-                    if precisionMode != TICK_SIZE
-                    else price_precision,  # numPrecisionDigits
+                    (
+                        int(price_precision)
+                        if precisionMode != TICK_SIZE
+                        else price_precision
+                    ),  # numPrecisionDigits
                     precisionMode,  # counting_mode
                 )
             )

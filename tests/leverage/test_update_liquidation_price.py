@@ -17,7 +17,9 @@ def test_update_liquidation_prices(mocker, margin_mode, dry_run):
     wallets = MagicMock()
     trade_mock = MagicMock()
 
-    mocker.patch("freqtrade.persistence.Trade.get_open_trades", return_value=[trade_mock])
+    mocker.patch(
+        "freqtrade.persistence.Trade.get_open_trades", return_value=[trade_mock]
+    )
 
     update_liquidation_prices(
         trade=trade_mock,
@@ -38,7 +40,8 @@ def test_update_liquidation_prices(mocker, margin_mode, dry_run):
     trade_mock_2 = MagicMock()
 
     mocker.patch(
-        "freqtrade.persistence.Trade.get_open_trades", return_value=[trade_mock, trade_mock_2]
+        "freqtrade.persistence.Trade.get_open_trades",
+        return_value=[trade_mock, trade_mock_2],
     )
 
     update_liquidation_prices(

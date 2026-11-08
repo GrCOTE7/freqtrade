@@ -15,7 +15,6 @@ from freqtrade.constants import MINIMAL_CONFIG, Config
 from freqtrade.exceptions import ConfigurationError, OperationalException
 from freqtrade.misc import deep_merge_dicts
 
-
 logger = logging.getLogger(__name__)
 
 

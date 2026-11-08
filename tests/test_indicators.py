@@ -12,7 +12,9 @@ def test_crossed_numpy_types():
     And we must ensure to not break this again once we update from the original source.
     """
     series = pd.Series([56, 97, 19, 76, 65, 25, 87, 91, 79, 79])
-    expected_result = pd.Series([False, True, False, True, False, False, True, False, False, False])
+    expected_result = pd.Series(
+        [False, True, False, True, False, False, True, False, False, False]
+    )
 
     # freqtrade.vendor.qtpylib is a deprecated shim around technical and emits a
     # FutureWarning on import - suppress it here, it's asserted below.
@@ -34,5 +36,7 @@ def test_qtpylib_deprecation():
         warnings.simplefilter("ignore", FutureWarning)
         import freqtrade.vendor.qtpylib.indicators as qtpylib
 
-    with pytest.warns(FutureWarning, match="freqtrade.vendor.qtpylib.indicators' is deprecated"):
+    with pytest.warns(
+        FutureWarning, match="freqtrade.vendor.qtpylib.indicators' is deprecated"
+    ):
         importlib.reload(qtpylib)

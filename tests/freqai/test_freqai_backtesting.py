@@ -33,7 +33,9 @@ def test_freqai_backtest_start_backtest_list(freqai_conf, mocker, testdatadir, c
         PropertyMock(return_value=["HULUMULU/USDT", "XRP/USDT"]),
     )
     mocker.patch("freqtrade.optimize.backtesting.history.load_data")
-    mocker.patch("freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now))
+    mocker.patch(
+        "freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now)
+    )
 
     patched_configuration_load_config_file(mocker, freqai_conf)
 
@@ -54,7 +56,8 @@ def test_freqai_backtest_start_backtest_list(freqai_conf, mocker, testdatadir, c
     bt_config = setup_optimize_configuration(args, RunMode.BACKTEST)
     Backtesting(bt_config)
     assert log_has_re(
-        "Using --strategy-list with FreqAI REQUIRES all strategies to have identical", caplog
+        "Using --strategy-list with FreqAI REQUIRES all strategies to have identical",
+        caplog,
     )
     Backtesting.cleanup()
 
@@ -78,9 +81,13 @@ def test_freqai_backtest_load_data(
         PropertyMock(return_value=["HULUMULU/USDT", "XRP/USDT"]),
     )
     mocker.patch("freqtrade.optimize.backtesting.history.load_data")
-    mocker.patch("freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now))
+    mocker.patch(
+        "freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now)
+    )
     freqai_conf["timeframe"] = timeframe
-    freqai_conf.get("freqai", {}).get("feature_parameters", {}).update({"include_timeframes": []})
+    freqai_conf.get("freqai", {}).get("feature_parameters", {}).update(
+        {"include_timeframes": []}
+    )
     backtesting = Backtesting(deepcopy(freqai_conf))
     backtesting.load_bt_data()
 
@@ -89,12 +96,17 @@ def test_freqai_backtest_load_data(
         f"to {expected_startup_candle_count}",
         caplog,
     )
-    assert history.load_data.call_args[1]["startup_candles"] == expected_startup_candle_count
+    assert (
+        history.load_data.call_args[1]["startup_candles"]
+        == expected_startup_candle_count
+    )
 
     Backtesting.cleanup()
 
 
-def test_freqai_backtest_live_models_model_not_found(freqai_conf, mocker, testdatadir, caplog):
+def test_freqai_backtest_live_models_model_not_found(
+    freqai_conf, mocker, testdatadir, caplog
+):
     patch_exchange(mocker)
 
     now = datetime.now(UTC)
@@ -103,7 +115,9 @@ def test_freqai_backtest_live_models_model_not_found(freqai_conf, mocker, testda
         PropertyMock(return_value=["HULUMULU/USDT", "XRP/USDT"]),
     )
     mocker.patch("freqtrade.optimize.backtesting.history.load_data")
-    mocker.patch("freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now))
+    mocker.patch(
+        "freqtrade.optimize.backtesting.history.get_timerange", return_value=(now, now)
+    )
     freqai_conf["timerange"] = ""
     freqai_conf.get("freqai", {}).update({"backtest_using_historic_predictions": False})
 
@@ -125,7 +139,8 @@ def test_freqai_backtest_live_models_model_not_found(freqai_conf, mocker, testda
     bt_config = setup_optimize_configuration(args, RunMode.BACKTEST)
 
     with pytest.raises(
-        OperationalException, match=r".* Historic predictions data is required to run backtest .*"
+        OperationalException,
+        match=r".* Historic predictions data is required to run backtest .*",
     ):
         Backtesting(bt_config)
 

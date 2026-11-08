@@ -26,7 +26,9 @@ def _no_base64_strategy(value: str) -> str:
     (see docs/strategy-advanced.md) - an API caller must never be able to supply one.
     """
     if ":" in value:
-        raise PydanticCustomError("strategy_name", "base64 encoded strategies are not allowed.")
+        raise PydanticCustomError(
+            "strategy_name", "base64 encoded strategies are not allowed."
+        )
     return value
 
 
@@ -547,7 +549,9 @@ class DownloadDataPayload(ExchangeModePayloadMixin, BaseModel):
     def check_mutually_exclusive(cls, values):
         timeframes, days = values.get("timerange"), values.get("days")
         if timeframes and days:
-            raise ValueError("Only one of timeframes or days can be provided, not both.")
+            raise ValueError(
+                "Only one of timeframes or days can be provided, not both."
+            )
         return values
 
 
@@ -628,7 +632,11 @@ class CategoricalParameter(CategoricalParameterInput, __StrategyParameter):
 
 
 AllParameters = Annotated[
-    BooleanParameter | CategoricalParameter | DecimalParameter | IntParameter | RealParameter,
+    BooleanParameter
+    | CategoricalParameter
+    | DecimalParameter
+    | IntParameter
+    | RealParameter,
     Field(discriminator="param_type"),
 ]
 
@@ -780,7 +788,9 @@ class RecursiveAnalysisRequest(BaseModel):
 
 class RecursiveAnalysisResultEntry(BaseModel):
     strategy: str
-    startup_candles: list[int] = Field(description="The startup candle counts that were tested.")
+    startup_candles: list[int] = Field(
+        description="The startup candle counts that were tested."
+    )
     strategy_scc: int | None = Field(
         default=None,
         description="The strategy's own startup_candle_count, if it could be determined.",
@@ -846,7 +856,9 @@ class SysInfo(BaseModel):
     cpu_load: list[CpuInfo]
     cpu_load_avg: dict[str, float]
     cpu_count: int = Field(description="Number of logical CPUs as provided by psutil")
-    cpu_avg: float = Field(description="Average CPU load across all cores as provided by psutil")
+    cpu_avg: float = Field(
+        description="Average CPU load across all cores as provided by psutil"
+    )
     ram_pct: float = Field(description="RAM usage percentage as provided by psutil")
 
 

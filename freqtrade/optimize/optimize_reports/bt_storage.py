@@ -14,7 +14,6 @@ from freqtrade.misc import dump_json_to_file, file_dump_json
 from freqtrade.optimize.backtest_caching import get_backtest_metadata_filename
 from freqtrade.util import dt_now
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +79,9 @@ def store_backtest_results(
 
     # Store latest backtest info separately
     latest_filename = Path.joinpath(zip_filename.parent, LAST_BT_RESULT_FN)
-    file_dump_json(latest_filename, {"latest_backtest": str(zip_filename.name)}, log=False)
+    file_dump_json(
+        latest_filename, {"latest_backtest": str(zip_filename.name)}, log=False
+    )
 
     # Create zip file and add the files
     with ZipFile(zip_filename, "w", ZIP_DEFLATED) as zipf:
@@ -102,12 +103,16 @@ def store_backtest_results(
             strategy_buf = BytesIO()
             strategy_path = Path(strategy_file)
             if not strategy_path.is_file():
-                logger.warning(f"Strategy file '{strategy_path}' does not exist. Skipping.")
+                logger.warning(
+                    f"Strategy file '{strategy_path}' does not exist. Skipping."
+                )
                 continue
             with strategy_path.open("rb") as strategy_file_obj:
                 strategy_buf.write(strategy_file_obj.read())
             strategy_buf.seek(0)
-            zipf.writestr(f"{base_filename.stem}_{strategy_name}.py", strategy_buf.getvalue())
+            zipf.writestr(
+                f"{base_filename.stem}_{strategy_name}.py", strategy_buf.getvalue()
+            )
             strategy_param_file = strategy_path.with_suffix(".json")
             used_params = (strategy_params or {}).get(strategy_name)
             if used_params:
@@ -125,7 +130,8 @@ def store_backtest_results(
                     strategy_params_buf,
                 )
                 zipf.writestr(
-                    f"{base_filename.stem}_{strategy_name}.json", strategy_params_buf.getvalue()
+                    f"{base_filename.stem}_{strategy_name}.json",
+                    strategy_params_buf.getvalue(),
                 )
             elif strategy_param_file.is_file():
                 zipf.writestr(
@@ -148,7 +154,9 @@ def store_backtest_results(
             for strategy, df in wallet_summary.items():
                 wallet_name = f"{base_filename.stem}_{strategy}_wallet.feather"
                 wallet_buf = BytesIO()
-                df.reset_index().to_feather(wallet_buf, compression_level=9, compression="lz4")
+                df.reset_index().to_feather(
+                    wallet_buf, compression_level=9, compression="lz4"
+                )
                 wallet_buf.seek(0)
                 zipf.writestr(wallet_name, wallet_buf.getvalue())
 

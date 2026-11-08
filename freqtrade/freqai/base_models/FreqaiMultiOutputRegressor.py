@@ -33,14 +33,18 @@ class FreqaiMultiOutputRegressor(MultiOutputRegressor):
                 "y must have at least two dimensions for multi-output regression but has only one."
             )
 
-        if sample_weight is not None and not has_fit_parameter(self.estimator, "sample_weight"):
+        if sample_weight is not None and not has_fit_parameter(
+            self.estimator, "sample_weight"
+        ):
             raise ValueError("Underlying estimator does not support sample weights.")
 
         if not fit_params:
             fit_params = [None] * y.shape[1]
 
         self.estimators_ = Parallel(n_jobs=self.n_jobs)(
-            delayed(_fit_estimator)(self.estimator, X, y[:, i], sample_weight, **fit_params[i])
+            delayed(_fit_estimator)(
+                self.estimator, X, y[:, i], sample_weight, **fit_params[i]
+            )
             for i in range(y.shape[1])
         )
 

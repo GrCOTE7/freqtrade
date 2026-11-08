@@ -109,7 +109,9 @@ def test_fetch_my_trades_gate(mocker, default_conf, takerormaker, rate, cost):
             }
         ]
     )
-    exchange = get_patched_exchange(mocker, default_conf, api_mock=api_mock, exchange="gate")
+    exchange = get_patched_exchange(
+        mocker, default_conf, api_mock=api_mock, exchange="gate"
+    )
     exchange._trading_fees = tick
     trades = exchange.get_trades_for_order("22255", "ETH/USDT:USDT", datetime.now(UTC))
     trade = trades[0]

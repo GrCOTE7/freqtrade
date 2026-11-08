@@ -18,7 +18,10 @@ from optuna.trial import FrozenTrial, Trial, TrialState
 from freqtrade.constants import FTHYPT_FILEVERSION, LAST_BT_RESULT_FN, Config
 from freqtrade.enums import HyperoptState
 from freqtrade.misc import file_dump_json, plural
-from freqtrade.optimize.hyperopt.hyperopt_optimizer import INITIAL_POINTS, HyperOptimizer
+from freqtrade.optimize.hyperopt.hyperopt_optimizer import (
+    INITIAL_POINTS,
+    HyperOptimizer,
+)
 from freqtrade.optimize.hyperopt.hyperopt_output import HyperoptOutput
 from freqtrade.optimize.hyperopt_tools import (
     HyperoptStateContainer,
@@ -26,7 +29,6 @@ from freqtrade.optimize.hyperopt_tools import (
     hyperopt_serializer,
 )
 from freqtrade.util import dt_now, get_progress_tracker
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +58,9 @@ class Hyperopt:
             / f"strategy_{strategy}_{time_now}.fthypt"
         )
         self.data_pickle_file = (
-            self.config["user_data_dir"] / "hyperopt_results" / "hyperopt_tickerdata.pkl"
+            self.config["user_data_dir"]
+            / "hyperopt_results"
+            / "hyperopt_tickerdata.pkl"
         )
         self.total_epochs = config.get("epochs", 0)
 
@@ -116,7 +120,9 @@ class Hyperopt:
         )
         # Store hyperopt filename
         latest_filename = Path.joinpath(self.results_file.parent, LAST_BT_RESULT_FN)
-        file_dump_json(latest_filename, {"latest_hyperopt": str(self.results_file.name)}, log=False)
+        file_dump_json(
+            latest_filename, {"latest_hyperopt": str(self.results_file.name)}, log=False
+        )
 
     def print_results(self, results: dict[str, Any]) -> None:
         """
@@ -133,7 +139,9 @@ class Hyperopt:
                 self.print_all,
             )
 
-    def run_optimizer_parallel(self, parallel: Parallel, asked: list[list]) -> list[dict[str, Any]]:
+    def run_optimizer_parallel(
+        self, parallel: Parallel, asked: list[list]
+    ) -> list[dict[str, Any]]:
         """Start optimizer in a parallel way"""
 
         return parallel(self.hyperopter.generate_optimizer_wrapped(v) for v in asked)
@@ -147,9 +155,13 @@ class Hyperopt:
             asked.append(self.opt.ask(dimensions))
         return asked
 
-    def duplicate_optuna_asked_points(self, trial: Trial, asked_trials: list[FrozenTrial]) -> bool:
+    def duplicate_optuna_asked_points(
+        self, trial: Trial, asked_trials: list[FrozenTrial]
+    ) -> bool:
         asked_trials_no_dups: list[FrozenTrial] = []
-        trials_to_consider = trial.study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
+        trials_to_consider = trial.study.get_trials(
+            deepcopy=False, states=[TrialState.COMPLETE]
+        )
         # Check whether we already evaluated the sampled `params`.
         for t in reversed(trials_to_consider):
             if trial.params == t.params:
@@ -160,7 +172,9 @@ class Hyperopt:
                 asked_trials_no_dups.append(t)
         return len(asked_trials_no_dups) != len(asked_trials)
 
-    def get_asked_points(self, n_points: int, dimensions: dict) -> tuple[list[Any], list[bool]]:
+    def get_asked_points(
+        self, n_points: int, dimensions: dict
+    ) -> tuple[list[Any], list[bool]]:
         """
         Enforce points returned from `self.opt.ask` have not been already evaluated
 
@@ -170,7 +184,9 @@ class Hyperopt:
         3. Retry using `self.opt.ask` up to `n_points` times
         """
         asked_non_tried: list[FrozenTrial] = []
-        optuna_asked_trials = self.get_optuna_asked_points(n_points=n_points, dimensions=dimensions)
+        optuna_asked_trials = self.get_optuna_asked_points(
+            n_points=n_points, dimensions=dimensions
+        )
         asked_non_tried += [
             x
             for x in optuna_asked_trials
@@ -178,13 +194,17 @@ class Hyperopt:
         ]
         i = 0
         while i < 2 * n_points and len(asked_non_tried) < n_points:
-            asked_new = self.get_optuna_asked_points(n_points=1, dimensions=dimensions)[0]
+            asked_new = self.get_optuna_asked_points(n_points=1, dimensions=dimensions)[
+                0
+            ]
             if not self.duplicate_optuna_asked_points(asked_new, asked_non_tried):
                 asked_non_tried.append(asked_new)
             i += 1
         if len(asked_non_tried) < n_points:
             if self.count_skipped_epochs == 0:
-                logger.warning("Duplicate params detected. Maybe your search space is too small?")
+                logger.warning(
+                    "Duplicate params detected. Maybe your search space is too small?"
+                )
             self.count_skipped_epochs += n_points - len(asked_non_tried)
 
         return asked_non_tried, [False for _ in range(len(asked_non_tried))]
@@ -214,7 +234,9 @@ class Hyperopt:
         self._save_result(val)
 
     def start(self) -> None:
-        self.random_state = self._set_random_state(self.config.get("hyperopt_random_state"))
+        self.random_state = self._set_random_state(
+            self.config.get("hyperopt_random_state")
+        )
         logger.info(f"Using optimizer random state: {self.random_state}")
         self.hyperopt_table_header = -1
         self.hyperopter.prepare_hyperopt()
@@ -256,7 +278,8 @@ class Hyperopt:
                         current_jobs = jobs - n_rest if n_rest > 0 else jobs
 
                         asked, is_random = self.get_asked_points(
-                            n_points=current_jobs, dimensions=self.hyperopter.o_dimensions
+                            n_points=current_jobs,
+                            dimensions=self.hyperopter.o_dimensions,
                         )
 
                         f_val = self.run_optimizer_parallel(

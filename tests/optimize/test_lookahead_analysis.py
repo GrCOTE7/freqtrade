@@ -13,7 +13,6 @@ from freqtrade.optimize.analysis.lookahead_helpers import LookaheadAnalysisSubFu
 from freqtrade.util import get_progress_tracker
 from tests.conftest import EXMS, get_args, log_has_re, patch_exchange
 
-
 IGNORE_BIASED_INDICATORS_CAPTION = (
     "Any indicators in 'biased_indicators' which are used within "
     "set_freqai_targets() can be ignored."
@@ -148,7 +147,9 @@ def test_lookahead_helper_start(lookahead_conf, mocker, caplog) -> None:
     LookaheadAnalysisSubFunctions.start(lookahead_conf)
     assert single_mock.call_count == 1
     assert text_table_mock.call_count == 1
-    assert log_has_re("Using configured order_types, skipping order_types override.", caplog)
+    assert log_has_re(
+        "Using configured order_types, skipping order_types override.", caplog
+    )
     assert "order_types" not in single_mock.call_args_list[0][0][0]
     assert "price_side" not in single_mock.call_args_list[0][0][0]["exit_pricing"]
 
@@ -214,7 +215,9 @@ def test_lookahead_helper_text_table_lookahead_analysis_instances(lookahead_conf
 
     strategy_obj = {
         "name": "strategy_test_v3_with_lookahead_bias",
-        "location": Path(lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"),
+        "location": Path(
+            lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"
+        ),
     }
 
     instance = LookaheadAnalysis(lookahead_conf, strategy_obj)
@@ -302,7 +305,9 @@ def test_lookahead_helper_text_table_lookahead_analysis_instances__caption(
         lookahead_conf,
         {
             "name": "strategy_test_v3_with_lookahead_bias",
-            "location": Path(lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"),
+            "location": Path(
+                lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"
+            ),
         },
     )
     kwargs = {}
@@ -321,7 +326,9 @@ def test_lookahead_helper_text_table_lookahead_analysis_instances__caption(
 def test_lookahead_helper_export_to_csv(lookahead_conf):
     import pandas as pd
 
-    lookahead_conf["lookahead_analysis_exportfilename"] = "temp_csv_lookahead_analysis.csv"
+    lookahead_conf["lookahead_analysis_exportfilename"] = (
+        "temp_csv_lookahead_analysis.csv"
+    )
 
     # just to be sure the test won't fail: remove file if exists for some reason
     # (repeat this at the end once again to clean up)
@@ -338,7 +345,9 @@ def test_lookahead_helper_export_to_csv(lookahead_conf):
     analysis1.false_exit_signals = 10
     analysis1.false_indicators.append("falseIndicator1")
     analysis1.false_indicators.append("falseIndicator2")
-    lookahead_conf["lookahead_analysis_exportfilename"] = "temp_csv_lookahead_analysis.csv"
+    lookahead_conf["lookahead_analysis_exportfilename"] = (
+        "temp_csv_lookahead_analysis.csv"
+    )
 
     strategy_obj1 = {
         "name": "strat1",
@@ -412,7 +421,9 @@ def test_lookahead_helper_export_to_csv(lookahead_conf):
     analysis3.false_exit_signals = 30
     analysis3.false_indicators.append("falseIndicator5")
     analysis3.false_indicators.append("falseIndicator6")
-    lookahead_conf["lookahead_analysis_exportfilename"] = "temp_csv_lookahead_analysis.csv"
+    lookahead_conf["lookahead_analysis_exportfilename"] = (
+        "temp_csv_lookahead_analysis.csv"
+    )
 
     strategy_obj3 = {
         "name": "strat3",
@@ -446,10 +457,14 @@ def test_initialize_single_lookahead_analysis(lookahead_conf, mocker, caplog):
 
     lookahead_conf["timeframe"] = "5m"
     lookahead_conf["timerange"] = "20180119-20180122"
-    start_mock = mocker.patch("freqtrade.optimize.analysis.lookahead.LookaheadAnalysis.start")
+    start_mock = mocker.patch(
+        "freqtrade.optimize.analysis.lookahead.LookaheadAnalysis.start"
+    )
     strategy_obj = {
         "name": "strategy_test_v3_with_lookahead_bias",
-        "location": Path(lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"),
+        "location": Path(
+            lookahead_conf["strategy_path"], f"{lookahead_conf['strategy']}.py"
+        ),
     }
 
     instance = LookaheadAnalysisSubFunctions.initialize_single_lookahead_analysis(
@@ -501,7 +516,9 @@ def test_config_overrides(lookahead_conf):
     lookahead_conf["max_open_trades"] = 0
     lookahead_conf["dry_run_wallet"] = 1
     lookahead_conf["pairs"] = ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
-    lookahead_conf = LookaheadAnalysisSubFunctions.calculate_config_overrides(lookahead_conf)
+    lookahead_conf = LookaheadAnalysisSubFunctions.calculate_config_overrides(
+        lookahead_conf
+    )
 
     assert lookahead_conf["dry_run_wallet"] == 1000000000
     assert lookahead_conf["max_open_trades"] == -1

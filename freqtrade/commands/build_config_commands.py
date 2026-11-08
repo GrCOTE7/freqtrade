@@ -5,7 +5,6 @@ from typing import Any
 from freqtrade.enums import RunMode
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 

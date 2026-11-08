@@ -10,7 +10,6 @@ from freqtrade.freqai.tensorboard.base_tensorboard import (
     BaseTensorboardLogger,
 )
 
-
 logger = logging.getLogger(__name__)
 
 

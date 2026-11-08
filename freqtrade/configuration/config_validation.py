@@ -19,7 +19,6 @@ from freqtrade.constants import UNLIMITED_STAKE_AMOUNT
 from freqtrade.enums import RunMode, TradingMode
 from freqtrade.exceptions import ConfigurationError
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -43,7 +42,9 @@ def _extend_validator(validator_class):
 FreqtradeValidator = _extend_validator(Draft4Validator)
 
 
-def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> dict[str, Any]:
+def validate_config_schema(
+    conf: dict[str, Any], preliminary: bool = False
+) -> dict[str, Any]:
     """
     Validate the configuration follow the Config Schema
     :param conf: Config in JSON format
@@ -70,7 +71,9 @@ def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> d
         raise ConfigurationError(result.message)
 
 
-def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = False) -> None:
+def validate_config_consistency(
+    conf: dict[str, Any], *, preliminary: bool = False
+) -> None:
     """
     Validate the configuration consistency.
     Should be run after loading both configuration and strategy,
@@ -107,22 +110,28 @@ def _validate_unlimited_amount(conf: dict[str, Any]) -> None:
     if (
         conf.get("max_open_trades") == float("inf") or conf.get("max_open_trades") == -1
     ) and conf.get("stake_amount") == UNLIMITED_STAKE_AMOUNT:
-        raise ConfigurationError("`max_open_trades` and `stake_amount` cannot both be unlimited.")
+        raise ConfigurationError(
+            "`max_open_trades` and `stake_amount` cannot both be unlimited."
+        )
 
 
 def _validate_price_config(conf: dict[str, Any]) -> None:
     """
     When using market orders, price sides must be using the "other" side of the price
     """
-    if conf.get("order_types", {}).get("entry") == "market" and conf.get("entry_pricing", {}).get(
-        "price_side"
-    ) not in ("ask", "other"):
-        raise ConfigurationError('Market entry orders require entry_pricing.price_side = "other".')
+    if conf.get("order_types", {}).get("entry") == "market" and conf.get(
+        "entry_pricing", {}
+    ).get("price_side") not in ("ask", "other"):
+        raise ConfigurationError(
+            'Market entry orders require entry_pricing.price_side = "other".'
+        )
 
-    if conf.get("order_types", {}).get("exit") == "market" and conf.get("exit_pricing", {}).get(
-        "price_side"
-    ) not in ("bid", "other"):
-        raise ConfigurationError('Market exit orders require exit_pricing.price_side = "other".')
+    if conf.get("order_types", {}).get("exit") == "market" and conf.get(
+        "exit_pricing", {}
+    ).get("price_side") not in ("bid", "other"):
+        raise ConfigurationError(
+            'Market exit orders require exit_pricing.price_side = "other".'
+        )
 
 
 def _validate_trailing_stoploss(conf: dict[str, Any]) -> None:
@@ -150,7 +159,10 @@ def _validate_trailing_stoploss(conf: dict[str, Any]) -> None:
         )
 
     # Fetch again without default
-    if "trailing_stop_positive" in conf and float(conf["trailing_stop_positive"]) == 0.0:
+    if (
+        "trailing_stop_positive" in conf
+        and float(conf["trailing_stop_positive"]) == 0.0
+    ):
         raise ConfigurationError(
             "The config trailing_stop_positive needs to be different from 0 "
             "to avoid problems with sell orders."
@@ -186,7 +198,9 @@ def _validate_whitelist(conf: dict[str, Any]) -> None:
             and pl.get("method") == "StaticPairList"
             and not conf.get("exchange", {}).get("pair_whitelist")
         ):
-            raise ConfigurationError("StaticPairList requires pair_whitelist to be set.")
+            raise ConfigurationError(
+                "StaticPairList requires pair_whitelist to be set."
+            )
 
 
 def _validate_ask_orderbook(conf: dict[str, Any]) -> None:
@@ -289,13 +303,17 @@ def _validate_unfilledtimeout(conf: dict[str, Any]) -> None:
                 ("buy", "entry"),
                 ("sell", "exit"),
             ]:
-                process_deprecated_setting(conf, "unfilledtimeout", o, "unfilledtimeout", n)
+                process_deprecated_setting(
+                    conf, "unfilledtimeout", o, "unfilledtimeout", n
+                )
 
 
 def _validate_pricing_rules(conf: dict[str, Any]) -> None:
     if conf.get("ask_strategy") or conf.get("bid_strategy"):
         if conf.get("trading_mode", TradingMode.SPOT) != TradingMode.SPOT:
-            raise ConfigurationError("Please migrate your pricing settings to use the new wording.")
+            raise ConfigurationError(
+                "Please migrate your pricing settings to use the new wording."
+            )
         else:
             logger.warning(
                 "DEPRECATED: Using 'ask_strategy' and 'bid_strategy' is deprecated."
@@ -308,7 +326,9 @@ def _validate_pricing_rules(conf: dict[str, Any]) -> None:
                         conf, "bid_strategy", obj, "entry_pricing", "price_last_balance"
                     )
                 else:
-                    process_deprecated_setting(conf, "bid_strategy", obj, "entry_pricing", obj)
+                    process_deprecated_setting(
+                        conf, "bid_strategy", obj, "entry_pricing", obj
+                    )
             del conf["bid_strategy"]
 
             conf["exit_pricing"] = {}
@@ -318,7 +338,9 @@ def _validate_pricing_rules(conf: dict[str, Any]) -> None:
                         conf, "ask_strategy", obj, "exit_pricing", "price_last_balance"
                     )
                 else:
-                    process_deprecated_setting(conf, "ask_strategy", obj, "exit_pricing", obj)
+                    process_deprecated_setting(
+                        conf, "ask_strategy", obj, "exit_pricing", obj
+                    )
             del conf["ask_strategy"]
 
 
@@ -331,12 +353,16 @@ def _validate_freqai_hyperopt(conf: dict[str, Any]) -> None:
         )
 
 
-def _validate_freqai_include_timeframes(conf: dict[str, Any], preliminary: bool) -> None:
+def _validate_freqai_include_timeframes(
+    conf: dict[str, Any], preliminary: bool
+) -> None:
     freqai_enabled = conf.get("freqai", {}).get("enabled", False)
     if freqai_enabled:
         main_tf = conf.get("timeframe", "5m")
         freqai_include_timeframes = (
-            conf.get("freqai", {}).get("feature_parameters", {}).get("include_timeframes", [])
+            conf.get("freqai", {})
+            .get("feature_parameters", {})
+            .get("include_timeframes", [])
         )
 
         from freqtrade.exchange import timeframe_to_seconds
@@ -389,10 +415,14 @@ def _validate_consumers(conf: dict[str, Any]) -> None:
     emc_conf = conf.get("external_message_consumer", {})
     if emc_conf.get("enabled", False):
         if len(emc_conf.get("producers", [])) < 1:
-            raise ConfigurationError("You must specify at least 1 Producer to connect to.")
+            raise ConfigurationError(
+                "You must specify at least 1 Producer to connect to."
+            )
 
         producer_names = [p["name"] for p in emc_conf.get("producers", [])]
-        duplicates = [item for item, count in Counter(producer_names).items() if count > 1]
+        duplicates = [
+            item for item, count in Counter(producer_names).items() if count > 1
+        ]
         if duplicates:
             raise ConfigurationError(
                 f"Producer names must be unique. Duplicate: {', '.join(duplicates)}"
@@ -413,14 +443,18 @@ def _validate_orderflow(conf: dict[str, Any]) -> None:
 
 
 def _validate_demo_trading(conf: dict[str, Any]) -> None:
-    if conf.get("exchange", {}).get("demo_trading", False) and conf.get("dry_run", False):
+    if conf.get("exchange", {}).get("demo_trading", False) and conf.get(
+        "dry_run", False
+    ):
         raise ConfigurationError("Demo trading cannot be used together with dry_run.")
 
 
 def _strategy_settings(conf: dict[str, Any]) -> None:
     process_deprecated_setting(conf, None, "use_sell_signal", None, "use_exit_signal")
     process_deprecated_setting(conf, None, "sell_profit_only", None, "exit_profit_only")
-    process_deprecated_setting(conf, None, "sell_profit_offset", None, "exit_profit_offset")
+    process_deprecated_setting(
+        conf, None, "sell_profit_offset", None, "exit_profit_offset"
+    )
     process_deprecated_setting(
         conf, None, "ignore_roi_if_buy_signal", None, "ignore_roi_if_entry_signal"
     )

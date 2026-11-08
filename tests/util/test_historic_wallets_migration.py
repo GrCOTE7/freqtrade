@@ -134,7 +134,9 @@ def test_migrate_wallet_history_no_trades(default_conf_usdt):
 
 
 @pytest.mark.usefixtures("init_persistence")
-def test_migrate_wallet_history_with_trades(default_conf_usdt, fee, time_machine, markets):
+def test_migrate_wallet_history_with_trades(
+    default_conf_usdt, fee, time_machine, markets
+):
     """Test migration with trades creates wallet history entries."""
     start_time = dt_utc(2024, 1, 10, 12, 0, 0)
     time_machine.move_to(start_time, tick=False)
@@ -164,7 +166,9 @@ def test_migrate_wallet_history_with_trades(default_conf_usdt, fee, time_machine
     exchange.get_option.return_value = True
     exchange.markets = markets
     exchange.refresh_latest_ohlcv.return_value = ohlcv_data
-    exchange.get_pair_base_currency = MagicMock(side_effect=lambda pair: markets.get(pair)["base"])
+    exchange.get_pair_base_currency = MagicMock(
+        side_effect=lambda pair: markets.get(pair)["base"]
+    )
 
     migrate_wallet_history(default_conf_usdt, exchange, 1000.0)
 
@@ -177,7 +181,9 @@ def test_migrate_wallet_history_with_trades(default_conf_usdt, fee, time_machine
 
 
 @pytest.mark.usefixtures("init_persistence")
-def test_migrate_wallet_history_with_multiple_pairs(default_conf_usdt, fee, time_machine, markets):
+def test_migrate_wallet_history_with_multiple_pairs(
+    default_conf_usdt, fee, time_machine, markets
+):
     """Test migration with multiple trading pairs."""
     start_time = dt_utc(2024, 1, 15, 12, 0, 0)
     time_machine.move_to(start_time, tick=False)
@@ -218,7 +224,9 @@ def test_migrate_wallet_history_with_multiple_pairs(default_conf_usdt, fee, time
     exchange.get_option.return_value = True
     exchange.markets = markets
     exchange.refresh_latest_ohlcv.return_value = ohlcv_data
-    exchange.get_pair_base_currency = MagicMock(side_effect=lambda pair: markets.get(pair)["base"])
+    exchange.get_pair_base_currency = MagicMock(
+        side_effect=lambda pair: markets.get(pair)["base"]
+    )
 
     migrate_wallet_history(default_conf_usdt, exchange, 1000.0)
 
@@ -242,8 +250,13 @@ def test_migrate_wallet_history_with_multiple_pairs(default_conf_usdt, fee, time
     btc_entries = [e for e in wallet_entries if e.currency == "BTC"]
     assert len(eth_entries) == 4
     assert len(btc_entries) == 2
-    assert all(entry.rate and entry.rate > 1400 and entry.rate < 1600 for entry in eth_entries)
-    assert all(entry.rate and entry.rate > 29000 and entry.rate < 31000 for entry in btc_entries)
+    assert all(
+        entry.rate and entry.rate > 1400 and entry.rate < 1600 for entry in eth_entries
+    )
+    assert all(
+        entry.rate and entry.rate > 29000 and entry.rate < 31000
+        for entry in btc_entries
+    )
     assert all(entry.balance == 10 for entry in btc_entries)
 
 
@@ -341,7 +354,9 @@ def test_internal_migrate_wallet_history_empty_trades(default_conf_usdt, time_ma
 
 
 @pytest.mark.usefixtures("init_persistence")
-def test_migrate_wallet_history_with_patched_exchange(mocker, default_conf_usdt, fee, time_machine):
+def test_migrate_wallet_history_with_patched_exchange(
+    mocker, default_conf_usdt, fee, time_machine
+):
     """Test migration using get_patched_exchange helper."""
     start_time = dt_utc(2024, 1, 10, 12, 0, 0)
     time_machine.move_to(start_time, tick=False)

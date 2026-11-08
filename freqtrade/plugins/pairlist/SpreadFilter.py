@@ -6,8 +6,11 @@ import logging
 
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Ticker
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
-
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +43,7 @@ class SpreadFilter(IPairList):
         """
         Short whitelist method description - used for startup-messages
         """
-        return (
-            f"{self.name} - Filtering pairs with ask/bid diff above {self._max_spread_ratio:.2%}."
-        )
+        return f"{self.name} - Filtering pairs with ask/bid diff above {self._max_spread_ratio:.2%}."
 
     @staticmethod
     def description() -> str:
@@ -66,7 +67,13 @@ class SpreadFilter(IPairList):
         :param ticker: ticker dict as returned from ccxt.fetch_ticker
         :return: True if the pair can stay, false if it should be removed
         """
-        if ticker and "bid" in ticker and "ask" in ticker and ticker["ask"] and ticker["bid"]:
+        if (
+            ticker
+            and "bid" in ticker
+            and "ask" in ticker
+            and ticker["ask"]
+            and ticker["bid"]
+        ):
             spread = 1 - ticker["bid"] / ticker["ask"]
             if spread > self._max_spread_ratio:
                 self.log_once(
@@ -78,6 +85,7 @@ class SpreadFilter(IPairList):
             else:
                 return True
         self.log_once(
-            f"Removed {pair} from whitelist due to invalid ticker data: {ticker}", logger.info
+            f"Removed {pair} from whitelist due to invalid ticker data: {ticker}",
+            logger.info,
         )
         return False

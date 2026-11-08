@@ -1,6 +1,5 @@
 from freqtrade.util import FtPrecise
 
-
 ws = FtPrecise("-1.123e-6")
 ws = FtPrecise("-1.123e-6")
 xs = FtPrecise("0.00000002")

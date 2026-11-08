@@ -12,9 +12,12 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.exchange import timeframe_to_minutes
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.misc import plural
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +40,9 @@ class VolumePairList(IPairList):
 
         self._stake_currency: str = self._config["stake_currency"]
         self._number_pairs: int = self._pairlistconfig["number_assets"]
-        self._sort_key: Literal["quoteVolume"] = self._pairlistconfig.get("sort_key", "quoteVolume")
+        self._sort_key: Literal["quoteVolume"] = self._pairlistconfig.get(
+            "sort_key", "quoteVolume"
+        )
         self._min_value: float | None = self._pairlistconfig.get("min_value", 0)
         self._max_value: float | None = self._pairlistconfig.get("max_value", None)
         self._refresh_period = self._pairlistconfig.get("refresh_period", 1800)
@@ -91,7 +96,9 @@ class VolumePairList(IPairList):
         """
         Short whitelist method description - used for startup-messages
         """
-        return f"{self.name} - top {self._pairlistconfig['number_assets']} volume pairs."
+        return (
+            f"{self.name} - top {self._pairlistconfig['number_assets']} volume pairs."
+        )
 
     @staticmethod
     def description() -> str:
@@ -147,7 +154,9 @@ class VolumePairList(IPairList):
             _pairlist = [
                 k
                 for k in self._exchange.get_markets(
-                    quote_currencies=[self._stake_currency], tradable_only=True, active_only=True
+                    quote_currencies=[self._stake_currency],
+                    tradable_only=True,
+                    active_only=True,
                 )
             ]
             # No point in testing for blacklisted pairs...
@@ -157,7 +166,8 @@ class VolumePairList(IPairList):
                     v
                     for k, v in tickers.items()
                     if (
-                        self._exchange.get_pair_quote_currency(k) == self._stake_currency
+                        self._exchange.get_pair_quote_currency(k)
+                        == self._stake_currency
                         and (self._use_range or v.get(self._sort_key) is not None)
                         and v["symbol"] in _pairlist
                     )
@@ -206,7 +216,9 @@ class VolumePairList(IPairList):
                 if pair_candles is not None and not pair_candles.empty:
                     if self._exchange.get_option("ohlcv_volume_currency") == "base":
                         pair_candles["typical_price"] = (
-                            pair_candles["high"] + pair_candles["low"] + pair_candles["close"]
+                            pair_candles["high"]
+                            + pair_candles["low"]
+                            + pair_candles["close"]
                         ) / 3
 
                         contract_size = (
@@ -215,7 +227,9 @@ class VolumePairList(IPairList):
                             else 1.0
                         )
                         pair_candles["quoteVolume"] = (
-                            pair_candles["volume"] * pair_candles["typical_price"] * contract_size
+                            pair_candles["volume"]
+                            * pair_candles["typical_price"]
+                            * contract_size
                         )
                     else:
                         # Exchange ohlcv data is in quote volume already.
@@ -239,14 +253,22 @@ class VolumePairList(IPairList):
             filtered_tickers = [v for k, v in tickers.items() if k in pairlist]
 
         if self._min_value and self._min_value > 0:
-            filtered_tickers = [v for v in filtered_tickers if v[self._sort_key] > self._min_value]
+            filtered_tickers = [
+                v for v in filtered_tickers if v[self._sort_key] > self._min_value
+            ]
         if self._max_value is not None:
-            filtered_tickers = [v for v in filtered_tickers if v[self._sort_key] < self._max_value]
+            filtered_tickers = [
+                v for v in filtered_tickers if v[self._sort_key] < self._max_value
+            ]
 
-        sorted_tickers = sorted(filtered_tickers, reverse=True, key=lambda t: t[self._sort_key])
+        sorted_tickers = sorted(
+            filtered_tickers, reverse=True, key=lambda t: t[self._sort_key]
+        )
 
         # Validate whitelist to only have active market pairs
-        pairs = self._whitelist_for_active_markets([s["symbol"] for s in sorted_tickers])
+        pairs = self._whitelist_for_active_markets(
+            [s["symbol"] for s in sorted_tickers]
+        )
         pairs = self.verify_blacklist(pairs, logmethod=logger.info)
         # Limit pairlist to the requested number of pairs
         pairs = pairs[: self._number_pairs]

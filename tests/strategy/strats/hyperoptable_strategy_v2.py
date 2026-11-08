@@ -2,7 +2,12 @@
 
 from strategy_test_v2 import StrategyTestV2
 
-from freqtrade.strategy import BooleanParameter, DecimalParameter, IntParameter, RealParameter
+from freqtrade.strategy import (
+    BooleanParameter,
+    DecimalParameter,
+    IntParameter,
+    RealParameter,
+)
 
 
 class HyperoptableStrategyV2(StrategyTestV2):

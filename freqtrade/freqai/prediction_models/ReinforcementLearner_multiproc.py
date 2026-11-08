@@ -11,7 +11,6 @@ from freqtrade.freqai.prediction_models.ReinforcementLearner import Reinforcemen
 from freqtrade.freqai.RL.BaseReinforcementLearningModel import make_env
 from freqtrade.freqai.tensorboard.TensorboardCallback import TensorboardCallback
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +51,15 @@ class ReinforcementLearner_multiproc(ReinforcementLearner):
         self.train_env = VecMonitor(
             SubprocVecEnv(
                 [
-                    make_env(self.MyRLEnv, env_id, i, 1, train_df, prices_train, env_info=env_info)
+                    make_env(
+                        self.MyRLEnv,
+                        env_id,
+                        i,
+                        1,
+                        train_df,
+                        prices_train,
+                        env_info=env_info,
+                    )
                     for i in range(self.max_threads)
                 ]
             )
@@ -63,7 +70,13 @@ class ReinforcementLearner_multiproc(ReinforcementLearner):
             SubprocVecEnv(
                 [
                     make_env(
-                        self.MyRLEnv, eval_env_id, i, 1, test_df, prices_test, env_info=env_info
+                        self.MyRLEnv,
+                        eval_env_id,
+                        i,
+                        1,
+                        test_df,
+                        prices_test,
+                        env_info=env_info,
                     )
                     for i in range(self.max_threads)
                 ]
@@ -76,7 +89,9 @@ class ReinforcementLearner_multiproc(ReinforcementLearner):
             render=False,
             eval_freq=eval_freq,
             best_model_save_path=str(dk.data_path),
-            use_masking=(self.model_type == "MaskablePPO" and is_masking_supported(self.eval_env)),
+            use_masking=(
+                self.model_type == "MaskablePPO" and is_masking_supported(self.eval_env)
+            ),
         )
 
         # TENSORBOARD CALLBACK DOES NOT RECOMMENDED TO USE WITH MULTIPLE ENVS,

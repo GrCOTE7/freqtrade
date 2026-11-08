@@ -14,7 +14,6 @@ from freqtrade.exceptions import OperationalException
 from freqtrade.plugins.pairlist.pairlist_helpers import expand_pairlist
 from freqtrade.resolvers import ExchangeResolver
 
-
 logger = logging.getLogger(__name__)
 
 KRAKEN_CSV_TRADE_COLUMNS = ["timestamp", "price", "amount"]

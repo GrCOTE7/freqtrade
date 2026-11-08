@@ -8,9 +8,10 @@ from typing import Any, Literal
 
 # DEFAULT_DATAFRAME_COLUMNS is re-exported here for backwards compatibility -
 # the definition lives in freqtrade/candle_columns.py
-from freqtrade.candle_columns import OHLCV_COLUMNS as DEFAULT_DATAFRAME_COLUMNS  # noqa: F401
+from freqtrade.candle_columns import (
+    OHLCV_COLUMNS as DEFAULT_DATAFRAME_COLUMNS,
+)  # noqa: F401
 from freqtrade.enums import CandleType, PriceType
-
 
 DOCS_LINK = "https://www.freqtrade.io/en/stable"
 DEFAULT_CONFIG = "config.json"
@@ -28,7 +29,9 @@ REQUIRED_ORDERTYPES = ["entry", "exit", "stoploss", "stoploss_on_exchange"]
 PRICING_SIDES = ["ask", "bid", "same", "other"]
 ORDERTYPE_POSSIBILITIES = ["limit", "market"]
 _ORDERTIF_POSSIBILITIES = ["GTC", "FOK", "IOC", "PO"]
-ORDERTIF_POSSIBILITIES = _ORDERTIF_POSSIBILITIES + [t.lower() for t in _ORDERTIF_POSSIBILITIES]
+ORDERTIF_POSSIBILITIES = _ORDERTIF_POSSIBILITIES + [
+    t.lower() for t in _ORDERTIF_POSSIBILITIES
+]
 STOPLOSS_PRICE_TYPES = [p for p in PriceType]
 HYPEROPT_LOSS_BUILTIN = [
     "ShortTradeDurHyperOptLoss",

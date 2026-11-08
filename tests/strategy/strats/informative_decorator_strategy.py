@@ -44,30 +44,46 @@ class InformativeDecoratorTest(IStrategy):
 
     # Simple informative test.
     @informative("1h", "NEO/{stake}")
-    def populate_indicators_neo_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_neo_1h(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         dataframe["rsi"] = 14
         return dataframe
 
     @informative("1h", "{base}/BTC")
-    def populate_indicators_base_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_base_1h(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         dataframe["rsi"] = 14
         return dataframe
 
     # Quote currency different from stake currency test.
     @informative("1h", "ETH/BTC", candle_type="spot")
-    def populate_indicators_eth_btc_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    def populate_indicators_eth_btc_1h(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         dataframe["rsi"] = 14
         return dataframe
 
     # Formatting test.
-    @informative("30m", "NEO/{stake}", "{column}_{BASE}_{QUOTE}_{base}_{quote}_{asset}_{timeframe}")
-    def populate_indicators_btc_1h_2(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    @informative(
+        "30m",
+        "NEO/{stake}",
+        "{column}_{BASE}_{QUOTE}_{base}_{quote}_{asset}_{timeframe}",
+    )
+    def populate_indicators_btc_1h_2(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         dataframe["rsi"] = 14
         return dataframe
 
     # Custom formatter test
-    @informative("30m", "ETH/{stake}", fmt=lambda column, **kwargs: column + "_from_callable")
-    def populate_indicators_eth_30m(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+    @informative(
+        "30m", "ETH/{stake}", fmt=lambda column, **kwargs: column + "_from_callable"
+    )
+    def populate_indicators_eth_30m(
+        self, dataframe: DataFrame, metadata: dict
+    ) -> DataFrame:
         dataframe["rsi"] = 14
         return dataframe
 
@@ -80,6 +96,8 @@ class InformativeDecoratorTest(IStrategy):
         # Mixing manual informative pairs with decorators.
         informative = self.dp.get_pair_dataframe("NEO/USDT", "5m", "")
         informative["rsi"] = 14
-        dataframe = merge_informative_pair(dataframe, informative, self.timeframe, "5m", ffill=True)
+        dataframe = merge_informative_pair(
+            dataframe, informative, self.timeframe, "5m", ffill=True
+        )
 
         return dataframe

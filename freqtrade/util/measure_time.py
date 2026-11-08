@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 from freqtrade.util import FtTTLCache
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +13,10 @@ class MeasureTime:
     """
 
     def __init__(
-        self, callback: Callable[[float, float], None], time_limit: float, ttl: int = 3600 * 4
+        self,
+        callback: Callable[[float, float], None],
+        time_limit: float,
+        ttl: int = 3600 * 4,
     ):
         """
         :param callback: The callback to call if the time limit is exceeded.

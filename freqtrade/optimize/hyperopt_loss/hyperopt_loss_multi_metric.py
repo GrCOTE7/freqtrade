@@ -36,7 +36,6 @@ from pandas import DataFrame
 from freqtrade.data.metrics import calculate_expectancy, calculate_max_drawdown
 from freqtrade.optimize.hyperopt import IHyperOptLoss
 
-
 # smaller numbers penalize drawdowns more severely
 DRAWDOWN_MULT = 0.055
 # A very large number to use as a replacement for infinity
@@ -88,12 +87,14 @@ class MultiMetricHyperOptLoss(IHyperOptLoss):
         # Trade Count Penalty
         trade_count_penalty = 1.0  # Default: no penalty
         if trade_count < TARGET_TRADE_AMOUNT:
-            trade_count_penalty = 1 - (abs(trade_count - TARGET_TRADE_AMOUNT) / TARGET_TRADE_AMOUNT)
+            trade_count_penalty = 1 - (
+                abs(trade_count - TARGET_TRADE_AMOUNT) / TARGET_TRADE_AMOUNT
+            )
             trade_count_penalty = max(trade_count_penalty, 0.1)
 
-        profit_draw_function = total_profit - (relative_account_drawdown * total_profit) * (
-            1 - DRAWDOWN_MULT
-        )
+        profit_draw_function = total_profit - (
+            relative_account_drawdown * total_profit
+        ) * (1 - DRAWDOWN_MULT)
 
         return -1 * (
             profit_draw_function

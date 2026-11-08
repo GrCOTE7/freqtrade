@@ -4,10 +4,11 @@ from typing import Any
 from lightgbm import LGBMRegressor
 
 from freqtrade.freqai.base_models.BaseRegressionModel import BaseRegressionModel
-from freqtrade.freqai.base_models.FreqaiMultiOutputRegressor import FreqaiMultiOutputRegressor
+from freqtrade.freqai.base_models.FreqaiMultiOutputRegressor import (
+    FreqaiMultiOutputRegressor,
+)
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.freqai.tensorboard import LightGBMCallback
-
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 from starlette.responses import FileResponse
 
-
 router_ui = APIRouter(include_in_schema=False, tags=["Web UI"])
 
 

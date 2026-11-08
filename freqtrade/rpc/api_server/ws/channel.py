@@ -18,7 +18,6 @@ from freqtrade.rpc.api_server.ws.serializer import (
 from freqtrade.rpc.api_server.ws.ws_types import WebSocketType
 from freqtrade.rpc.api_server.ws_schemas import WSMessageSchemaType
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -80,7 +79,9 @@ class WebSocketChannel:
             # maximum of 3 seconds per message
             self._send_high_limit = min(max(self.avg_send_time * 2, 1), 3)
 
-    async def send(self, message: WSMessageSchemaType | dict[str, Any], use_timeout: bool = False):
+    async def send(
+        self, message: WSMessageSchemaType | dict[str, Any], use_timeout: bool = False
+    ):
         """
         Send a message on the wrapped websocket. If the sending
         takes too long, it will raise a TimeoutError and
@@ -225,7 +226,9 @@ class WebSocketChannel:
 
 
 @asynccontextmanager
-async def create_channel(websocket: WebSocketType, **kwargs) -> AsyncIterator[WebSocketChannel]:
+async def create_channel(
+    websocket: WebSocketType, **kwargs
+) -> AsyncIterator[WebSocketChannel]:
     """
     Context manager for safely opening and closing a WebSocketChannel
     """

@@ -89,21 +89,21 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["entry"]["value1"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["entry"]["value2"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["entry"]["value3"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["entry"]["value4"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["entry"]["value5"].format(
-        **msg
-    )
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["entry"][
+        "value1"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["entry"][
+        "value2"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["entry"][
+        "value3"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["entry"][
+        "value4"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["entry"][
+        "value5"
+    ].format(**msg)
     # Test short
     msg_mock.reset_mock()
 
@@ -121,21 +121,21 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["entry"]["value1"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["entry"]["value2"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["entry"]["value3"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["entry"]["value4"].format(
-        **msg
-    )
-    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["entry"]["value5"].format(
-        **msg
-    )
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["entry"][
+        "value1"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["entry"][
+        "value2"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["entry"][
+        "value3"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["entry"][
+        "value4"
+    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["entry"][
+        "value5"
+    ].format(**msg)
     # Test buy cancel
     msg_mock.reset_mock()
 
@@ -153,15 +153,15 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookentrycancel"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookentrycancel"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookentrycancel"][
-        "value3"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value3"].format(**msg)
     # Test short cancel
     msg_mock.reset_mock()
 
@@ -179,21 +179,21 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookentrycancel"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookentrycancel"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookentrycancel"][
-        "value3"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["webhookentrycancel"][
-        "value4"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["webhookentrycancel"][
-        "value5"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value3"].format(**msg)
+    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value4"].format(**msg)
+    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value5"].format(**msg)
     # Test buy fill
     msg_mock.reset_mock()
 
@@ -211,21 +211,21 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookentryfill"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookentryfill"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookentryfill"][
-        "value3"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["webhookentrycancel"][
-        "value4"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["webhookentrycancel"][
-        "value5"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value3"].format(**msg)
+    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value4"].format(**msg)
+    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value5"].format(**msg)
     # Test short fill
     msg_mock.reset_mock()
 
@@ -243,21 +243,21 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookentryfill"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookentryfill"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookentryfill"][
-        "value3"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"]["webhookentrycancel"][
-        "value4"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"]["webhookentrycancel"][
-        "value5"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookentryfill"
+    ]["value3"].format(**msg)
+    assert msg_mock.call_args[0][0]["value4"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value4"].format(**msg)
+    assert msg_mock.call_args[0][0]["value5"] == default_conf["webhook"][
+        "webhookentrycancel"
+    ]["value5"].format(**msg)
     # Test sell
     msg_mock.reset_mock()
 
@@ -306,15 +306,15 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookexitcancel"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookexitcancel"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookexitcancel"][
-        "value3"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookexitcancel"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookexitcancel"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookexitcancel"
+    ]["value3"].format(**msg)
     # Test Sell fill
     msg_mock.reset_mock()
     msg = {
@@ -334,32 +334,39 @@ def test_send_msg_webhook(default_conf, mocker):
     }
     webhook.send_msg(msg=msg)
     assert msg_mock.call_count == 1
-    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookexitfill"][
-        "value1"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookexitfill"][
-        "value2"
-    ].format(**msg)
-    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookexitfill"][
-        "value3"
-    ].format(**msg)
+    assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+        "webhookexitfill"
+    ]["value1"].format(**msg)
+    assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+        "webhookexitfill"
+    ]["value2"].format(**msg)
+    assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+        "webhookexitfill"
+    ]["value3"].format(**msg)
 
-    for msgtype in [RPCMessageType.STATUS, RPCMessageType.WARNING, RPCMessageType.STARTUP]:
+    for msgtype in [
+        RPCMessageType.STATUS,
+        RPCMessageType.WARNING,
+        RPCMessageType.STARTUP,
+    ]:
         # Test notification
-        msg = {"type": msgtype, "status": "Unfilled sell order for BTC cancelled due to timeout"}
+        msg = {
+            "type": msgtype,
+            "status": "Unfilled sell order for BTC cancelled due to timeout",
+        }
         msg_mock = MagicMock()
         mocker.patch("freqtrade.rpc.webhook.Webhook._send_msg", msg_mock)
         webhook.send_msg(msg)
         assert msg_mock.call_count == 1
-        assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"]["webhookstatus"][
-            "value1"
-        ].format(**msg)
-        assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"]["webhookstatus"][
-            "value2"
-        ].format(**msg)
-        assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"]["webhookstatus"][
-            "value3"
-        ].format(**msg)
+        assert msg_mock.call_args[0][0]["value1"] == default_conf["webhook"][
+            "webhookstatus"
+        ]["value1"].format(**msg)
+        assert msg_mock.call_args[0][0]["value2"] == default_conf["webhook"][
+            "webhookstatus"
+        ]["value2"].format(**msg)
+        assert msg_mock.call_args[0][0]["value3"] == default_conf["webhook"][
+            "webhookstatus"
+        ]["value3"].format(**msg)
 
 
 def test_exception_send_msg(default_conf, mocker, caplog):
@@ -370,7 +377,9 @@ def test_exception_send_msg(default_conf, mocker, caplog):
 
     webhook = Webhook(RPC(get_patched_freqtradebot(mocker, default_conf)), default_conf)
     webhook.send_msg({"type": RPCMessageType.ENTRY})
-    assert log_has(f"Message type '{RPCMessageType.ENTRY}' not configured for webhooks", caplog)
+    assert log_has(
+        f"Message type '{RPCMessageType.ENTRY}' not configured for webhooks", caplog
+    )
 
     default_conf["webhook"] = get_webhook_dict()
     default_conf["webhook"]["strategy_msg"] = {"value1": "{DEADBEEF:8f}"}
@@ -506,4 +515,6 @@ def test_nested_payload_format(default_conf, mocker):
         "text": {"content": "Status update: running", "contentlist": ["running"]},
     }
 
-    post.assert_called_once_with("https://example.com", json=expected_payload, timeout=10)
+    post.assert_called_once_with(
+        "https://example.com", json=expected_payload, timeout=10
+    )

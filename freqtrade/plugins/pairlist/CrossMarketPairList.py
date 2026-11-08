@@ -5,9 +5,12 @@ import logging
 from freqtrade.constants import PairPrefixes
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +22,9 @@ class CrossMarketPairList(IPairList):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self._pairs_exist_on: str = self._pairlistconfig.get("pairs_exist_on", "both_markets")
+        self._pairs_exist_on: str = self._pairlistconfig.get(
+            "pairs_exist_on", "both_markets"
+        )
         if self._pairs_exist_on not in ("current_market_only", "both_markets"):
             raise OperationalException(
                 f"{self.name}: `pairs_exist_on` not configured correctly "
@@ -27,7 +32,9 @@ class CrossMarketPairList(IPairList):
                 "Supported values are `current_market_only` and `both_markets`."
             )
         self._stake_currency: str = self._config["stake_currency"]
-        self._target_mode = "spot" if self._config["trading_mode"] == "futures" else "futures"
+        self._target_mode = (
+            "spot" if self._config["trading_mode"] == "futures" else "futures"
+        )
         self._refresh_period = self._pairlistconfig.get("refresh_period", 1800)
         self._pair_cache: FtTTLCache = FtTTLCache(maxsize=1, ttl=self._refresh_period)
 
@@ -90,7 +97,9 @@ class CrossMarketPairList(IPairList):
             _pairlist = [
                 k
                 for k in self._exchange.get_markets(
-                    quote_currencies=[self._stake_currency], tradable_only=True, active_only=True
+                    quote_currencies=[self._stake_currency],
+                    tradable_only=True,
+                    active_only=True,
                 )
             ]
 
@@ -112,7 +121,8 @@ class CrossMarketPairList(IPairList):
             base = self._exchange.get_pair_base_currency(pair)
             if not base:
                 self.log_once(
-                    f"Unable to get base currency for pair {pair}, skipping it.", logger.warning
+                    f"Unable to get base currency for pair {pair}, skipping it.",
+                    logger.warning,
                 )
                 filtered_pairlist.remove(pair)
                 continue

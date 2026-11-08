@@ -41,7 +41,9 @@ def round_value(value: float | None, decimals: int, keep_trailing_zeros=False) -
     return val
 
 
-def fmt_coin(value: float, coin: str, show_coin_name=True, keep_trailing_zeros=False) -> str:
+def fmt_coin(
+    value: float, coin: str, show_coin_name=True, keep_trailing_zeros=False
+) -> str:
     """
     Format price value for this coin
     :param value: Value to be printed
@@ -58,7 +60,12 @@ def fmt_coin(value: float, coin: str, show_coin_name=True, keep_trailing_zeros=F
 
 
 def fmt_coin2(
-    value: float, coin: str, decimals: int = 8, *, show_coin_name=True, keep_trailing_zeros=False
+    value: float,
+    coin: str,
+    decimals: int = 8,
+    *,
+    show_coin_name=True,
+    keep_trailing_zeros=False,
 ) -> str:
     """
     Format price value for this coin. Should be preferred for rate formatting

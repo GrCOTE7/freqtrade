@@ -9,7 +9,6 @@ from pandas import DataFrame
 from freqtrade.configuration import TimeRange
 from freqtrade.util import CustomProgress
 
-
 logger = logging.getLogger(__name__)
 
 

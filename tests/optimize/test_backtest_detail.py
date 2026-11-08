@@ -17,7 +17,6 @@ from tests.optimize import (
     tests_timeframe,
 )
 
-
 # Test 0: exit with exit signal in candle 3
 # Test with Stop-loss at 1%
 tc0 = BTContainer(
@@ -88,7 +87,16 @@ tc3 = BTContainer(
         [1, 5000, 5025, 4975, 4987, 6172, 0, 0],  # enter trade (signal on last candle)
         [2, 4987, 5012, 4800, 4975, 6172, 0, 0],  # exit with stoploss hit
         [3, 4975, 5000, 4950, 4962, 6172, 1, 0],
-        [4, 4975, 5000, 4950, 4962, 6172, 0, 0],  # enter trade 2 (signal on last candle)
+        [
+            4,
+            4975,
+            5000,
+            4950,
+            4962,
+            6172,
+            0,
+            0,
+        ],  # enter trade 2 (signal on last candle)
         [5, 4962, 4987, 4000, 4000, 6172, 0, 0],  # exit with stoploss hit
         [6, 4950, 4975, 4950, 4950, 6172, 0, 0],
     ],
@@ -554,7 +562,16 @@ tc26 = BTContainer(
         [1, 5000, 5025, 4975, 4987, 6172, 0, 0],  # enter trade (signal on last candle)
         [2, 4987, 5012, 4986, 4986, 6172, 0, 0],
         [3, 5010, 5010, 4986, 5010, 6172, 0, 1],
-        [4, 5010, 5010, 4855, 4995, 6172, 0, 0],  # Triggers stoploss + exit-signal acted on
+        [
+            4,
+            5010,
+            5010,
+            4855,
+            4995,
+            6172,
+            0,
+            0,
+        ],  # Triggers stoploss + exit-signal acted on
         [5, 4995, 4995, 4950, 4950, 6172, 0, 0],
     ],
     stop_loss=-0.01,
@@ -575,7 +592,16 @@ tc27 = BTContainer(
         [1, 5000, 5025, 4975, 4987, 6172, 0, 0],  # enter trade (signal on last candle)
         [2, 4987, 5012, 4986, 4986, 6172, 0, 0],
         [3, 5010, 5010, 4986, 5010, 6172, 0, 1],
-        [4, 5010, 5010, 4855, 4995, 6172, 0, 0],  # Triggers stoploss + exit-signal acted on
+        [
+            4,
+            5010,
+            5010,
+            4855,
+            4995,
+            6172,
+            0,
+            0,
+        ],  # Triggers stoploss + exit-signal acted on
         [5, 4995, 4995, 4950, 4950, 6172, 0, 0],
     ],
     stop_loss=-0.05,
@@ -594,10 +620,32 @@ tc28 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5025, 4975, 4987, 6172, 0, 0, 1, 0],
-        [1, 5000, 5025, 4975, 4987, 6172, 0, 0, 0, 0],  # enter trade (signal on last candle)
+        [
+            1,
+            5000,
+            5025,
+            4975,
+            4987,
+            6172,
+            0,
+            0,
+            0,
+            0,
+        ],  # enter trade (signal on last candle)
         [2, 4987, 5012, 4986, 4986, 6172, 0, 0, 0, 0],
         [3, 5010, 5010, 4986, 5010, 6172, 0, 0, 0, 1],
-        [4, 4990, 5010, 4855, 4995, 6172, 0, 0, 0, 0],  # Triggers stoploss + exit-signal acted on
+        [
+            4,
+            4990,
+            5010,
+            4855,
+            4995,
+            6172,
+            0,
+            0,
+            0,
+            0,
+        ],  # Triggers stoploss + exit-signal acted on
         [5, 4995, 4995, 4950, 4950, 6172, 0, 0, 0, 0],
     ],
     stop_loss=-0.05,
@@ -605,7 +653,11 @@ tc28 = BTContainer(
     profit_perc=0.002 * 5.0,
     use_exit_signal=True,
     leverage=5.0,
-    trades=[BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True
+        )
+    ],
 )
 # Test 29: Exit with exit signal in candle 3 (ROI at signal candle)
 # Stoploss at 10% (irrelevant), ROI at 5% (will trigger)
@@ -690,7 +742,12 @@ tc32 = BTContainer(
     trailing_stop_positive_offset=0.05,
     trailing_stop_positive=0.03,
     trades=[
-        BTrade(exit_reason=ExitType.TRAILING_STOP_LOSS, open_tick=1, close_tick=3, is_short=True)
+        BTrade(
+            exit_reason=ExitType.TRAILING_STOP_LOSS,
+            open_tick=1,
+            close_tick=3,
+            is_short=True,
+        )
     ],
 )
 
@@ -720,7 +777,16 @@ tc34 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 1, 0],
-        [1, 5000, 5500, 4900, 4900, 6172, 0, 0],  # enter trade (signal on last candle) and stop
+        [
+            1,
+            5000,
+            5500,
+            4900,
+            4900,
+            6172,
+            0,
+            0,
+        ],  # enter trade (signal on last candle) and stop
         [2, 4900, 5250, 4500, 5100, 6172, 0, 0],
         [3, 5100, 5100, 4650, 4750, 6172, 0, 0],
         [4, 4750, 4950, 4350, 4750, 6172, 0, 0],
@@ -739,7 +805,16 @@ tc35 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 1, 0],
-        [1, 5000, 5500, 4900, 4900, 6172, 0, 0],  # enter trade (signal on last candle) and stop
+        [
+            1,
+            5000,
+            5500,
+            4900,
+            4900,
+            6172,
+            0,
+            0,
+        ],  # enter trade (signal on last candle) and stop
         [2, 4900, 5250, 4500, 5100, 6172, 0, 0],
         [3, 5100, 5100, 4650, 4750, 6172, 0, 0],
         [4, 4750, 4950, 4350, 4750, 6172, 0, 0],
@@ -883,7 +958,9 @@ tc41 = BTContainer(
     roi={"0": 0.10},
     profit_perc=-0.01,
     custom_entry_price=4000,
-    trades=[BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=1, is_short=True)],
+    trades=[
+        BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=1, is_short=True)
+    ],
 )
 
 # Test 42: Custom-entry-price around candle low
@@ -979,7 +1056,11 @@ tc46 = BTContainer(
     profit_perc=0.0,
     use_exit_signal=True,
     custom_exit_price=4700,
-    trades=[BTrade(exit_reason=ExitType.FORCE_EXIT, open_tick=1, close_tick=4, is_short=True)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.FORCE_EXIT, open_tick=1, close_tick=4, is_short=True
+        )
+    ],
 )
 
 # Test 47: Colliding long and short signal
@@ -1016,7 +1097,11 @@ tc48 = BTContainer(
     timeout=1000,
     custom_entry_price=4200,
     adjust_entry_price=5200,
-    trades=[BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False
+        )
+    ],
 )
 
 
@@ -1037,7 +1122,11 @@ tc49 = BTContainer(
     timeout=1000,
     custom_entry_price=5300,
     adjust_entry_price=5000,
-    trades=[BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True
+        )
+    ],
 )
 
 # Test 50: Custom-entry-price below all candles - readjust order cancels order
@@ -1097,7 +1186,11 @@ tc52 = BTContainer(
     timeout=1000,
     custom_entry_price=4200,
     adjust_entry_price=5200,
-    trades=[BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=2, is_short=False)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=2, is_short=False
+        )
+    ],
 )
 
 
@@ -1106,7 +1199,18 @@ tc53 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 0, 0, 1, 0],
-        [1, 5000, 5200, 4951, 5000, 6172, 0, 0, 0, 0],  # enter trade (signal on last candle)
+        [
+            1,
+            5000,
+            5200,
+            4951,
+            5000,
+            6172,
+            0,
+            0,
+            0,
+            0,
+        ],  # enter trade (signal on last candle)
         [2, 4900, 5250, 4900, 5100, 6172, 0, 0, 0, 0],  # Order readjust
         [3, 5100, 5100, 4650, 4750, 6172, 0, 0, 0, 1],  # stoploss hit?
         [4, 4750, 4950, 4350, 4750, 6172, 0, 0, 0, 0],
@@ -1118,7 +1222,9 @@ tc53 = BTContainer(
     timeout=1000,
     custom_entry_price=5300,
     adjust_entry_price=5000,
-    trades=[BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=2, is_short=True)],
+    trades=[
+        BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=2, is_short=True)
+    ],
 )
 
 # Test 54: Switch position from long to short
@@ -1127,7 +1233,18 @@ tc54 = BTContainer(
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 1, 0, 0, 0],
         [1, 5000, 5000, 4951, 5000, 6172, 0, 0, 0, 0],
-        [2, 4910, 5150, 4910, 5100, 6172, 0, 0, 1, 0],  # Enter short signal being ignored
+        [
+            2,
+            4910,
+            5150,
+            4910,
+            5100,
+            6172,
+            0,
+            0,
+            1,
+            0,
+        ],  # Enter short signal being ignored
         [3, 5100, 5100, 4950, 4950, 6172, 0, 1, 1, 0],  # exit - re-enter short
         [4, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 1],
         [5, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
@@ -1137,8 +1254,12 @@ tc54 = BTContainer(
     profit_perc=0.00,
     use_exit_signal=True,
     trades=[
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False),
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=4, close_tick=5, is_short=True),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False
+        ),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=4, close_tick=5, is_short=True
+        ),
     ],
 )
 
@@ -1147,7 +1268,18 @@ tc55 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 0, 0, 1, 0],
-        [1, 5000, 5000, 4951, 5000, 6172, 1, 0, 0, 0],  # Enter long signal being ignored
+        [
+            1,
+            5000,
+            5000,
+            4951,
+            5000,
+            6172,
+            1,
+            0,
+            0,
+            0,
+        ],  # Enter long signal being ignored
         [2, 4910, 5150, 4910, 5100, 6172, 1, 0, 0, 1],  # Exit - reenter long
         [3, 5100, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
         [4, 5000, 5100, 4950, 4950, 6172, 0, 1, 0, 0],
@@ -1158,8 +1290,12 @@ tc55 = BTContainer(
     profit_perc=-0.04,
     use_exit_signal=True,
     trades=[
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=3, is_short=True),
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=False),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=3, is_short=True
+        ),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=False
+        ),
     ],
 )
 
@@ -1169,7 +1305,18 @@ tc56 = BTContainer(
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 1, 0, 0, 0],
         [1, 5000, 5000, 4951, 5000, 6172, 0, 0, 0, 0],
-        [2, 4910, 5150, 4910, 5100, 6172, 0, 0, 1, 0],  # exit on stoploss - re-enter short
+        [
+            2,
+            4910,
+            5150,
+            4910,
+            5100,
+            6172,
+            0,
+            0,
+            1,
+            0,
+        ],  # exit on stoploss - re-enter short
         [3, 5100, 5100, 4888, 4950, 6172, 0, 0, 0, 0],
         [4, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 1],
         [5, 5000, 5100, 4950, 4950, 6172, 0, 0, 0, 0],
@@ -1179,8 +1326,12 @@ tc56 = BTContainer(
     profit_perc=-0.0,
     use_exit_signal=True,
     trades=[
-        BTrade(exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=3, is_short=False),
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=True),
+        BTrade(
+            exit_reason=ExitType.STOP_LOSS, open_tick=1, close_tick=3, is_short=False
+        ),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=3, close_tick=5, is_short=True
+        ),
     ],
 )
 
@@ -1192,7 +1343,18 @@ tc57 = BTContainer(
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 1, 0, 0, 0],
         [1, 4598, 5200, 4498, 5000, 6172, 0, 0, 0, 0],
-        [2, 4900, 5250, 4900, 5100, 6172, 0, 0, 0, 0],  # Enhance position, but won't fill
+        [
+            2,
+            4900,
+            5250,
+            4900,
+            5100,
+            6172,
+            0,
+            0,
+            0,
+            0,
+        ],  # Enhance position, but won't fill
         [3, 5100, 5100, 4650, 4750, 6172, 0, 0, 0, 0],
         [4, 4750, 4950, 4650, 4750, 6172, 0, 0, 0, 0],
         [5, 4750, 4950, 4650, 4750, 6172, 0, 1, 0, 0],
@@ -1213,7 +1375,9 @@ tc57 = BTContainer(
         None,
     ],
     trades=[
-        BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=6, is_short=False),
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=6, is_short=False
+        ),
     ],
 )
 
@@ -1222,7 +1386,18 @@ tc58 = BTContainer(
     data=[
         # D   O     H     L     C    V    EL XL ES Xs  BT
         [0, 5000, 5050, 4950, 5000, 6172, 0, 0, 1, 0],
-        [1, 5000, 5200, 4951, 5000, 6172, 0, 0, 0, 0],  # enter trade (signal on last candle)
+        [
+            1,
+            5000,
+            5200,
+            4951,
+            5000,
+            6172,
+            0,
+            0,
+            0,
+            0,
+        ],  # enter trade (signal on last candle)
         [2, 4900, 5250, 4900, 5100, 6172, 0, 0, 0, 1],  # Exit - delayed
         [3, 5100, 5100, 4650, 4750, 6172, 0, 0, 0, 0],
         [4, 4750, 5100, 4350, 4750, 6172, 0, 0, 0, 0],
@@ -1234,7 +1409,11 @@ tc58 = BTContainer(
     timeout=1000,
     custom_exit_price=4300,
     adjust_exit_price=5050,
-    trades=[BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=True
+        )
+    ],
 )
 
 # Test 59: Custom-exit-price above all candles - readjust order
@@ -1254,7 +1433,11 @@ tc59 = BTContainer(
     timeout=1000,
     custom_exit_price=5300,
     adjust_exit_price=4900,
-    trades=[BTrade(exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False)],
+    trades=[
+        BTrade(
+            exit_reason=ExitType.EXIT_SIGNAL, open_tick=1, close_tick=4, is_short=False
+        )
+    ],
 )
 
 
@@ -1331,7 +1514,9 @@ def test_backtest_results(default_conf, mocker, caplog, data: BTContainer) -> No
     default_conf["minimal_roi"] = data.roi
     default_conf["timeframe"] = tests_timeframe
     default_conf["trailing_stop"] = data.trailing_stop
-    default_conf["trailing_only_offset_is_reached"] = data.trailing_only_offset_is_reached
+    default_conf["trailing_only_offset_is_reached"] = (
+        data.trailing_only_offset_is_reached
+    )
     if data.timeout:
         default_conf["unfilledtimeout"].update(
             {
@@ -1362,18 +1547,26 @@ def test_backtest_results(default_conf, mocker, caplog, data: BTContainer) -> No
     backtesting.strategy.advise_entry = lambda a, m: frame
     backtesting.strategy.advise_exit = lambda a, m: frame
     if data.custom_entry_price:
-        backtesting.strategy.custom_entry_price = MagicMock(return_value=data.custom_entry_price)
+        backtesting.strategy.custom_entry_price = MagicMock(
+            return_value=data.custom_entry_price
+        )
     if data.custom_exit_price:
-        backtesting.strategy.custom_exit_price = MagicMock(return_value=data.custom_exit_price)
+        backtesting.strategy.custom_exit_price = MagicMock(
+            return_value=data.custom_exit_price
+        )
     if data.adjust_trade_position:
         backtesting.strategy.position_adjustment_enable = True
         backtesting.strategy.adjust_trade_position = MagicMock(
             side_effect=data.adjust_trade_position
         )
     if data.adjust_entry_price:
-        backtesting.strategy.adjust_entry_price = MagicMock(return_value=data.adjust_entry_price)
+        backtesting.strategy.adjust_entry_price = MagicMock(
+            return_value=data.adjust_entry_price
+        )
     if data.adjust_exit_price:
-        backtesting.strategy.adjust_exit_price = MagicMock(return_value=data.adjust_exit_price)
+        backtesting.strategy.adjust_exit_price = MagicMock(
+            return_value=data.adjust_exit_price
+        )
 
     backtesting.strategy.use_custom_stoploss = data.use_custom_stoploss
     backtesting.strategy.leverage = lambda **kwargs: data.leverage

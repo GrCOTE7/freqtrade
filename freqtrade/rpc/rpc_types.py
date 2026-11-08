@@ -4,7 +4,6 @@ from typing import Any, Literal, TypedDict
 from freqtrade.constants import PairWithTimeframe
 from freqtrade.enums import RPCMessageType
 
-
 ProfitLossStr = Literal["profit", "loss"]
 
 
@@ -27,7 +26,9 @@ class RPCStrategyMsg(RPCSendMsgBase):
 
 
 class RPCProtectionMsg(RPCSendMsgBase):
-    type: Literal[RPCMessageType.PROTECTION_TRIGGER, RPCMessageType.PROTECTION_TRIGGER_GLOBAL]
+    type: Literal[
+        RPCMessageType.PROTECTION_TRIGGER, RPCMessageType.PROTECTION_TRIGGER_GLOBAL
+    ]
     id: int
     pair: str
     base_currency: str | None

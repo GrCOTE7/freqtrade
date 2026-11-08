@@ -6,8 +6,10 @@ from typing import Any
 from freqtrade.constants import DATETIME_PRINT_FORMAT, DL_DATA_TIMEFRAMES, Config
 from freqtrade.enums import CandleType, RunMode, TradingMode
 from freqtrade.exceptions import ConfigurationError
-from freqtrade.plugins.pairlist.pairlist_helpers import dynamic_expand_pairlist, expand_pairlist
-
+from freqtrade.plugins.pairlist.pairlist_helpers import (
+    dynamic_expand_pairlist,
+    expand_pairlist,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +136,9 @@ def start_list_data(args: dict[str, Any]) -> None:
         config["datadir"], config.get("trading_mode", TradingMode.SPOT)
     )
     if args["pairs"]:
-        pl = expand_pairlist(args["pairs"], [p[0] for p in paircombs], keep_invalid=True)
+        pl = expand_pairlist(
+            args["pairs"], [p[0] for p in paircombs], keep_invalid=True
+        )
         paircombs = [comb for comb in paircombs if comb[0] in pl]
     title = f"Found {len(paircombs)} pair / timeframe combinations."
     if not config.get("show_timerange"):
@@ -156,7 +160,12 @@ def start_list_data(args: dict[str, Any]) -> None:
             )
     else:
         paircombs1 = [
-            (pair, timeframe, candle_type, *dhc.ohlcv_data_min_max(pair, timeframe, candle_type))
+            (
+                pair,
+                timeframe,
+                candle_type,
+                *dhc.ohlcv_data_min_max(pair, timeframe, candle_type),
+            )
             for pair, timeframe, candle_type in paircombs
         ]
         print_rich_table(
@@ -204,14 +213,22 @@ def start_list_trades_data(args: dict[str, Any]) -> None:
     title = f"Found trades data for {len(paircombs)} {plural(len(paircombs), 'pair')}."
     if not config.get("show_timerange"):
         print_rich_table(
-            [(pair, config.get("candle_type_def", CandleType.SPOT)) for pair in sorted(paircombs)],
+            [
+                (pair, config.get("candle_type_def", CandleType.SPOT))
+                for pair in sorted(paircombs)
+            ],
             ("Pair", "Type"),
             title,
             table_kwargs={"min_width": 50},
         )
     else:
         paircombs1 = [
-            (pair, *dhc.trades_data_min_max(pair, config.get("trading_mode", TradingMode.SPOT)))
+            (
+                pair,
+                *dhc.trades_data_min_max(
+                    pair, config.get("trading_mode", TradingMode.SPOT)
+                ),
+            )
             for pair in paircombs
         ]
         print_rich_table(

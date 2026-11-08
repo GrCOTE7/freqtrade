@@ -2,7 +2,6 @@ from copy import deepcopy
 
 from freqtrade.constants import Config, ExchangeConfig
 
-
 _SENSITIVE_KEYS = [
     "exchange.key",
     "exchange.api_key",

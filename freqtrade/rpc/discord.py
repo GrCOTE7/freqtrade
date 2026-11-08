@@ -5,7 +5,6 @@ from freqtrade.enums import RPCMessageType
 from freqtrade.rpc import RPC
 from freqtrade.rpc.webhook import Webhook
 
-
 logger = logging.getLogger(__name__)
 
 

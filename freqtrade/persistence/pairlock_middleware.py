@@ -7,7 +7,6 @@ from sqlalchemy import select
 from freqtrade.exchange import timeframe_to_next_date
 from freqtrade.persistence.models import PairLock
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -185,9 +184,9 @@ class PairLocks:
         if not now:
             now = datetime.now(UTC)
 
-        return len(PairLocks.get_pair_locks(pair, now, side)) > 0 or PairLocks.is_global_lock(
-            now, side
-        )
+        return len(
+            PairLocks.get_pair_locks(pair, now, side)
+        ) > 0 or PairLocks.is_global_lock(now, side)
 
     @staticmethod
     def get_all_locks() -> Sequence[PairLock]:

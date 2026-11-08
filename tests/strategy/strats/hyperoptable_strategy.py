@@ -6,8 +6,12 @@ from pandas import DataFrame
 from strategy_test_v3 import StrategyTestV3
 from technical import qtpylib
 
-from freqtrade.strategy import BooleanParameter, DecimalParameter, IntParameter, RealParameter
-
+from freqtrade.strategy import (
+    BooleanParameter,
+    DecimalParameter,
+    IntParameter,
+    RealParameter,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +81,9 @@ class HyperoptableStrategy(StrategyTestV3):
                 & (dataframe["adx"] > 30)
                 & (dataframe["plus_di"] > self.buy_plusdi.value)
             )
-            | ((dataframe["adx"] > 65) & (dataframe["plus_di"] > self.buy_plusdi.value)),
+            | (
+                (dataframe["adx"] > 65) & (dataframe["plus_di"] > self.buy_plusdi.value)
+            ),
             "enter_long",
         ] = 1
 
@@ -93,7 +99,10 @@ class HyperoptableStrategy(StrategyTestV3):
                 & (dataframe["adx"] > 10)
                 & (dataframe["minus_di"] > 0)
             )
-            | ((dataframe["adx"] > 70) & (dataframe["minus_di"] > self.sell_minusdi.value)),
+            | (
+                (dataframe["adx"] > 70)
+                & (dataframe["minus_di"] > self.sell_minusdi.value)
+            ),
             "exit_long",
         ] = 1
         return dataframe

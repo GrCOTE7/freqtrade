@@ -21,12 +21,20 @@ class FtRichHandler(Handler):
             msg = self.format(record)
             # Format log message
             log_time = Text(
-                datetime.fromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]  # noqa: DTZ006
-                if record.created
-                else "N/A",
+                (
+                    datetime.fromtimestamp(record.created).strftime(
+                        "%Y-%m-%d %H:%M:%S,%f"
+                    )[
+                        :-3
+                    ]  # noqa: DTZ006
+                    if record.created
+                    else "N/A"
+                ),
             )
             name = Text(record.name, style="violet")
-            log_level = Text(record.levelname, style=f"logging.level.{record.levelname.lower()}")
+            log_level = Text(
+                record.levelname, style=f"logging.level.{record.levelname.lower()}"
+            )
             gray_sep = Text(" - ", style="gray46")
 
             if isinstance(self._console.file, NullFile):
@@ -37,7 +45,14 @@ class FtRichHandler(Handler):
                 return
 
             self._console.print(
-                Text() + log_time + gray_sep + name + gray_sep + log_level + gray_sep + msg
+                Text()
+                + log_time
+                + gray_sep
+                + name
+                + gray_sep
+                + log_level
+                + gray_sep
+                + msg
             )
 
         except RecursionError:

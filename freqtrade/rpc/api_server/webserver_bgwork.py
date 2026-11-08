@@ -7,7 +7,6 @@ from typing_extensions import TypedDict
 
 from freqtrade.exchange.exchange import Exchange
 
-
 if TYPE_CHECKING:
     from pandas import DataFrame
 

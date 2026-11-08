@@ -8,7 +8,6 @@ from typing import Any, cast, overload
 from freqtrade.exceptions import DDosProtection, RetryableOrderError, TemporaryError
 from freqtrade.mixins import LoggingMixin
 
-
 logger = logging.getLogger(__name__)
 __logging_mixin = None
 
@@ -89,7 +88,10 @@ EXCHANGE_HAS_OPTIONAL: dict[str, list[str]] = {
     "fetchTicker": [],  # OR for pricing
     "fetchTickers": [],  # For volumepairlist?
     "fetchTrades": [],  # Downloading trades data
-    "fetchOrders": ["fetchOpenOrders", "fetchClosedOrders"],  # ,  # Refinding balance...
+    "fetchOrders": [
+        "fetchOpenOrders",
+        "fetchClosedOrders",
+    ],  # ,  # Refinding balance...
     # ccxt.pro
     "watchOHLCV": [],
     "watchOrderBook": [],
@@ -145,7 +147,9 @@ def retrier_async(f):
                         msg = ""
                     else:
                         backoff_delay = calculate_backoff(count + 1, API_RETRY_COUNT)
-                        logger.info(f"Applying DDosProtection backoff delay: {backoff_delay}")
+                        logger.info(
+                            f"Applying DDosProtection backoff delay: {backoff_delay}"
+                        )
                         await asyncio.sleep(backoff_delay)
                 if msg:
                     logger.warning(msg)
@@ -159,14 +163,20 @@ def retrier_async(f):
 
 # Type shenanigans
 @overload
-def retrier[F: Callable[..., Any]](_func: F, *, retries: int = API_RETRY_COUNT) -> F: ...
+def retrier[F: Callable[..., Any]](
+    _func: F, *, retries: int = API_RETRY_COUNT
+) -> F: ...
 
 
 @overload
-def retrier[F: Callable[..., Any]](*, retries: int = API_RETRY_COUNT) -> Callable[[F], F]: ...
+def retrier[F: Callable[..., Any]](
+    *, retries: int = API_RETRY_COUNT
+) -> Callable[[F], F]: ...
 
 
-def retrier[F: Callable[..., Any]](_func: F | None = None, *, retries: int = API_RETRY_COUNT):
+def retrier[F: Callable[..., Any]](
+    _func: F | None = None, *, retries: int = API_RETRY_COUNT
+):
     def decorator(f: F) -> F:
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -182,7 +192,9 @@ def retrier[F: Callable[..., Any]](_func: F | None = None, *, retries: int = API
                     if isinstance(ex, DDosProtection | RetryableOrderError):
                         # increasing backoff
                         backoff_delay = calculate_backoff(count + 1, retries)
-                        logger.info(f"Applying DDosProtection backoff delay: {backoff_delay}")
+                        logger.info(
+                            f"Applying DDosProtection backoff delay: {backoff_delay}"
+                        )
                         time.sleep(backoff_delay)
                     return wrapper(*args, **kwargs)
                 else:

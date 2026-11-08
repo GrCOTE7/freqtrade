@@ -3,7 +3,6 @@ from typing import Any
 
 from freqtrade.enums import RunMode
 
-
 logger = logging.getLogger(__name__)
 
 

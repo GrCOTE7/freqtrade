@@ -7,7 +7,6 @@ from freqtrade.enums import ExitType
 from freqtrade.exchange import timeframe_to_minutes
 from freqtrade.util.datetime_helpers import dt_utc
 
-
 tests_start_time = dt_utc(2018, 10, 3)
 tests_timeframe = "1h"
 

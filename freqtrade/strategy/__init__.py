@@ -23,7 +23,6 @@ from freqtrade.strategy.strategy_helper import (
     stoploss_from_open,
 )
 
-
 # Imports to be used for `from freqtrade.strategy import *`
 __all__ = [
     "IStrategy",

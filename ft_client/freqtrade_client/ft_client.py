@@ -14,7 +14,6 @@ import rapidjson
 from freqtrade_client import __version__
 from freqtrade_client.ft_rest_client import FtRestClient
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -28,9 +27,13 @@ def add_arguments(args: Any = None):
         description="Client for the freqtrade REST API",
     )
     parser.add_argument(
-        "command", help="Positional argument defining the command to execute.", nargs="?"
+        "command",
+        help="Positional argument defining the command to execute.",
+        nargs="?",
     )
-    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "-V", "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument(
         "--show",
         help="Show possible methods with this client",
@@ -79,7 +82,9 @@ def print_commands():
     print("Possible commands:\n")
     for x, _ in inspect.getmembers(client):
         if not x.startswith("_"):
-            doc = re.sub(":return:.*", "", getattr(client, x).__doc__, flags=re.MULTILINE).rstrip()
+            doc = re.sub(
+                ":return:.*", "", getattr(client, x).__doc__, flags=re.MULTILINE
+            ).rstrip()
             print(f"{x}\n\t{doc}\n")
 
 
@@ -105,7 +110,11 @@ def main_exec(parsed: dict[str, Any]):
         return
 
     # Split arguments with = into key/value pairs
-    kwargs = {x.split("=")[0]: x.split("=")[1] for x in parsed["command_arguments"] if "=" in x}
+    kwargs = {
+        x.split("=")[0]: x.split("=")[1]
+        for x in parsed["command_arguments"]
+        if "=" in x
+    }
     args = [x for x in parsed["command_arguments"] if "=" not in x]
     try:
         res = getattr(client, command)(*args, **kwargs)

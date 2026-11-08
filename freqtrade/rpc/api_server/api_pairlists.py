@@ -18,7 +18,6 @@ from freqtrade.rpc.api_server.api_schemas import (
 from freqtrade.rpc.api_server.deps import get_config, get_exchange
 from freqtrade.rpc.api_server.webserver_bgwork import ApiBG
 
-
 logger = logging.getLogger(__name__)
 
 # Private API, protected by authentication and webserver_mode dependency
@@ -72,10 +71,14 @@ def __run_pairlist(job_id: str, config_loc: Config):
 
 @router.post("/pairlists/evaluate", response_model=BgJobStarted)
 def pairlists_evaluate(
-    payload: PairListsPayload, background_tasks: BackgroundTasks, config=Depends(get_config)
+    payload: PairListsPayload,
+    background_tasks: BackgroundTasks,
+    config=Depends(get_config),
 ):
     if ApiBG.pairlist_running:
-        raise HTTPException(status_code=400, detail="Pairlist evaluation is already running.")
+        raise HTTPException(
+            status_code=400, detail="Pairlist evaluation is already running."
+        )
 
     config_loc = deepcopy(config)
     config_loc["stake_currency"] = payload.stake_currency

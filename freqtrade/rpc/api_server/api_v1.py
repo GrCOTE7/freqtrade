@@ -31,7 +31,6 @@ from freqtrade.rpc.api_server.deps import (
 )
 from freqtrade.rpc.rpc import RPCException
 
-
 logger = logging.getLogger(__name__)
 
 # API version
@@ -98,9 +97,14 @@ def version():
 
 
 @router.get(
-    "/show_config", response_model=ShowConfig, tags=["Info"], response_model_exclude_unset=True
+    "/show_config",
+    response_model=ShowConfig,
+    tags=["Info"],
+    response_model_exclude_unset=True,
 )
-def show_config(rpc: RPC | None = Depends(get_rpc_optional), config=Depends(get_config)):
+def show_config(
+    rpc: RPC | None = Depends(get_rpc_optional), config=Depends(get_config)
+):
     state: State | str = ""
     strategy_version = None
     if rpc:

@@ -7,9 +7,12 @@ from datetime import UTC, datetime, timedelta
 
 from freqtrade.exceptions import ConfigurationError
 from freqtrade.exchange.exchange_types import Ticker
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import format_date
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,9 @@ class DelistFilter(IPairList):
 
         self._max_days_from_now = self._pairlistconfig.get("max_days_from_now", 0)
         if self._max_days_from_now < 0:
-            raise ConfigurationError("DelistFilter requires max_days_from_now to be >= 0")
+            raise ConfigurationError(
+                "DelistFilter requires max_days_from_now to be >= 0"
+            )
         if not self._exchange.get_option("has_delisting"):
             raise ConfigurationError(
                 f"DelistFilter doesn't support {self._exchange.name} in "
@@ -73,7 +78,9 @@ class DelistFilter(IPairList):
             remove_pair = self._max_days_from_now == 0
             if self._max_days_from_now > 0:
                 current_datetime = datetime.now(UTC)
-                max_delist_date = current_datetime + timedelta(days=self._max_days_from_now)
+                max_delist_date = current_datetime + timedelta(
+                    days=self._max_days_from_now
+                )
                 remove_pair = delist_date <= max_delist_date
 
             if remove_pair:

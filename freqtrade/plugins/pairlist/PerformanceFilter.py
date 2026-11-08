@@ -9,9 +9,12 @@ import pandas as pd
 
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.persistence import Trade
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util.datetime_helpers import dt_now
-
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +69,9 @@ class PerformanceFilter(IPairList):
             performance = pd.DataFrame(Trade.get_overall_performance(start_date))
         except AttributeError:
             # Performancefilter does not work in backtesting.
-            self.log_once("PerformanceFilter is not available in this mode.", logger.warning)
+            self.log_once(
+                "PerformanceFilter is not available in this mode.", logger.warning
+            )
             return pairlist
 
         # Skip performance-based sorting if no performance data is available
@@ -85,7 +90,9 @@ class PerformanceFilter(IPairList):
         sorted_df = (
             list_df.merge(performance, on="pair", how="left")
             .fillna(0)
-            .sort_values(by=["profit_ratio", "count", "prior_idx"], ascending=[False, True, True])
+            .sort_values(
+                by=["profit_ratio", "count", "prior_idx"], ascending=[False, True, True]
+            )
         )
         if self._min_profit is not None:
             removed = sorted_df[sorted_df["profit_ratio"] < self._min_profit]

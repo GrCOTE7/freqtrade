@@ -17,7 +17,6 @@ from freqtrade.util import (
     print_rich_table,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -64,9 +63,11 @@ class LookaheadAnalysisSubFunctions:
                     [
                         inst.strategy_obj["location"].parts[-1],
                         inst.strategy_obj["name"],
-                        Text("Yes", style="bold red")
-                        if inst.current_analysis.has_bias
-                        else Text("No", style="bold green"),
+                        (
+                            Text("Yes", style="bold red")
+                            if inst.current_analysis.has_bias
+                            else Text("No", style="bold green")
+                        ),
                         inst.current_analysis.total_signals,
                         inst.current_analysis.false_entry_signals,
                         inst.current_analysis.false_exit_signals,
@@ -75,15 +76,21 @@ class LookaheadAnalysisSubFunctions:
                 )
 
         print_rich_table(
-            data, headers, summary="Lookahead Analysis", table_kwargs={"caption": caption}
+            data,
+            headers,
+            summary="Lookahead Analysis",
+            table_kwargs={"caption": caption},
         )
         return data
 
     @staticmethod
-    def export_to_csv(config: dict[str, Any], lookahead_analysis: list[LookaheadAnalysis]):
+    def export_to_csv(
+        config: dict[str, Any], lookahead_analysis: list[LookaheadAnalysis]
+    ):
         def add_or_update_row(df, row_data):
             if (
-                (df["filename"] == row_data["filename"]) & (df["strategy"] == row_data["strategy"])
+                (df["filename"] == row_data["filename"])
+                & (df["strategy"] == row_data["strategy"])
             ).any():
                 # Update existing row
                 pd_series = pd.DataFrame([row_data])
@@ -126,16 +133,26 @@ class LookaheadAnalysisSubFunctions:
                     "strategy": inst.strategy_obj["name"],
                     "has_bias": inst.current_analysis.has_bias,
                     "total_signals": int(inst.current_analysis.total_signals),
-                    "biased_entry_signals": int(inst.current_analysis.false_entry_signals),
-                    "biased_exit_signals": int(inst.current_analysis.false_exit_signals),
-                    "biased_indicators": ",".join(inst.current_analysis.false_indicators),
+                    "biased_entry_signals": int(
+                        inst.current_analysis.false_entry_signals
+                    ),
+                    "biased_exit_signals": int(
+                        inst.current_analysis.false_exit_signals
+                    ),
+                    "biased_indicators": ",".join(
+                        inst.current_analysis.false_indicators
+                    ),
                 }
                 csv_df = add_or_update_row(csv_df, new_row_data)
 
         # Fill NaN values with a default value (e.g., 0)
         csv_df["total_signals"] = csv_df["total_signals"].astype("int64").fillna(0)
-        csv_df["biased_entry_signals"] = csv_df["biased_entry_signals"].astype("int64").fillna(0)
-        csv_df["biased_exit_signals"] = csv_df["biased_exit_signals"].astype("int64").fillna(0)
+        csv_df["biased_entry_signals"] = (
+            csv_df["biased_entry_signals"].astype("int64").fillna(0)
+        )
+        csv_df["biased_exit_signals"] = (
+            csv_df["biased_exit_signals"].astype("int64").fillna(0)
+        )
 
         # Convert columns to integers
         csv_df["total_signals"] = csv_df["total_signals"].astype("int64")
@@ -163,8 +180,14 @@ class LookaheadAnalysisSubFunctions:
                 "stoploss_on_exchange": False,
             }
             # Adjust Pricing to not fail when order types are forced to market orders
-            config["entry_pricing"] = {**config.get("entry_pricing", {}), "price_side": "other"}
-            config["exit_pricing"] = {**config.get("exit_pricing", {}), "price_side": "other"}
+            config["entry_pricing"] = {
+                **config.get("entry_pricing", {}),
+                "price_side": "other",
+            }
+            config["exit_pricing"] = {
+                **config.get("exit_pricing", {}),
+                "price_side": "other",
+            }
 
         else:
             logger.info("Using configured order_types, skipping order_types override.")
@@ -233,7 +256,9 @@ class LookaheadAnalysisSubFunctions:
         config = LookaheadAnalysisSubFunctions.calculate_config_overrides(config)
 
         strategy_objs = StrategyResolver.search_all_objects(
-            config, enum_failed=False, recursive=config.get("recursive_strategy_search", False)
+            config,
+            enum_failed=False,
+            recursive=config.get("recursive_strategy_search", False),
         )
 
         lookaheadAnalysis_instances = []
@@ -256,9 +281,14 @@ class LookaheadAnalysisSubFunctions:
             )
             for strat in strategy_list:
                 for strategy_obj in strategy_objs:
-                    if strategy_obj["name"] == strat and strategy_obj not in strategy_list:
+                    if (
+                        strategy_obj["name"] == strat
+                        and strategy_obj not in strategy_list
+                    ):
                         if strategy_task is not None:
-                            progress.update(strategy_task, description=f"Analyzing {strat}")
+                            progress.update(
+                                strategy_task, description=f"Analyzing {strat}"
+                            )
                         lookaheadAnalysis_instances.append(
                             LookaheadAnalysisSubFunctions.initialize_single_lookahead_analysis(
                                 config, strategy_obj, progress
@@ -286,7 +316,9 @@ class LookaheadAnalysisSubFunctions:
                 config, lookaheadAnalysis_instances, caption=caption
             )
             if config.get("lookahead_analysis_exportfilename") is not None:
-                LookaheadAnalysisSubFunctions.export_to_csv(config, lookaheadAnalysis_instances)
+                LookaheadAnalysisSubFunctions.export_to_csv(
+                    config, lookaheadAnalysis_instances
+                )
         else:
             logger.error(
                 "There were no strategies specified neither through "

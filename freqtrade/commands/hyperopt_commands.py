@@ -5,7 +5,6 @@ from typing import Any
 from freqtrade.enums import RunMode
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +26,8 @@ def start_hyperopt_list(args: dict[str, Any]) -> None:
     no_header = False
 
     results_file = get_latest_hyperopt_file(
-        config["user_data_dir"] / "hyperopt_results", config.get("hyperoptexportfilename")
+        config["user_data_dir"] / "hyperopt_results",
+        config.get("hyperoptexportfilename"),
     )
 
     # Previous evaluations
@@ -70,7 +70,8 @@ def start_hyperopt_show(args: dict[str, Any]) -> None:
     print_json = config.get("print_json", False)
     no_header = config.get("hyperopt_show_no_header", False)
     results_file = get_latest_hyperopt_file(
-        config["user_data_dir"] / "hyperopt_results", config.get("hyperoptexportfilename")
+        config["user_data_dir"] / "hyperopt_results",
+        config.get("hyperoptexportfilename"),
     )
 
     n = config.get("hyperopt_show_index", -1)

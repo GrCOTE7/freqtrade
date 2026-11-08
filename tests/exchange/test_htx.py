@@ -22,7 +22,9 @@ def test_create_stoploss_order_htx(default_conf, mocker, limitratio, expected, s
     order_id = f"test_prod_buy_{randint(0, 10**6)}"
     order_type = "stop-limit"
 
-    api_mock.create_order = MagicMock(return_value={"id": order_id, "info": {"foo": "bar"}})
+    api_mock.create_order = MagicMock(
+        return_value={"id": order_id, "info": {"foo": "bar"}}
+    )
     default_conf["dry_run"] = False
     mocker.patch(f"{EXMS}.amount_to_precision", lambda s, x, y: y)
     mocker.patch(f"{EXMS}.price_to_precision", lambda s, x, y, **kwargs: y)
@@ -40,9 +42,16 @@ def test_create_stoploss_order_htx(default_conf, mocker, limitratio, expected, s
         )
 
     api_mock.create_order.reset_mock()
-    order_types = {} if limitratio is None else {"stoploss_on_exchange_limit_ratio": limitratio}
+    order_types = (
+        {} if limitratio is None else {"stoploss_on_exchange_limit_ratio": limitratio}
+    )
     order = exchange.create_stoploss(
-        pair="ETH/BTC", amount=1, stop_price=220, order_types=order_types, side=side, leverage=1.0
+        pair="ETH/BTC",
+        amount=1,
+        stop_price=220,
+        order_types=order_types,
+        side=side,
+        leverage=1.0,
     )
 
     assert "id" in order
@@ -61,10 +70,17 @@ def test_create_stoploss_order_htx(default_conf, mocker, limitratio, expected, s
 
     # test exception handling
     with pytest.raises(DependencyException):
-        api_mock.create_order = MagicMock(side_effect=ccxt.InsufficientFunds("0 balance"))
+        api_mock.create_order = MagicMock(
+            side_effect=ccxt.InsufficientFunds("0 balance")
+        )
         exchange = get_patched_exchange(mocker, default_conf, api_mock, "htx")
         exchange.create_stoploss(
-            pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side=side, leverage=1.0
+            pair="ETH/BTC",
+            amount=1,
+            stop_price=220,
+            order_types={},
+            side=side,
+            leverage=1.0,
         )
 
     with pytest.raises(InvalidOrderException):
@@ -73,7 +89,12 @@ def test_create_stoploss_order_htx(default_conf, mocker, limitratio, expected, s
         )
         exchange = get_patched_exchange(mocker, default_conf, api_mock, "binance")
         exchange.create_stoploss(
-            pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side=side, leverage=1.0
+            pair="ETH/BTC",
+            amount=1,
+            stop_price=220,
+            order_types={},
+            side=side,
+            leverage=1.0,
         )
 
     ccxt_exceptionhandlers(
@@ -115,7 +136,12 @@ def test_create_stoploss_order_dry_run_htx(default_conf, mocker):
     api_mock.create_order.reset_mock()
 
     order = exchange.create_stoploss(
-        pair="ETH/BTC", amount=1, stop_price=220, order_types={}, side="sell", leverage=1.0
+        pair="ETH/BTC",
+        amount=1,
+        stop_price=220,
+        order_types={},
+        side="sell",
+        leverage=1.0,
     )
 
     assert "id" in order

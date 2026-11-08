@@ -105,7 +105,11 @@ def test_set_loggers_Filehandler(tmp_path):
     setup_logging_pre()
     setup_logging(config)
     assert len(logger.handlers) == 3
-    assert [x for x in logger.handlers if isinstance(x, logging.handlers.RotatingFileHandler)]
+    assert [
+        x
+        for x in logger.handlers
+        if isinstance(x, logging.handlers.RotatingFileHandler)
+    ]
     assert [x for x in logger.handlers if isinstance(x, FtRichHandler)]
     assert [x for x in logger.handlers if isinstance(x, FTBufferingHandler)]
     # setting up logging again should NOT cause the loggers to be added a second time.
@@ -142,7 +146,9 @@ def test_set_loggers_Filehandler_without_permission(tmp_path):
         tmp_path.chmod(0o700)
 
 
-@pytest.mark.skip(reason="systemd is not installed on every system, so we're not testing this.")
+@pytest.mark.skip(
+    reason="systemd is not installed on every system, so we're not testing this."
+)
 @pytest.mark.usefixtures("keep_log_config_loggers")
 def test_set_loggers_journald():
     logger = logging.getLogger()
@@ -175,7 +181,9 @@ def test_set_loggers_journald_importerror(import_fails):
         "verbosity": 2,
         "logfile": "journald",
     }
-    with pytest.raises(OperationalException, match=r"You need the cysystemd python package.*"):
+    with pytest.raises(
+        OperationalException, match=r"You need the cysystemd python package.*"
+    ):
         setup_logging(config)
     logger.handlers = orig_handlers
 
@@ -235,14 +243,21 @@ def test_reduce_verbosity():
     reduce_verbosity_for_bias_tester()
     prior_level = logging.getLogger("freqtrade").getEffectiveLevel()
 
-    assert logging.getLogger("freqtrade.resolvers").getEffectiveLevel() == logging.WARNING
-    assert logging.getLogger("freqtrade.strategy.hyper").getEffectiveLevel() == logging.WARNING
+    assert (
+        logging.getLogger("freqtrade.resolvers").getEffectiveLevel() == logging.WARNING
+    )
+    assert (
+        logging.getLogger("freqtrade.strategy.hyper").getEffectiveLevel()
+        == logging.WARNING
+    )
     # base level wasn't changed
     assert logging.getLogger("freqtrade").getEffectiveLevel() == prior_level
 
     restore_verbosity_for_bias_tester()
 
     assert logging.getLogger("freqtrade.resolvers").getEffectiveLevel() == prior_level
-    assert logging.getLogger("freqtrade.strategy.hyper").getEffectiveLevel() == prior_level
+    assert (
+        logging.getLogger("freqtrade.strategy.hyper").getEffectiveLevel() == prior_level
+    )
     assert logging.getLogger("freqtrade").getEffectiveLevel() == prior_level
     # base level wasn't changed

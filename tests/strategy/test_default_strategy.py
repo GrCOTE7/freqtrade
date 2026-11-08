@@ -37,7 +37,11 @@ def test_strategy_test_v3(dataframe_1m, fee, is_short, side):
     assert isinstance(strategy.populate_sell_trend(indicators, metadata), DataFrame)
 
     trade = Trade(
-        open_rate=19_000, amount=0.1, pair="ETH/BTC", fee_open=fee.return_value, is_short=is_short
+        open_rate=19_000,
+        amount=0.1,
+        pair="ETH/BTC",
+        fee_open=fee.return_value,
+        is_short=is_short,
     )
 
     assert (

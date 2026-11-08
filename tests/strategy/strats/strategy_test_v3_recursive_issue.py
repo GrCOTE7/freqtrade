@@ -17,7 +17,9 @@ class strategy_test_v3_recursive_issue(IStrategy):
 
     # Optimal timeframe for the strategy
     timeframe = "5m"
-    scenario = CategoricalParameter(["no_bias", "bias1", "bias2"], default="bias1", space="buy")
+    scenario = CategoricalParameter(
+        ["no_bias", "bias1", "bias2"], default="bias1", space="buy"
+    )
 
     # Number of candles the strategy requires before producing valid signals
     startup_candle_count: int = 100

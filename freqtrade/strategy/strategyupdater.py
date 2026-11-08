@@ -62,8 +62,12 @@ class StrategyUpdater:
         """
 
         source_file = strategy_obj["location"]
-        strategies_backup_folder = Path.joinpath(config["user_data_dir"], "strategies_orig_updater")
-        target_file = Path.joinpath(strategies_backup_folder, strategy_obj["location_rel"])
+        strategies_backup_folder = Path.joinpath(
+            config["user_data_dir"], "strategies_orig_updater"
+        )
+        target_file = Path.joinpath(
+            strategies_backup_folder, strategy_obj["location_rel"]
+        )
 
         # read the file
         old_code = Path(source_file).read_text(encoding="utf-8")
@@ -142,7 +146,9 @@ class NameUpdater(ast_comments.NodeTransformer):
 
     def visit_Expr(self, node):
         if hasattr(node.value, "left") and hasattr(node.value.left, "id"):
-            node.value.left.id = self.check_dict(StrategyUpdater.name_mapping, node.value.left.id)
+            node.value.left.id = self.check_dict(
+                StrategyUpdater.name_mapping, node.value.left.id
+            )
             self.visit(node.value)
         return node
 
@@ -210,7 +216,8 @@ class NameUpdater(ast_comments.NodeTransformer):
     def visit_ClassDef(self, node):
         # check if the class is derived from IStrategy
         if any(
-            isinstance(base, ast_comments.Name) and base.id == "IStrategy" for base in node.bases
+            isinstance(base, ast_comments.Name) and base.id == "IStrategy"
+            for base in node.bases
         ):
             # check if the INTERFACE_VERSION variable exists
             has_interface_version = any(
@@ -259,7 +266,10 @@ class NameUpdater(ast_comments.NodeTransformer):
 
     # sub function again needed since the structure itself is highly flexible ...
     def visit_elt(self, elt):
-        if isinstance(elt, ast_comments.Constant) and elt.value in StrategyUpdater.rename_dict:
+        if (
+            isinstance(elt, ast_comments.Constant)
+            and elt.value in StrategyUpdater.rename_dict
+        ):
             elt.value = StrategyUpdater.rename_dict[elt.value]
         if hasattr(elt, "elts"):
             self.visit_elts(elt.elts)
@@ -272,6 +282,8 @@ class NameUpdater(ast_comments.NodeTransformer):
         return elt
 
     def visit_Constant(self, node):
-        node.value = self.check_dict(StrategyUpdater.otif_ot_unfilledtimeout, node.value)
+        node.value = self.check_dict(
+            StrategyUpdater.otif_ot_unfilledtimeout, node.value
+        )
         node.value = self.check_dict(StrategyUpdater.name_mapping, node.value)
         return node

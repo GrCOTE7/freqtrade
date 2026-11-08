@@ -6,11 +6,12 @@ from freqtrade.constants import Config
 from freqtrade.enums import RunMode
 from freqtrade.exceptions import ConfigurationError, OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
-def setup_optimize_configuration(args: dict[str, Any], method: RunMode) -> dict[str, Any]:
+def setup_optimize_configuration(
+    args: dict[str, Any], method: RunMode
+) -> dict[str, Any]:
     """
     Prepare the configuration for the Hyperopt module
     :param args: Cli args from Arguments()
@@ -81,7 +82,9 @@ def start_backtesting_show(args: dict[str, Any]) -> None:
         show_sorted_pairlist,
     )
 
-    filename = get_backtest_filename(config["exportdirectory"], config["exportfilename"])
+    filename = get_backtest_filename(
+        config["exportdirectory"], config["exportfilename"]
+    )
     results = load_backtest_stats(filename)
 
     show_backtest_results(config, results)
@@ -101,7 +104,9 @@ def start_backtesting_show(args: dict[str, Any]) -> None:
                 _export_backtest_params(config, strategy_name, params)
 
 
-def _export_backtest_params(config: Config, strategy_name: str, params: dict[str, Any]) -> None:
+def _export_backtest_params(
+    config: Config, strategy_name: str, params: dict[str, Any]
+) -> None:
     """
     Write the parameters of a stored backtest to the strategy's parameter file.
     """
@@ -109,7 +114,9 @@ def _export_backtest_params(config: Config, strategy_name: str, params: dict[str
 
     fn = HyperoptTools.get_strategy_filename(config, strategy_name)
     if not fn:
-        logger.warning(f"Strategy {strategy_name} not found, not exporting parameter file.")
+        logger.warning(
+            f"Strategy {strategy_name} not found, not exporting parameter file."
+        )
         return
     filename = fn.with_suffix(".json")
     logger.info(f"Dumping parameters to {filename}")
@@ -181,7 +188,9 @@ def start_lookahead_analysis(args: dict[str, Any]) -> None:
     :return: None
     """
     from freqtrade.configuration import setup_utils_configuration
-    from freqtrade.optimize.analysis.lookahead_helpers import LookaheadAnalysisSubFunctions
+    from freqtrade.optimize.analysis.lookahead_helpers import (
+        LookaheadAnalysisSubFunctions,
+    )
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
     LookaheadAnalysisSubFunctions.start(config)
@@ -194,7 +203,9 @@ def start_recursive_analysis(args: dict[str, Any]) -> None:
     :return: None
     """
     from freqtrade.configuration import setup_utils_configuration
-    from freqtrade.optimize.analysis.recursive_helpers import RecursiveAnalysisSubFunctions
+    from freqtrade.optimize.analysis.recursive_helpers import (
+        RecursiveAnalysisSubFunctions,
+    )
 
     config = setup_utils_configuration(args, RunMode.UTIL_NO_EXCHANGE)
     RecursiveAnalysisSubFunctions.start(config)

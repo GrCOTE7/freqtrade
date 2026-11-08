@@ -7,7 +7,6 @@ from pathlib import Path
 
 import yaml
 
-
 pre_commit_file = Path(".pre-commit-config.yaml")
 require_dev = Path("requirements-dev.txt")
 require = Path("requirements.txt")
@@ -18,7 +17,9 @@ parser.add_argument("--update", action="store_true")
 args = parser.parse_args()
 
 
-def replace_dependency_version(pre_commit_text: str, dependency: str) -> tuple[str, bool]:
+def replace_dependency_version(
+    pre_commit_text: str, dependency: str
+) -> tuple[str, bool]:
     """
     Regex-based replacement of a dependency version in the pre-commit config file.
     using regex here ensures we only replace the version of the dependency while
@@ -26,7 +27,9 @@ def replace_dependency_version(pre_commit_text: str, dependency: str) -> tuple[s
     """
     package_name = dependency.split("==", 1)[0]
     pattern = re.compile(rf"^(\s*-\s+){re.escape(package_name)}==.*$", re.MULTILINE)
-    updated_text, replacements = pattern.subn(rf"\1{dependency}", pre_commit_text, count=1)
+    updated_text, replacements = pattern.subn(
+        rf"\1{dependency}", pre_commit_text, count=1
+    )
     return updated_text, replacements > 0 and updated_text != pre_commit_text
 
 
@@ -60,7 +63,9 @@ with pre_commit_file.open("r") as file:
 
 
 mypy_repo = [
-    repo for repo in f["repos"] if repo["repo"] == "https://github.com/pre-commit/mirrors-mypy"
+    repo
+    for repo in f["repos"]
+    if repo["repo"] == "https://github.com/pre-commit/mirrors-mypy"
 ]
 
 hooks = mypy_repo[0]["hooks"][0]["additional_dependencies"]
@@ -76,7 +81,9 @@ for req in type_reqs:
 
 if updated:
     if args.update:
-        errors.append(".pre-commit-config.yaml was updated to match the requirements files.")
+        errors.append(
+            ".pre-commit-config.yaml was updated to match the requirements files."
+        )
     else:
         errors.append(
             ".pre-commit-config.yaml is outdated. Run build_helpers/pre_commit_update.py --update."

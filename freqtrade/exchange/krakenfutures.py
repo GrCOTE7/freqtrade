@@ -20,7 +20,6 @@ from freqtrade.exchange.exchange_types import CcxtBalances, CcxtOrder, FtHas
 from freqtrade.misc import safe_value_nested
 from freqtrade.util.datetime_helpers import dt_from_ts
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -98,7 +97,9 @@ class Krakenfutures(Exchange):
                     if usd_free is not None or usd_total is not None:
                         # Use available value for both if only one is present
                         usd_free_value = usd_free if usd_free is not None else usd_total
-                        usd_total_value = usd_total if usd_total is not None else usd_free
+                        usd_total_value = (
+                            usd_total if usd_total is not None else usd_free
+                        )
                         if usd_free_value is not None and usd_total_value is not None:
                             usd_used = max(0.0, usd_total_value - usd_free_value)
                             balances["USD"] = {
@@ -158,7 +159,9 @@ class Krakenfutures(Exchange):
         """
         if order.get("status") == "canceled" and order.get("filled") is None:
             # Workaround for missing filled parsing - https://github.com/ccxt/ccxt/issues/28210
-            order["filled"] = safe_value_nested(order, "info.order.filled", default_value=None)
+            order["filled"] = safe_value_nested(
+                order, "info.order.filled", default_value=None
+            )
 
         filled = self._safe_float(order.get("filled")) or 0.0
         if order.get("status") in ("canceled", "closed") and filled > 0:
@@ -170,8 +173,12 @@ class Krakenfutures(Exchange):
                 total_amount = sum(t["amount"] for t in trades)
                 if total_amount:
                     # Compute VWAP
-                    order["average"] = sum(t["price"] * t["amount"] for t in trades) / total_amount
-                    trade_costs = [t["cost"] for t in trades if t.get("cost") is not None]
+                    order["average"] = (
+                        sum(t["price"] * t["amount"] for t in trades) / total_amount
+                    )
+                    trade_costs = [
+                        t["cost"] for t in trades if t.get("cost") is not None
+                    ]
                     if trade_costs:
                         order["cost"] = sum(trade_costs)
         return order
@@ -210,7 +217,9 @@ class Krakenfutures(Exchange):
             return self.fetch_dry_run_order(order_id)
 
         params = params or {}
-        status_params = {k: v for k, v in params.items() if k not in ("trigger", "stop")}
+        status_params = {
+            k: v for k, v in params.items() if k not in ("trigger", "stop")
+        }
         try:
             order = self._api.fetch_order(order_id, pair, params=status_params)
             self._log_exchange_response("fetch_order", order)
@@ -263,7 +272,10 @@ class Krakenfutures(Exchange):
 
         # Closed/canceled: pass params through (including stop=True for stoploss orders,
         # which CCXT maps to the trigger history endpoint).
-        for fetch_fn in (self._api.fetch_closed_orders, self._api.fetch_canceled_orders):
+        for fetch_fn in (
+            self._api.fetch_closed_orders,
+            self._api.fetch_canceled_orders,
+        ):
             order = self._find_order_in_list(fetch_fn, pair, params, order_id_str)
             if order is not None:
                 return order
@@ -299,11 +311,15 @@ class Krakenfutures(Exchange):
             raise OperationalException(e) from e
         return None
 
-    def get_funding_fees(self, pair: str, amount: float, is_short: bool, open_date) -> float:
+    def get_funding_fees(
+        self, pair: str, amount: float, is_short: bool, open_date
+    ) -> float:
         """Fetch funding fees, returning 0.0 if retrieval fails."""
         if self.trading_mode == TradingMode.FUTURES:
             try:
-                return self._fetch_and_calculate_funding_fees(pair, amount, is_short, open_date)
+                return self._fetch_and_calculate_funding_fees(
+                    pair, amount, is_short, open_date
+                )
             except ExchangeError:
                 logger.warning(f"Could not update funding fees for {pair}.")
         return 0.0

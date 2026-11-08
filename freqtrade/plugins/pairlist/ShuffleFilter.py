@@ -10,9 +10,12 @@ from freqtrade.enums import RunMode
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange import timeframe_to_seconds
 from freqtrade.exchange.exchange_types import Tickers
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util.periodic_cache import PeriodicCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,9 @@ class ShuffleFilter(IPairList):
             logger.info(f"Backtesting mode detected, applying seed value: {self._seed}")
 
         self._random = random.Random(self._seed)  # noqa: S311
-        self._shuffle_freq: ShuffleValues = self._pairlistconfig.get("shuffle_frequency", "candle")
+        self._shuffle_freq: ShuffleValues = self._pairlistconfig.get(
+            "shuffle_frequency", "candle"
+        )
         if self._shuffle_freq not in ("candle", "iteration"):
             raise OperationalException(
                 f"{self.name}: `shuffle_frequency` not configured correctly "

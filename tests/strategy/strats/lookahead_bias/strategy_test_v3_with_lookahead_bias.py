@@ -38,9 +38,13 @@ class strategy_test_v3_with_lookahead_bias(IStrategy):
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         if self.scenario.value == "no_bias":
-            dataframe.loc[dataframe["close"].shift(10) < dataframe["close"], "enter_long"] = 1
+            dataframe.loc[
+                dataframe["close"].shift(10) < dataframe["close"], "enter_long"
+            ] = 1
         else:
-            dataframe.loc[dataframe["close"].shift(-10) > dataframe["close"], "enter_long"] = 1
+            dataframe.loc[
+                dataframe["close"].shift(-10) > dataframe["close"], "enter_long"
+            ] = 1
 
         return dataframe
 
@@ -48,6 +52,8 @@ class strategy_test_v3_with_lookahead_bias(IStrategy):
         if self.scenario.value == "no_bias":
             dataframe.loc[dataframe["close"].shift(10) < dataframe["close"], "exit"] = 1
         else:
-            dataframe.loc[dataframe["close"].shift(-10) > dataframe["close"], "exit"] = 1
+            dataframe.loc[
+                dataframe["close"].shift(-10) > dataframe["close"], "exit"
+            ] = 1
 
         return dataframe

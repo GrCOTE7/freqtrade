@@ -4,10 +4,11 @@ from typing import Any
 from lightgbm import LGBMClassifier
 
 from freqtrade.freqai.base_models.BaseClassifierModel import BaseClassifierModel
-from freqtrade.freqai.base_models.FreqaiMultiOutputClassifier import FreqaiMultiOutputClassifier
+from freqtrade.freqai.base_models.FreqaiMultiOutputClassifier import (
+    FreqaiMultiOutputClassifier,
+)
 from freqtrade.freqai.data_kitchen import FreqaiDataKitchen
 from freqtrade.freqai.tensorboard import LightGBMCallback
-
 
 logger = logging.getLogger(__name__)
 

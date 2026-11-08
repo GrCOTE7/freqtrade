@@ -25,7 +25,10 @@ def pif_config(default_conf_usdt):
     [
         ("info_key", "`info_key` not specified"),
         ("info_compare_value", "`info_compare_value` not specified"),
-        ("selection_mode", r"`selection_mode` not configured correctly \(got `invalid_mode`\)"),
+        (
+            "selection_mode",
+            r"`selection_mode` not configured correctly \(got `invalid_mode`\)",
+        ),
     ],
 )
 def test_PairInformationFilter_validation(mocker, pif_config, missing_key, error_msg):
@@ -41,7 +44,9 @@ def test_PairInformationFilter_validation(mocker, pif_config, missing_key, error
     ]
     exchange = get_patched_exchange(mocker, pif_config)
 
-    with pytest.raises(OperationalException, match=rf"^PairInformationFilter: {error_msg}"):
+    with pytest.raises(
+        OperationalException, match=rf"^PairInformationFilter: {error_msg}"
+    ):
         if missing_key == "selection_mode":
             pif_config["pairlists"][0]["selection_mode"] = "invalid_mode"
         else:
@@ -130,7 +135,13 @@ def test_PairInformationFilter_filter_explicit_falsy_values(
     [("whitelist", ["ETH/USDT"]), ("blacklist", ["XRP/USDT", "BTC/USDT"])],
 )
 def test_PairInformationFilter_filter_boolean_numeric_comparison(
-    mocker, pif_config, compare_value, matching_value, nonmatching_value, selection_mode, expected
+    mocker,
+    pif_config,
+    compare_value,
+    matching_value,
+    nonmatching_value,
+    selection_mode,
+    expected,
 ):
     markets = _get_pairinformation_test_markets()
     markets["ETH/USDT"]["info"]["contractType"] = matching_value

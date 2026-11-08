@@ -7,12 +7,13 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-
 logger = logging.getLogger(__name__)
 
 
 def calculate_market_change(
-    data: dict[str, pd.DataFrame], column: str = "close", min_date: datetime | None = None
+    data: dict[str, pd.DataFrame],
+    column: str = "close",
+    min_date: datetime | None = None,
 ) -> float:
     """
     Calculate market change based on "column".
@@ -56,13 +57,20 @@ def combine_dataframes_by_column(
     if not data:
         raise ValueError("No data provided.")
     df_comb = pd.concat(
-        [data[pair].set_index("date").rename({column: pair}, axis=1)[pair] for pair in data], axis=1
+        [
+            data[pair].set_index("date").rename({column: pair}, axis=1)[pair]
+            for pair in data
+        ],
+        axis=1,
     )
     return df_comb
 
 
 def combined_dataframes_with_rel_mean(
-    data: dict[str, pd.DataFrame], fromdt: datetime, todt: datetime, column: str = "close"
+    data: dict[str, pd.DataFrame],
+    fromdt: datetime,
+    todt: datetime,
+    column: str = "close",
 ) -> pd.DataFrame:
     """
     Combine multiple dataframes "column"
@@ -128,17 +136,27 @@ def create_cum_profit(
 
 
 def _calc_drawdown_series(
-    profit_results: pd.DataFrame, *, date_col: str, value_col: str, starting_balance: float
+    profit_results: pd.DataFrame,
+    *,
+    date_col: str,
+    value_col: str,
+    starting_balance: float,
 ) -> pd.DataFrame:
     max_drawdown_df = pd.DataFrame()
     max_drawdown_df["cumulative"] = profit_results[value_col].cumsum()
-    max_drawdown_df["high_value"] = np.maximum(0, max_drawdown_df["cumulative"].cummax())
-    max_drawdown_df["drawdown"] = max_drawdown_df["cumulative"] - max_drawdown_df["high_value"]
+    max_drawdown_df["high_value"] = np.maximum(
+        0, max_drawdown_df["cumulative"].cummax()
+    )
+    max_drawdown_df["drawdown"] = (
+        max_drawdown_df["cumulative"] - max_drawdown_df["high_value"]
+    )
     max_drawdown_df["date"] = profit_results.loc[:, date_col]
     if starting_balance:
         cumulative_balance = starting_balance + max_drawdown_df["cumulative"]
         max_balance = starting_balance + max_drawdown_df["high_value"]
-        max_drawdown_df["drawdown_relative"] = (max_balance - cumulative_balance) / max_balance
+        max_drawdown_df["drawdown_relative"] = (
+            max_balance - cumulative_balance
+        ) / max_balance
     else:
         # NOTE: This is not completely accurate,
         # but will be good enough if starting_balance is not available
@@ -182,7 +200,10 @@ def calculate_underwater(
         raise ValueError("Trade dataframe empty.")
     profit_results = trades.sort_values(date_col).reset_index(drop=True)
     max_drawdown_df = _calc_drawdown_series(
-        profit_results, date_col=date_col, value_col=value_col, starting_balance=starting_balance
+        profit_results,
+        date_col=date_col,
+        value_col=value_col,
+        starting_balance=starting_balance,
     )
 
     return max_drawdown_df
@@ -229,7 +250,10 @@ def calculate_max_drawdown(
 
     profit_results = trades.sort_values(date_col).reset_index(drop=True)
     max_drawdown_df = _calc_drawdown_series(
-        profit_results, date_col=date_col, value_col=value_col, starting_balance=starting_balance
+        profit_results,
+        date_col=date_col,
+        value_col=value_col,
+        starting_balance=starting_balance,
     )
     # max_drawdown_df has an extra zero row at the start
 
@@ -270,7 +294,9 @@ def calculate_max_drawdown(
     )
 
 
-def calculate_csum(trades: pd.DataFrame, starting_balance: float = 0) -> tuple[float, float]:
+def calculate_csum(
+    trades: pd.DataFrame, starting_balance: float = 0
+) -> tuple[float, float]:
     """
     Calculate min/max cumsum of trades, to show if the wallet/stake amount ratio is sane
     :param trades: DataFrame containing trades (requires columns close_date and profit_percent)
@@ -289,7 +315,9 @@ def calculate_csum(trades: pd.DataFrame, starting_balance: float = 0) -> tuple[f
     return csum_min, csum_max
 
 
-def calculate_cagr(days_passed: int, starting_balance: float, final_balance: float) -> float:
+def calculate_cagr(
+    days_passed: int, starting_balance: float, final_balance: float
+) -> float:
     """
     Calculate CAGR
     :param days_passed: Days passed between start and ending balance
@@ -352,7 +380,9 @@ def _calculate_annualized_ratio(
              not optimal.
     """
     if denominator != 0 and not np.isnan(denominator):
-        return float(expected_returns_mean / denominator * np.sqrt(annualization_factor))
+        return float(
+            expected_returns_mean / denominator * np.sqrt(annualization_factor)
+        )
 
     # Define high (negative) ratio to be clear that this is NOT optimal.
     return -100.0
@@ -369,7 +399,11 @@ def _calculate_daily_returns_from_balance(
 
     # Sample balance to daily end-of-day values to normalize variable snapshot frequency.
     daily_balance = (
-        wallet.set_index(date_col)[balance_col].resample("1D").last().dropna().rename(balance_col)
+        wallet.set_index(date_col)[balance_col]
+        .resample("1D")
+        .last()
+        .dropna()
+        .rename(balance_col)
     )
     daily_balance = daily_balance.reset_index()
 
@@ -415,7 +449,12 @@ def calculate_sortino(
     :param trades: DataFrame containing trades (requires columns profit_abs)
     :return: sortino
     """
-    if (len(trades) == 0) or (min_date is None) or (max_date is None) or (min_date == max_date):
+    if (
+        (len(trades) == 0)
+        or (min_date is None)
+        or (max_date is None)
+        or (min_date == max_date)
+    ):
         return 0
 
     total_profit = trades["profit_abs"] / starting_balance
@@ -423,7 +462,9 @@ def calculate_sortino(
 
     expected_returns_mean = total_profit.sum() / days_period
 
-    down_stdev = np.std(trades.loc[trades["profit_abs"] < 0, "profit_abs"] / starting_balance)
+    down_stdev = np.std(
+        trades.loc[trades["profit_abs"] < 0, "profit_abs"] / starting_balance
+    )
 
     return _calculate_annualized_ratio(expected_returns_mean, down_stdev)
 
@@ -441,7 +482,9 @@ def calculate_sortino_from_balance(
     :param balance_col: Column containing historical balance values
     :return: sortino
     """
-    daily_returns = _calculate_daily_returns_from_balance(balance_history, date_col, balance_col)
+    daily_returns = _calculate_daily_returns_from_balance(
+        balance_history, date_col, balance_col
+    )
 
     if len(daily_returns) == 0:
         return 0.0
@@ -463,7 +506,12 @@ def calculate_sharpe(
     :param trades: DataFrame containing trades (requires column profit_abs)
     :return: sharpe
     """
-    if (len(trades) == 0) or (min_date is None) or (max_date is None) or (min_date == max_date):
+    if (
+        (len(trades) == 0)
+        or (min_date is None)
+        or (max_date is None)
+        or (min_date == max_date)
+    ):
         return 0
 
     total_profit = trades["profit_abs"] / starting_balance
@@ -488,7 +536,9 @@ def calculate_sharpe_from_balance(
     :param balance_col: Column containing historical balance values
     :return: sharpe
     """
-    daily_returns = _calculate_daily_returns_from_balance(balance_history, date_col, balance_col)
+    daily_returns = _calculate_daily_returns_from_balance(
+        balance_history, date_col, balance_col
+    )
 
     if len(daily_returns) == 0:
         return 0.0
@@ -546,7 +596,12 @@ def calculate_calmar(
     :param trades: DataFrame containing trades (requires columns close_date and profit_abs)
     :return: calmar
     """
-    if (len(trades) == 0) or (min_date is None) or (max_date is None) or (min_date == max_date):
+    if (
+        (len(trades) == 0)
+        or (min_date is None)
+        or (max_date is None)
+        or (min_date == max_date)
+    ):
         return 0.0
 
     total_profit = trades["profit_abs"].sum() / starting_balance

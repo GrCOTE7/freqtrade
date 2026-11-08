@@ -10,8 +10,13 @@ from pathlib import Path
 from typing import Any
 
 from freqtrade import constants
-from freqtrade.configuration.deprecated_settings import process_temporary_deprecated_settings
-from freqtrade.configuration.directory_operations import create_datadir, create_userdata_dir
+from freqtrade.configuration.deprecated_settings import (
+    process_temporary_deprecated_settings,
+)
+from freqtrade.configuration.directory_operations import (
+    create_datadir,
+    create_userdata_dir,
+)
 from freqtrade.configuration.environment_vars import environment_vars_to_dict
 from freqtrade.configuration.load_config import load_file, load_from_files
 from freqtrade.constants import Config
@@ -25,8 +30,11 @@ from freqtrade.enums import (
 )
 from freqtrade.exceptions import OperationalException
 from freqtrade.loggers import setup_logging
-from freqtrade.misc import deep_merge_dicts, parse_db_uri_for_logging, safe_value_fallback
-
+from freqtrade.misc import (
+    deep_merge_dicts,
+    parse_db_uri_for_logging,
+    safe_value_fallback,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +120,9 @@ class Configuration:
         from freqtrade.exchange.check_exchange import check_exchange
 
         # Check if the exchange set by the user is supported
-        check_exchange(config, config.get("experimental", {}).get("block_bad_exchanges", True))
+        check_exchange(
+            config, config.get("experimental", {}).get("block_bad_exchanges", True)
+        )
 
         self._resolve_pairs_list(config)
 
@@ -128,7 +138,11 @@ class Configuration:
         # Log level
         if "verbosity" not in config or self.args.get("verbosity") is not None:
             config.update(
-                {"verbosity": safe_value_fallback(self.args, "verbosity", default_value=0)}
+                {
+                    "verbosity": safe_value_fallback(
+                        self.args, "verbosity", default_value=0
+                    )
+                }
             )
 
         if self.args.get("logfile"):
@@ -164,7 +178,9 @@ class Configuration:
             config.update({"strategy": self.args.get("strategy")})
 
         self._args_to_config(
-            config, argname="strategy_path", logstring="Using additional Strategy lookup path: {}"
+            config,
+            argname="strategy_path",
+            logstring="Using additional Strategy lookup path: {}",
         )
 
         if (
@@ -176,7 +192,9 @@ class Configuration:
             logger.info("Parameter --db-url detected ...")
 
         self._args_to_config(
-            config, argname="db_url_from", logstring="Parameter --db-url-from detected ..."
+            config,
+            argname="db_url_from",
+            logstring="Parameter --db-url-from detected ...",
         )
 
         if config.get("force_entry_enable", False):
@@ -206,19 +224,25 @@ class Configuration:
             config.update({"user_data_dir": str(Path.cwd() / "user_data")})
 
         # reset to user_data_dir so this contains the absolute path.
-        config["user_data_dir"] = create_userdata_dir(config["user_data_dir"], create_dir=False)
+        config["user_data_dir"] = create_userdata_dir(
+            config["user_data_dir"], create_dir=False
+        )
         logger.info("Using user-data directory: %s ...", config["user_data_dir"])
 
         config.update({"datadir": create_datadir(config, self.args.get("datadir"))})
         logger.info("Using data directory: %s ...", config.get("datadir"))
 
         self._args_to_config(
-            config, argname="exportdirectory", logstring="Using {} as backtest directory ..."
+            config,
+            argname="exportdirectory",
+            logstring="Using {} as backtest directory ...",
         )
 
         if self.args.get("exportfilename"):
             self._args_to_config(
-                config, argname="exportfilename", logstring="Storing backtest results to {} ..."
+                config,
+                argname="exportfilename",
+                logstring="Storing backtest results to {} ...",
             )
             config["exportfilename"] = Path(config["exportfilename"])
             if config.get("exportfilename"):
@@ -337,7 +361,10 @@ class Configuration:
             ("backtest_breakdown", "Parameter --breakdown detected ..."),
             ("backtest_cache", "Parameter --cache={} detected ..."),
             ("disableparamexport", "Parameter --disableparamexport detected: {} ..."),
-            ("freqai_backtest_live_models", "Parameter --freqai-backtest-live-models detected ..."),
+            (
+                "freqai_backtest_live_models",
+                "Parameter --freqai-backtest-live-models detected ...",
+            ),
             ("backtest_notes", "Parameter --notes detected: {} ..."),
         ]
         self._args_to_config_loop(config, configurations)
@@ -347,8 +374,14 @@ class Configuration:
         configurations = [
             ("hyperopt_path", "Using additional Hyperopt lookup path: {}"),
             ("hyperoptexportfilename", "Using hyperopt file: {}"),
-            ("lookahead_analysis_exportfilename", "Saving lookahead analysis results into {} ..."),
-            ("epochs", "Parameter --epochs detected ... Will run Hyperopt with for {} epochs ..."),
+            (
+                "lookahead_analysis_exportfilename",
+                "Saving lookahead analysis results into {} ...",
+            ),
+            (
+                "epochs",
+                "Parameter --epochs detected ... Will run Hyperopt with for {} epochs ...",
+            ),
             ("spaces", "Parameter -s/--spaces detected: {}"),
             ("analyze_per_epoch", "Parameter --analyze-per-epoch detected."),
             ("print_all", "Parameter --print-all detected ..."),
@@ -384,13 +417,22 @@ class Configuration:
             ("hyperopt_list_max_avg_time", "Parameter --max-avg-time detected: {}"),
             ("hyperopt_list_min_avg_profit", "Parameter --min-avg-profit detected: {}"),
             ("hyperopt_list_max_avg_profit", "Parameter --max-avg-profit detected: {}"),
-            ("hyperopt_list_min_total_profit", "Parameter --min-total-profit detected: {}"),
-            ("hyperopt_list_max_total_profit", "Parameter --max-total-profit detected: {}"),
+            (
+                "hyperopt_list_min_total_profit",
+                "Parameter --min-total-profit detected: {}",
+            ),
+            (
+                "hyperopt_list_max_total_profit",
+                "Parameter --max-total-profit detected: {}",
+            ),
             ("hyperopt_list_min_objective", "Parameter --min-objective detected: {}"),
             ("hyperopt_list_max_objective", "Parameter --max-objective detected: {}"),
             ("hyperopt_list_no_details", "Parameter --no-details detected: {}"),
             ("hyperopt_show_no_header", "Parameter --no-header detected: {}"),
-            ("hyperopt_ignore_missing_space", "Parameter --ignore-missing-space detected: {}"),
+            (
+                "hyperopt_ignore_missing_space",
+                "Parameter --ignore-missing-space detected: {}",
+            ),
         ]
 
         self._args_to_config_loop(config, configurations)
@@ -412,7 +454,10 @@ class Configuration:
             ("include_inactive", "Detected --include-inactive-pairs: {}"),
             ("no_parallel_download", "Detected --no-parallel-download: {}"),
             ("download_trades", "Detected --dl-trades: {}"),
-            ("convert_trades", "Detected --convert: {} - Converting trade data to OHLCV."),
+            (
+                "convert_trades",
+                "Detected --convert: {} - Converting trade data to OHLCV.",
+            ),
             ("dataformat_ohlcv", 'Using "{}" to store OHLCV data.'),
             ("dataformat_trades", 'Using "{}" to store trades data.'),
             ("show_timerange", "Detected --show-timerange"),
@@ -432,7 +477,9 @@ class Configuration:
         config["candle_type_def"] = CandleType.get_default(
             config.get("trading_mode", "spot") or "spot"
         )
-        config["trading_mode"] = TradingMode(config.get("trading_mode", "spot") or "spot")
+        config["trading_mode"] = TradingMode(
+            config.get("trading_mode", "spot") or "spot"
+        )
         config["margin_mode"] = MarginMode(config.get("margin_mode", "") or "")
         self._args_to_config(
             config, argname="candle_types", logstring="Detected --candle-types: {}"
@@ -453,12 +500,17 @@ class Configuration:
             # Lookahead analysis results
             ("targeted_trade_amount", "Targeted Trade amount: {}"),
             ("minimum_trade_amount", "Minimum Trade amount: {}"),
-            ("lookahead_analysis_exportfilename", "Path to store lookahead-analysis-results: {}"),
+            (
+                "lookahead_analysis_exportfilename",
+                "Path to store lookahead-analysis-results: {}",
+            ),
             ("startup_candle", "Startup candle to be used on recursive analysis: {}"),
         ]
         self._args_to_config_loop(config, configurations)
 
-    def _args_to_config_loop(self, config, configurations: list[tuple[str, str]]) -> None:
+    def _args_to_config_loop(
+        self, config, configurations: list[tuple[str, str]]
+    ) -> None:
         for argname, logstring in configurations:
             self._args_to_config(config, argname=argname, logstring=logstring)
 
@@ -471,7 +523,9 @@ class Configuration:
 
         if not self.runmode:
             # Handle real mode, infer dry/live from config
-            self.runmode = RunMode.DRY_RUN if config.get("dry_run", True) else RunMode.LIVE
+            self.runmode = (
+                RunMode.DRY_RUN if config.get("dry_run", True) else RunMode.LIVE
+            )
             logger.info(f"Runmode set to {self.runmode.value}.")
 
         config.update({"runmode": self.runmode})
@@ -513,7 +567,9 @@ class Configuration:
             else:
                 logger.info(logstring.format(config[argname]))
             if deprecated_msg:
-                warnings.warn(f"DEPRECATED: {deprecated_msg}", DeprecationWarning, stacklevel=1)
+                warnings.warn(
+                    f"DEPRECATED: {deprecated_msg}", DeprecationWarning, stacklevel=1
+                )
 
     def _resolve_pairs_list(self, config: Config) -> None:
         """
@@ -534,7 +590,9 @@ class Configuration:
             # Download pairs from the pairs file if no config is specified
             # or if pairs file is specified explicitly
             if not pairs_file.exists():
-                raise OperationalException(f'No pairs file found with path "{pairs_file}".')
+                raise OperationalException(
+                    f'No pairs file found with path "{pairs_file}".'
+                )
             config["pairs"] = load_file(pairs_file)
             if isinstance(config["pairs"], list):
                 config["pairs"].sort()

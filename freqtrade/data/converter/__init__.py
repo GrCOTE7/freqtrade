@@ -21,7 +21,6 @@ from freqtrade.data.converter.trade_converter import (
     trades_to_ohlcv,
 )
 
-
 __all__ = [
     "add_candle_aliases",
     "clean_ohlcv_dataframe",

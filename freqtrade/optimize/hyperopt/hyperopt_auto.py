@@ -11,12 +11,10 @@ from typing import Literal
 
 from freqtrade.exceptions import OperationalException
 
-
 with suppress(ImportError):
     from freqtrade.optimize.space import Dimension
 
 from freqtrade.optimize.hyperopt.hyperopt_interface import EstimatorType, IHyperOpt
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +28,8 @@ def _format_exception_message(space: str, ignore_missing_space: bool) -> None:
         logger.warning(msg + "This space will be ignored.")
     else:
         raise OperationalException(
-            msg + f"Please make sure to have parameters for this space enabled for optimization "
+            msg
+            + f"Please make sure to have parameters for this space enabled for optimization "
             f"or remove the '{space}' space from hyperoptimization."
         )
 
@@ -100,5 +99,7 @@ class HyperOptAuto(IHyperOpt):
     def max_open_trades_space(self) -> list["Dimension"]:
         return self._get_func("max_open_trades_space")()
 
-    def generate_estimator(self, dimensions: list["Dimension"], **kwargs) -> EstimatorType:
+    def generate_estimator(
+        self, dimensions: list["Dimension"], **kwargs
+    ) -> EstimatorType:
         return self._get_func("generate_estimator")(dimensions=dimensions, **kwargs)

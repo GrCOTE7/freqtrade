@@ -192,7 +192,14 @@ def test_get_trade_stake_amount_unlimited_amount(
         (9, 11, 100, 10000, None, 11),  # Below min stake
         (1, 15, 10, 10000, None, 0),  # Below min stake and min_stake > stake_available
         (20, 50, 100, 10000, None, 0),  # Below min stake and stake * 1.3 > min_stake
-        (1000, None, 1000, 10000, None, 1000),  # No min-stake-amount could be determined
+        (
+            1000,
+            None,
+            1000,
+            10000,
+            None,
+            1000,
+        ),  # No min-stake-amount could be determined
         # Rebuy - resulting in too high stake amount. Adjusting.
         (2000, 15, 2000, 3000, 1500, 1500),
         ("undefined", 15, 100, 10000, None, 0),  # string stake amount
@@ -212,7 +219,8 @@ def test_validate_stake_amount(
     freqtrade = get_patched_freqtradebot(mocker, default_conf)
 
     mocker.patch(
-        "freqtrade.wallets.Wallets.get_available_stake_amount", return_value=stake_available
+        "freqtrade.wallets.Wallets.get_available_stake_amount",
+        return_value=stake_available,
     )
     res = freqtrade.wallets.validate_stake_amount(
         "XRP/USDT", stake_amount, min_stake, max_stake, trade_amount
@@ -240,16 +248,20 @@ def test_get_starting_balance(
     if available_capital:
         default_conf["available_capital"] = available_capital
     mocker.patch(
-        "freqtrade.persistence.models.Trade.get_total_closed_profit", return_value=closed_profit
+        "freqtrade.persistence.models.Trade.get_total_closed_profit",
+        return_value=closed_profit,
     )
     mocker.patch(
-        "freqtrade.persistence.models.Trade.total_open_trades_stakes", return_value=open_stakes
+        "freqtrade.persistence.models.Trade.total_open_trades_stakes",
+        return_value=open_stakes,
     )
     mocker.patch("freqtrade.wallets.Wallets.get_free", return_value=free)
 
     freqtrade = get_patched_freqtradebot(mocker, default_conf)
 
-    assert freqtrade.wallets.get_starting_balance() == expected * (1 if available_capital else 0.99)
+    assert freqtrade.wallets.get_starting_balance() == expected * (
+        1 if available_capital else 0.99
+    )
 
 
 def test_sync_wallet_futures_live(mocker, default_conf):
@@ -384,7 +396,9 @@ def test_sync_wallet_futures_live(mocker, default_conf):
 
 
 @pytest.mark.parametrize("includes_upnl", [True, False])
-def test_sync_wallet_futures_live_unrealized_pnl(mocker, default_conf_usdt, includes_upnl):
+def test_sync_wallet_futures_live_unrealized_pnl(
+    mocker, default_conf_usdt, includes_upnl
+):
 
     # Wallet.total for the stake currency must never contain the unrealized PnL of open
     # positions - exchanges reporting account equity get normalized back to wallet balance.
@@ -415,7 +429,9 @@ def test_sync_wallet_futures_live_unrealized_pnl(mocker, default_conf_usdt, incl
     ]
     mocker.patch.multiple(
         EXMS,
-        get_balances=MagicMock(return_value={"USDT": {"free": 850, "used": 150, "total": 1017.5}}),
+        get_balances=MagicMock(
+            return_value={"USDT": {"free": 850, "used": 150, "total": 1017.5}}
+        ),
         fetch_positions=MagicMock(return_value=mock_result),
         balance_includes_unrealized_pnl=MagicMock(return_value=includes_upnl),
     )
@@ -441,7 +457,9 @@ def test_sync_wallet_futures_live_no_positions_unchanged(mocker, default_conf_us
     default_conf_usdt["margin_mode"] = "isolated"
     mocker.patch.multiple(
         EXMS,
-        get_balances=MagicMock(return_value={"USDT": {"free": 1000, "used": 0, "total": 1000}}),
+        get_balances=MagicMock(
+            return_value={"USDT": {"free": 1000, "used": 0, "total": 1000}}
+        ),
         fetch_positions=MagicMock(return_value=[]),
         balance_includes_unrealized_pnl=MagicMock(return_value=True),
     )
@@ -530,7 +548,8 @@ def test_sync_wallet_dry(mocker, default_conf_usdt, fee):
 
     assert (
         freqtrade.wallets.get_starting_balance()
-        == default_conf_usdt["dry_run_wallet"] * default_conf_usdt["tradable_balance_ratio"]
+        == default_conf_usdt["dry_run_wallet"]
+        * default_conf_usdt["tradable_balance_ratio"]
     )
     total = freqtrade.wallets.get_total("LTC")
     free = freqtrade.wallets.get_free("LTC")
@@ -619,12 +638,27 @@ def test_check_exit_amount_futures(mocker, default_conf, fee):
     [
         (
             {"stake_currency": "USDT", "dry_run_wallet": 1000.0},
-            {"USDT": {"currency": "USDT", "free": 1000.0, "used": 0.0, "total": 1000.0}},
+            {
+                "USDT": {
+                    "currency": "USDT",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                }
+            },
         ),
         (
-            {"stake_currency": "USDT", "dry_run_wallet": {"USDT": 1000.0, "BTC": 0.1, "ETH": 2.0}},
             {
-                "USDT": {"currency": "USDT", "free": 1000.0, "used": 0.0, "total": 1000.0},
+                "stake_currency": "USDT",
+                "dry_run_wallet": {"USDT": 1000.0, "BTC": 0.1, "ETH": 2.0},
+            },
+            {
+                "USDT": {
+                    "currency": "USDT",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                },
                 "BTC": {"currency": "BTC", "free": 0.1, "used": 0.0, "total": 0.1},
                 "ETH": {"currency": "ETH", "free": 2.0, "used": 0.0, "total": 2.0},
             },
@@ -639,7 +673,12 @@ def test_check_exit_amount_futures(mocker, default_conf, fee):
                 # USDT wallet should be created with 0 balance, but Free balance, since
                 # it's converted from the other currencies
                 "USDT": {"currency": "USDT", "free": 4200.0, "used": 0.0, "total": 0.0},
-                "USDC": {"currency": "USDC", "free": 1000.0, "used": 0.0, "total": 1000.0},
+                "USDC": {
+                    "currency": "USDC",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                },
                 "BTC": {"currency": "BTC", "free": 0.1, "used": 0.0, "total": 0.1},
                 "ETH": {"currency": "ETH", "free": 2.0, "used": 0.0, "total": 2.0},
             },
@@ -653,8 +692,18 @@ def test_check_exit_amount_futures(mocker, default_conf, fee):
             {
                 # USDT wallet should be created with 500 balance, but Free balance, since
                 # it's converted from the other currencies
-                "USDT": {"currency": "USDT", "free": 4700.0, "used": 0.0, "total": 500.0},
-                "USDC": {"currency": "USDC", "free": 1000.0, "used": 0.0, "total": 1000.0},
+                "USDT": {
+                    "currency": "USDT",
+                    "free": 4700.0,
+                    "used": 0.0,
+                    "total": 500.0,
+                },
+                "USDC": {
+                    "currency": "USDC",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                },
                 "BTC": {"currency": "BTC", "free": 0.1, "used": 0.0, "total": 0.1},
                 "ETH": {"currency": "ETH", "free": 2.0, "used": 0.0, "total": 2.0},
             },
@@ -667,8 +716,18 @@ def test_check_exit_amount_futures(mocker, default_conf, fee):
             },
             {
                 # No "free" transfer for USDT wallet
-                "USDT": {"currency": "USDT", "free": 500.0, "used": 0.0, "total": 500.0},
-                "USDC": {"currency": "USDC", "free": 1000.0, "used": 0.0, "total": 1000.0},
+                "USDT": {
+                    "currency": "USDT",
+                    "free": 500.0,
+                    "used": 0.0,
+                    "total": 500.0,
+                },
+                "USDC": {
+                    "currency": "USDC",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                },
                 "BTC": {"currency": "BTC", "free": 0.1, "used": 0.0, "total": 0.1},
                 "ETH": {"currency": "ETH", "free": 2.0, "used": 0.0, "total": 2.0},
             },
@@ -684,8 +743,18 @@ def test_check_exit_amount_futures(mocker, default_conf, fee):
             {
                 # USDT wallet should be created with 500 balance, but Free balance, since
                 # it's converted from the other currencies
-                "USDT": {"currency": "USDT", "free": 4700.0, "used": 0.0, "total": 500.0},
-                "USDC": {"currency": "USDC", "free": 1000.0, "used": 0.0, "total": 1000.0},
+                "USDT": {
+                    "currency": "USDT",
+                    "free": 4700.0,
+                    "used": 0.0,
+                    "total": 500.0,
+                },
+                "USDC": {
+                    "currency": "USDC",
+                    "free": 1000.0,
+                    "used": 0.0,
+                    "total": 1000.0,
+                },
                 "BTC": {"currency": "BTC", "free": 0.1, "used": 0.0, "total": 0.1},
                 "ETH": {"currency": "ETH", "free": 2.0, "used": 0.0, "total": 2.0},
             },
@@ -727,7 +796,9 @@ def test_dry_run_wallet_initialization(mocker, default_conf_usdt, config, wallet
         },
     )
     # Without position, collateral will be the same as free
-    assert freqtrade.wallets.get_collateral() == freqtrade.wallets.get_free(stake_currency)
+    assert freqtrade.wallets.get_collateral() == freqtrade.wallets.get_free(
+        stake_currency
+    )
     freqtrade.execute_entry("NEO/USDT", 100.0)
 
     # Update wallets and verify NEO is now included
@@ -738,13 +809,17 @@ def test_dry_run_wallet_initialization(mocker, default_conf_usdt, config, wallet
         assert freqtrade.wallets._wallets["NEO"].total == 45.04504504  # 100 USDT / 0.22
         assert freqtrade.wallets._wallets["NEO"].used == 0.0
         assert freqtrade.wallets._wallets["NEO"].free == 45.04504504
-        assert freqtrade.wallets.get_collateral() == freqtrade.wallets.get_free(stake_currency)
+        assert freqtrade.wallets.get_collateral() == freqtrade.wallets.get_free(
+            stake_currency
+        )
         # Verify USDT wallet was reduced by trade amount
         assert (
             pytest.approx(freqtrade.wallets._wallets[stake_currency].total)
             == wallets[stake_currency]["total"] - 100.0
         )
-        assert len(freqtrade.wallets._wallets) == len(wallets) + 1  # Original wallets + NEO
+        assert (
+            len(freqtrade.wallets._wallets) == len(wallets) + 1
+        )  # Original wallets + NEO
     else:
         # Futures mode
         assert "NEO" not in freqtrade.wallets._wallets
@@ -784,7 +859,9 @@ def test_record_wallet_state_stores_wallet_history(mocker, default_conf_usdt):
     mocker.patch.object(
         freqtrade.exchange,
         "get_conversion_rate",
-        side_effect=lambda currency, *args, **kwargs: conversion_rates.get(currency, 1.0),
+        side_effect=lambda currency, *args, **kwargs: conversion_rates.get(
+            currency, 1.0
+        ),
     )
     mocker.patch(
         "freqtrade.persistence.trade_model.Trade.get_open_trades",

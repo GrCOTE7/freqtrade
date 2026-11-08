@@ -10,9 +10,12 @@ from freqtrade.constants import ListPairsWithTimeframes
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.misc import plural
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +30,13 @@ class RangeStabilityFilter(IPairList):
         self._max_rate_of_change = self._pairlistconfig.get("max_rate_of_change")
         self._refresh_period = self._pairlistconfig.get("refresh_period", 86400)
         self._def_candletype = self._config["candle_type_def"]
-        self._sort_direction: str | None = self._pairlistconfig.get("sort_direction", None)
+        self._sort_direction: str | None = self._pairlistconfig.get(
+            "sort_direction", None
+        )
 
-        self._pair_cache: FtTTLCache = FtTTLCache(maxsize=1000, ttl=self._refresh_period)
+        self._pair_cache: FtTTLCache = FtTTLCache(
+            maxsize=1000, ttl=self._refresh_period
+        )
 
         self._init_lookback_config(required=True, deprecated_fallback=10)
 
@@ -104,7 +111,9 @@ class RangeStabilityFilter(IPairList):
         pct_changes: dict[str, float] = {}
 
         for p in pairlist:
-            pair_candles = candles.get((p, self._lookback_timeframe, self._def_candletype), None)
+            pair_candles = candles.get(
+                (p, self._lookback_timeframe, self._def_candletype), None
+            )
 
             pct_change = self._calculate_rate_of_change(p, pair_candles)
 
@@ -113,7 +122,9 @@ class RangeStabilityFilter(IPairList):
                     resulting_pairlist.append(p)
                     pct_changes[p] = pct_change
             else:
-                self.log_once(f"Removed {p} from whitelist, no candles found.", logger.info)
+                self.log_once(
+                    f"Removed {p} from whitelist, no candles found.", logger.info
+                )
 
         if self._sort_direction:
             resulting_pairlist = sorted(
@@ -123,14 +134,18 @@ class RangeStabilityFilter(IPairList):
             )
         return resulting_pairlist
 
-    def _calculate_rate_of_change(self, pair: str, pair_candles: DataFrame) -> float | None:
+    def _calculate_rate_of_change(
+        self, pair: str, pair_candles: DataFrame
+    ) -> float | None:
         # Check symbol in cache
         if (pct_change := self._pair_cache.get(pair, None)) is not None:
             return pct_change
         if pair_candles is not None and not pair_candles.empty:
             highest_high = pair_candles["high"].max()
             lowest_low = pair_candles["low"].min()
-            pct_change = ((highest_high - lowest_low) / lowest_low) if lowest_low > 0 else 0
+            pct_change = (
+                ((highest_high - lowest_low) / lowest_low) if lowest_low > 0 else 0
+            )
             self._pair_cache[pair] = pct_change
             return pct_change
         else:

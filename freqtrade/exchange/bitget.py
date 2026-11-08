@@ -4,7 +4,13 @@ from datetime import datetime, timedelta
 import ccxt
 
 from freqtrade.constants import BuySell
-from freqtrade.enums import OPTIMIZE_MODES, CandleType, MarginMode, PriceType, TradingMode
+from freqtrade.enums import (
+    OPTIMIZE_MODES,
+    CandleType,
+    MarginMode,
+    PriceType,
+    TradingMode,
+)
 from freqtrade.exceptions import (
     DDosProtection,
     InvalidOrderException,
@@ -16,7 +22,6 @@ from freqtrade.exchange import Exchange
 from freqtrade.exchange.common import API_RETRY_COUNT, retrier
 from freqtrade.exchange.exchange_types import CcxtOrder, FtHas
 from freqtrade.util import dt_from_ts, dt_now, dt_ts
-
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +84,9 @@ class Bitget(Exchange):
 
         return super().ohlcv_candle_limit(timeframe, candle_type, since_ms)
 
-    def _convert_stop_order(self, pair: str, order_id: str, order: CcxtOrder) -> CcxtOrder:
+    def _convert_stop_order(
+        self, pair: str, order_id: str, order: CcxtOrder
+    ) -> CcxtOrder:
         if order.get("status", "open") == "closed":
             # Use orderID as cliendOrderId filter to fetch the regular followup order.
             # Could be done with "fetch_order" - but clientOid as filter doesn't seem to work
@@ -90,7 +97,9 @@ class Bitget(Exchange):
                 self._api.fetch_open_orders,
             ):
                 orders = method(pair)
-                orders_f = [order for order in orders if order["clientOrderId"] == order_id]
+                orders_f = [
+                    order for order in orders if order["clientOrderId"] == order_id
+                ]
                 if orders_f:
                     order_reg = orders_f[0]
                     self._log_exchange_response("fetch_stoploss_order1", order_reg)
@@ -109,7 +118,9 @@ class Bitget(Exchange):
         # new stoploss orders with stopLossPrice (used in futures starting 2026.4)
         paramsnew = {"planType": "profit_loss"}
         params_to_try = (
-            (paramsnew, paramsold) if self.trading_mode == TradingMode.FUTURES else (paramsold,)
+            (paramsnew, paramsold)
+            if self.trading_mode == TradingMode.FUTURES
+            else (paramsold,)
         )
 
         for params2 in params_to_try:
@@ -134,7 +145,9 @@ class Bitget(Exchange):
                     ) from e
                 except ccxt.BaseError as e:
                     raise OperationalException(e) from e
-        raise RetryableOrderError(f"StoplossOrder not found (pair: {pair} id: {order_id}).")
+        raise RetryableOrderError(
+            f"StoplossOrder not found (pair: {pair} id: {order_id})."
+        )
 
     @retrier(retries=API_RETRY_COUNT)
     def fetch_stoploss_order(
@@ -145,7 +158,9 @@ class Bitget(Exchange):
 
         return self._fetch_stop_order_fallback(order_id, pair)
 
-    def cancel_stoploss_order(self, order_id: str, pair: str, params: dict | None = None) -> dict:
+    def cancel_stoploss_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> dict:
         cancel_params = params.copy() if params else {}
         cancel_params["stop"] = True
 
@@ -153,7 +168,9 @@ class Bitget(Exchange):
             return self.cancel_order(order_id, pair, cancel_params)
 
         try:
-            return self.cancel_order(order_id, pair, {**cancel_params, "planType": "pos_loss"})
+            return self.cancel_order(
+                order_id, pair, {**cancel_params, "planType": "pos_loss"}
+            )
         except (InvalidOrderException, IndexError):
             # Keep compatibility with stoploss orders created by older versions.
             return self.cancel_order(order_id, pair, cancel_params)
@@ -246,7 +263,10 @@ class Bitget(Exchange):
         ).get("taker", 0.001)
         mm_ratio, _ = self.get_maintenance_ratio_and_amt(pair, stake_amount)
 
-        if self.trading_mode == TradingMode.FUTURES and self.margin_mode == MarginMode.ISOLATED:
+        if (
+            self.trading_mode == TradingMode.FUTURES
+            and self.margin_mode == MarginMode.ISOLATED
+        ):
             position_direction = -1 if is_short else 1
 
             return (wallet_balance - (amount * open_rate * position_direction)) / (
@@ -272,7 +292,9 @@ class Bitget(Exchange):
         return None
 
     def _check_delisting_futures(self, pair: str) -> datetime | None:
-        delivery_time = self.markets.get(pair, {}).get("info", {}).get("limitOpenTime", None)
+        delivery_time = (
+            self.markets.get(pair, {}).get("info", {}).get("limitOpenTime", None)
+        )
         if delivery_time:
             if isinstance(delivery_time, str) and (delivery_time != ""):
                 delivery_time = int(delivery_time)

@@ -100,7 +100,9 @@ def test_add_indicators(default_conf, testdatadir, caplog):
     assert macd.line.color == "red"
 
     # No indicator found
-    fig3 = add_indicators(fig=deepcopy(fig), row=3, indicators={"no_indicator": {}}, data=data)
+    fig3 = add_indicators(
+        fig=deepcopy(fig), row=3, indicators={"no_indicator": {}}, data=data
+    )
     assert fig == fig3
     assert log_has_re(r'Indicator "no_indicator" ignored\..*', caplog)
 
@@ -204,12 +206,16 @@ def test_plot_trades(testdatadir, caplog):
     assert trade_sell_loss.text[5] == "-10.45%, stop_loss, 720 min"
 
 
-def test_generate_candlestick_graph_no_signals_no_trades(default_conf, mocker, testdatadir, caplog):
+def test_generate_candlestick_graph_no_signals_no_trades(
+    default_conf, mocker, testdatadir, caplog
+):
     row_mock = mocker.patch(
-        "freqtrade.plot.plotting.add_indicators", MagicMock(side_effect=fig_generating_mock)
+        "freqtrade.plot.plotting.add_indicators",
+        MagicMock(side_effect=fig_generating_mock),
     )
     trades_mock = mocker.patch(
-        "freqtrade.plot.plotting.plot_trades", MagicMock(side_effect=fig_generating_mock)
+        "freqtrade.plot.plotting.plot_trades",
+        MagicMock(side_effect=fig_generating_mock),
     )
 
     pair = "UNITTEST/BTC"
@@ -225,7 +231,11 @@ def test_generate_candlestick_graph_no_signals_no_trades(default_conf, mocker, t
     indicators1 = []
     indicators2 = []
     fig = generate_candlestick_graph(
-        pair=pair, data=data, trades=None, indicators1=indicators1, indicators2=indicators2
+        pair=pair,
+        data=data,
+        trades=None,
+        indicators1=indicators1,
+        indicators2=indicators2,
     )
     assert isinstance(fig, go.Figure)
     assert fig.layout.title.text == pair
@@ -250,10 +260,12 @@ def test_generate_candlestick_graph_no_signals_no_trades(default_conf, mocker, t
 
 def test_generate_candlestick_graph_no_trades(default_conf, mocker, testdatadir):
     row_mock = mocker.patch(
-        "freqtrade.plot.plotting.add_indicators", MagicMock(side_effect=fig_generating_mock)
+        "freqtrade.plot.plotting.add_indicators",
+        MagicMock(side_effect=fig_generating_mock),
     )
     trades_mock = mocker.patch(
-        "freqtrade.plot.plotting.plot_trades", MagicMock(side_effect=fig_generating_mock)
+        "freqtrade.plot.plotting.plot_trades",
+        MagicMock(side_effect=fig_generating_mock),
     )
     pair = "UNITTEST/BTC"
     timerange = TimeRange(None, "line", 0, -1000)
@@ -269,7 +281,11 @@ def test_generate_candlestick_graph_no_trades(default_conf, mocker, testdatadir)
     indicators1 = []
     indicators2 = []
     fig = generate_candlestick_graph(
-        pair=pair, data=data, trades=None, indicators1=indicators1, indicators2=indicators2
+        pair=pair,
+        data=data,
+        trades=None,
+        indicators1=indicators1,
+        indicators2=indicators2,
     )
     assert isinstance(fig, go.Figure)
     assert fig.layout.title.text == pair
@@ -329,10 +345,15 @@ def test_add_profit(testdatadir):
     fig = generate_empty_figure()
 
     cum_profits = create_cum_profit(
-        df.set_index("date"), bt_data[bt_data["pair"] == "TRX/BTC"], "cum_profits", timeframe="5m"
+        df.set_index("date"),
+        bt_data[bt_data["pair"] == "TRX/BTC"],
+        "cum_profits",
+        timeframe="5m",
     )
 
-    fig1 = add_profit(fig, row=2, data=cum_profits, column="cum_profits", name="Profits")
+    fig1 = add_profit(
+        fig, row=2, data=cum_profits, column="cum_profits", name="Profits"
+    )
     figure = fig1.layout.figure
     profits = find_trace_in_fig_data(figure.data, "Profits")
     assert isinstance(profits, go.Scatter)
@@ -346,7 +367,9 @@ def test_generate_profit_graph(testdatadir):
     pairs = ["TRX/BTC", "XLM/BTC"]
     trades = trades[trades["close_date"] < pd.Timestamp("2018-01-12", tz="UTC")]
 
-    data = history.load_data(datadir=testdatadir, pairs=pairs, timeframe="5m", timerange=timerange)
+    data = history.load_data(
+        datadir=testdatadir, pairs=pairs, timeframe="5m", timerange=timerange
+    )
 
     trades = trades[trades["pair"].isin(pairs)]
 
@@ -476,14 +499,18 @@ def test_plot_profit(default_conf, mocker, testdatadir):
     profit_mock = MagicMock()
     store_mock = MagicMock()
     mocker.patch.multiple(
-        "freqtrade.plot.plotting", generate_profit_graph=profit_mock, store_plot_file=store_mock
+        "freqtrade.plot.plotting",
+        generate_profit_graph=profit_mock,
+        store_plot_file=store_mock,
     )
     with pytest.raises(
         OperationalException, match=r"No trades found, cannot generate Profit-plot.*"
     ):
         plot_profit(default_conf)
 
-    default_conf["exportfilename"] = testdatadir / "backtest_results/backtest-result.json"
+    default_conf["exportfilename"] = (
+        testdatadir / "backtest_results/backtest-result.json"
+    )
 
     plot_profit(default_conf)
 
@@ -495,7 +522,9 @@ def test_plot_profit(default_conf, mocker, testdatadir):
     assert store_mock.call_args_list[0][1]["auto_open"] is False
 
     del default_conf["timeframe"]
-    with pytest.raises(OperationalException, match=r"Timeframe must be set.*--timeframe.*"):
+    with pytest.raises(
+        OperationalException, match=r"Timeframe must be set.*--timeframe.*"
+    ):
         plot_profit(default_conf)
 
 
@@ -520,7 +549,12 @@ def test_plot_profit(default_conf, mocker, testdatadir):
             {"main_plot": {"sma": {}, "ema3": {}}, "subplots": {"Other": {"macd": {}}}},
         ),
         # only main_plot - adds empty subplots
-        ([], [], {"main_plot": {"sma": {}}}, {"main_plot": {"sma": {}}, "subplots": {}}),
+        (
+            [],
+            [],
+            {"main_plot": {"sma": {}}},
+            {"main_plot": {"sma": {}}, "subplots": {}},
+        ),
         # Main and subplots
         (
             [],
@@ -547,14 +581,20 @@ def test_plot_profit(default_conf, mocker, testdatadir):
             ["sma", "ema3"],
             [],
             {"main_plot": {"sma": {}}, "subplots": {"RSI": {"rsi": {"color": "red"}}}},
-            {"main_plot": {"sma": {}, "ema3": {}}, "subplots": {"RSI": {"rsi": {"color": "red"}}}},
+            {
+                "main_plot": {"sma": {}, "ema3": {}},
+                "subplots": {"RSI": {"rsi": {"color": "red"}}},
+            },
         ),
         # indicator 2 - overrides plot_config subplots
         (
             [],
             ["macd", "macd_signal"],
             {"main_plot": {"sma": {}}, "subplots": {"RSI": {"rsi": {"color": "red"}}}},
-            {"main_plot": {"sma": {}}, "subplots": {"Other": {"macd": {}, "macd_signal": {}}}},
+            {
+                "main_plot": {"sma": {}},
+                "subplots": {"Other": {"macd": {}, "macd_signal": {}}},
+            },
         ),
     ],
 )

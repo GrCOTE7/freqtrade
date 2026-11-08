@@ -193,16 +193,20 @@ def test_balance_distribution_over_time(is_short):
     # Trade 1 exits at hour 18 - the only event between 17 and 18, so its proceeds
     # (including the 0.2 funding fee gained) are the full difference.
     exit_value = 41000.0 * 0.0025
-    expected_exit = (exit_value if not is_short else 2 * 100.0 - exit_value) - exit_value * fee
-    assert result.iloc[18][stake_currency] - result.iloc[17][stake_currency] == pytest.approx(
-        expected_exit + 0.2
-    )
+    expected_exit = (
+        exit_value if not is_short else 2 * 100.0 - exit_value
+    ) - exit_value * fee
+    assert result.iloc[18][stake_currency] - result.iloc[17][
+        stake_currency
+    ] == pytest.approx(expected_exit + 0.2)
 
     # Check that pair columns have non-zero values during trade periods
     # Trade 1 (BTC/USDT) is open from hour 15 to hour 18
     # At hour 16, BTC/USDT should have position
     btc_during_trade = result.loc[base_date + timedelta(hours=1), "BTC/USDT"]
-    assert btc_during_trade > 0, "Trade should have positive position during open period"
+    assert (
+        btc_during_trade > 0
+    ), "Trade should have positive position during open period"
 
     # After Trade 1 closes at hour 3, BTC/USDT position should be 0
     btc_after_close = result.loc[base_date + timedelta(hours=4) :, "BTC/USDT"]
@@ -216,6 +220,8 @@ def test_balance_distribution_over_time(is_short):
 
     # Since all exit prices > entry prices, exits return more cash than entries spent
     # This means final balance > start balance for long trades and < start balance for short trades
-    assert (final_balance > start_balance) if not is_short else (final_balance < start_balance), (
-        "Balance increases for long and decreases for short trades"
-    )
+    assert (
+        (final_balance > start_balance)
+        if not is_short
+        else (final_balance < start_balance)
+    ), "Balance increases for long and decreases for short trades"

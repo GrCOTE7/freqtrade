@@ -21,7 +21,10 @@ from freqtrade.data.history.datahandlers.idatahandler import (
     get_datahandler,
     get_datahandlerclass,
 )
-from freqtrade.data.history.datahandlers.jsondatahandler import JsonDataHandler, JsonGzDataHandler
+from freqtrade.data.history.datahandlers.jsondatahandler import (
+    JsonDataHandler,
+    JsonGzDataHandler,
+)
 from freqtrade.data.history.datahandlers.parquetdatahandler import ParquetDataHandler
 from freqtrade.enums import CandleType, TradingMode
 from freqtrade.exceptions import OperationalException
@@ -72,14 +75,17 @@ def test_rebuild_pair_from_filename(pair, expected):
 def test_datahandler_normalize_columns_ohlcv(testdatadir):
     dh = FeatherDataHandler(testdatadir)
     df = DataFrame(
-        [[1, 2.0, 3.0, 1.0, 2.5, 100.0]], columns=["date", "open", "high", "low", "close", "volume"]
+        [[1, 2.0, 3.0, 1.0, 2.5, 100.0]],
+        columns=["date", "open", "high", "low", "close", "volume"],
     )
     assert (
         list(dh._normalize_columns(df, "XRP/USDT:USDT", CandleType.SPOT).columns)
         == DEFAULT_DATAFRAME_COLUMNS
     )
     # Extra columns are dropped, order is normalized
-    df2 = df.assign(extra=1)[["volume", "extra", "close", "low", "high", "open", "date"]]
+    df2 = df.assign(extra=1)[
+        ["volume", "extra", "close", "low", "high", "open", "date"]
+    ]
     assert (
         list(dh._normalize_columns(df2, "XRP/USDT:USDT", CandleType.SPOT).columns)
         == DEFAULT_DATAFRAME_COLUMNS
@@ -95,7 +101,9 @@ def test_datahandler_normalize_columns_funding_rate(testdatadir):
     assert res.iloc[0]["funding_rate"] == 0.0005
 
     # Legacy layout - "open" carries the rate, the zero columns are dropped
-    legacy = DataFrame([[1, 0.0005, 0.0, 0.0, 0.0, 0.0]], columns=DEFAULT_DATAFRAME_COLUMNS)
+    legacy = DataFrame(
+        [[1, 0.0005, 0.0, 0.0, 0.0, 0.0]], columns=DEFAULT_DATAFRAME_COLUMNS
+    )
     res = dh._normalize_columns(legacy, "XRP/USDT:USDT", CandleType.FUNDING_RATE)
     assert list(res.columns) == ["date", "funding_rate"]
     assert res.iloc[0]["funding_rate"] == 0.0005
@@ -135,7 +143,9 @@ def test_datahandler_normalize_columns_bad_width(testdatadir, width):
     dh = JsonDataHandler(testdatadir)
     df = DataFrame([[0] * width]) if width else DataFrame()
     for candle_type in (CandleType.FUNDING_RATE, CandleType.SPOT):
-        with pytest.raises(ValueError, match=r"Unexpected column count .* for XRP/USDT:USDT"):
+        with pytest.raises(
+            ValueError, match=r"Unexpected column count .* for XRP/USDT:USDT"
+        ):
             dh._normalize_columns(df, "XRP/USDT:USDT", candle_type)
 
 
@@ -153,31 +163,44 @@ def test_datahandler_ohlcv_load_unknown_layout(tmp_path, datahandler, caplog):
     assert log_has_re(r"Error loading data from .*Unexpected column count 3", caplog)
 
 
-def test_datahandler_funding_rate_legacy_load_and_migrate(testdatadir, tmp_path, caplog):
+def test_datahandler_funding_rate_legacy_load_and_migrate(
+    testdatadir, tmp_path, caplog
+):
     """Legacy 6-column funding files load transparently and are rewritten 2-wide."""
     from pyarrow import dataset
 
     caplog.set_level(logging.DEBUG)
 
     dhbase = FeatherDataHandler(testdatadir)
-    legacy_raw = read_feather(testdatadir / "futures/XRP_USDT_USDT-1h-funding_rate.feather")
+    legacy_raw = read_feather(
+        testdatadir / "futures/XRP_USDT_USDT-1h-funding_rate.feather"
+    )
     assert list(legacy_raw.columns) == DEFAULT_DATAFRAME_COLUMNS
 
-    loaded = dhbase.ohlcv_load("XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False)
+    loaded = dhbase.ohlcv_load(
+        "XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False
+    )
     # funding_rate is canonical, "open" stays available as a compatibility alias
     assert list(loaded.columns) == ["date", "funding_rate", "open"]
     assert (loaded["open"] == loaded["funding_rate"]).all()
     assert loaded["funding_rate"].tolist() == legacy_raw["open"].astype(float).tolist()
-    assert log_has("Migrating legacy funding rate columns for XRP/USDT:USDT on read.", caplog)
+    assert log_has(
+        "Migrating legacy funding rate columns for XRP/USDT:USDT on read.", caplog
+    )
 
     # Storing writes the new layout - aliases never reach disk
     (tmp_path / "futures").mkdir()
     dh_new = FeatherDataHandler(tmp_path)
     dh_new.ohlcv_store("XRP/USDT:USDT", "1h", loaded, CandleType.FUNDING_RATE)
     stored = tmp_path / "futures/XRP_USDT_USDT-1h-funding_rate.feather"
-    assert dataset.dataset(stored, format="feather").schema.names == ["date", "funding_rate"]
+    assert dataset.dataset(stored, format="feather").schema.names == [
+        "date",
+        "funding_rate",
+    ]
 
-    reloaded = dh_new.ohlcv_load("XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False)
+    reloaded = dh_new.ohlcv_load(
+        "XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False
+    )
     assert reloaded.equals(loaded)
 
 
@@ -185,7 +208,9 @@ def test_datahandler_funding_rate_legacy_load_and_migrate(testdatadir, tmp_path,
 def test_datahandler_funding_rate_legacy_load_formats(testdatadir, datahandler):
     """Both the named (feather) and positional (json) legacy layouts read identically."""
     dh = get_datahandler(testdatadir, datahandler)
-    df = dh.ohlcv_load("XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False)
+    df = dh.ohlcv_load(
+        "XRP/USDT:USDT", "1h", CandleType.FUNDING_RATE, fill_missing=False
+    )
     assert list(df.columns) == ["date", "funding_rate", "open"]
     assert len(df) == 91
     assert (df["open"] == df["funding_rate"]).all()
@@ -247,17 +272,29 @@ def test_datahandler_open_interest_roundtrip(tmp_path, datahandler):
     )
     dh.ohlcv_store("XRP/USDT:USDT", "1h", df, CandleType.OPEN_INTEREST)
 
-    loaded = dh.ohlcv_load("XRP/USDT:USDT", "1h", CandleType.OPEN_INTEREST, fill_missing=False)
-    assert list(loaded.columns) == ["date", "open_interest_amount", "open_interest_value"]
+    loaded = dh.ohlcv_load(
+        "XRP/USDT:USDT", "1h", CandleType.OPEN_INTEREST, fill_missing=False
+    )
+    assert list(loaded.columns) == [
+        "date",
+        "open_interest_amount",
+        "open_interest_value",
+    ]
     assert len(loaded) == 3
-    assert loaded["open_interest_amount"].tolist() == [108721.214, 109261.55, 107807.866]
+    assert loaded["open_interest_amount"].tolist() == [
+        108721.214,
+        109261.55,
+        107807.866,
+    ]
     assert loaded["open_interest_value"].isna().all()
     assert loaded["open_interest_value"].dtype == "float64"
     assert_frame_equal(loaded, df)
 
 
 def test_datahandler_ohlcv_get_available_data(testdatadir):
-    paircombs = FeatherDataHandler.ohlcv_get_available_data(testdatadir, TradingMode.SPOT)
+    paircombs = FeatherDataHandler.ohlcv_get_available_data(
+        testdatadir, TradingMode.SPOT
+    )
     # Convert to set to avoid failures due to sorting
     assert set(paircombs) == {
         ("UNITTEST/BTC", "5m", CandleType.SPOT),
@@ -280,7 +317,9 @@ def test_datahandler_ohlcv_get_available_data(testdatadir):
         ("UNITTEST/BTC", "8m", CandleType.SPOT),
     }
 
-    paircombs = FeatherDataHandler.ohlcv_get_available_data(testdatadir, TradingMode.FUTURES)
+    paircombs = FeatherDataHandler.ohlcv_get_available_data(
+        testdatadir, TradingMode.FUTURES
+    )
     # Convert to set to avoid failures due to sorting
     assert set(paircombs) == {
         ("UNITTEST/USDT:USDT", "1h", "mark"),
@@ -291,7 +330,9 @@ def test_datahandler_ohlcv_get_available_data(testdatadir):
         ("XRP/USDT:USDT", "1h", "funding_rate"),
     }
 
-    paircombs = JsonGzDataHandler.ohlcv_get_available_data(testdatadir, TradingMode.SPOT)
+    paircombs = JsonGzDataHandler.ohlcv_get_available_data(
+        testdatadir, TradingMode.SPOT
+    )
     assert set(paircombs) == {("UNITTEST/BTC", "8m", CandleType.SPOT)}
 
 
@@ -490,7 +531,8 @@ def test_datahandler_trades_get_pairs(testdatadir, datahandler, expected):
 
 def test_hdf5datahandler_deprecated(testdatadir):
     with pytest.raises(
-        OperationalException, match=r"DEPRECATED: The hdf5 dataformat is deprecated and has.*"
+        OperationalException,
+        match=r"DEPRECATED: The hdf5 dataformat is deprecated and has.*",
     ):
         get_datahandler(testdatadir, "hdf5")
 
@@ -549,7 +591,9 @@ def test_generic_datahandler_ohlcv_load_and_resave(
     # Get data to test
     dh = get_datahandler(testdatadir, datahandler)
 
-    file = tmpdir2 / f"UNITTEST_NEW-{timeframe}{candle_append}.{dh._get_file_extension()}"
+    file = (
+        tmpdir2 / f"UNITTEST_NEW-{timeframe}{candle_append}.{dh._get_file_extension()}"
+    )
     assert not file.is_file()
 
     dh1 = get_datahandler(tmp_path, datahandler)
@@ -558,10 +602,16 @@ def test_generic_datahandler_ohlcv_load_and_resave(
 
     assert not ohlcv[ohlcv["date"] < startdt].empty
 
-    timerange = TimeRange.parse_timerange(f"{startdt.replace('-', '')}-{enddt.replace('-', '')}")
+    timerange = TimeRange.parse_timerange(
+        f"{startdt.replace('-', '')}-{enddt.replace('-', '')}"
+    )
 
-    ohlcv = dhbase.ohlcv_load(pair, timeframe, timerange=timerange, candle_type=candle_type)
-    ohlcv1 = dh1.ohlcv_load("UNITTEST/NEW", timeframe, timerange=timerange, candle_type=candle_type)
+    ohlcv = dhbase.ohlcv_load(
+        pair, timeframe, timerange=timerange, candle_type=candle_type
+    )
+    ohlcv1 = dh1.ohlcv_load(
+        "UNITTEST/NEW", timeframe, timerange=timerange, candle_type=candle_type
+    )
 
     assert len(ohlcv) == len(ohlcv1)
     assert ohlcv.equals(ohlcv1)
@@ -635,15 +685,21 @@ def test_datahandler_trades_purge(mocker, testdatadir, datahandler):
 
 
 def test_datahandler_trades_get_available_data(testdatadir):
-    paircombs = FeatherDataHandler.trades_get_available_data(testdatadir, TradingMode.SPOT)
+    paircombs = FeatherDataHandler.trades_get_available_data(
+        testdatadir, TradingMode.SPOT
+    )
     # Convert to set to avoid failures due to sorting
     assert set(paircombs) == {"XRP/ETH"}
 
-    paircombs = FeatherDataHandler.trades_get_available_data(testdatadir, TradingMode.FUTURES)
+    paircombs = FeatherDataHandler.trades_get_available_data(
+        testdatadir, TradingMode.FUTURES
+    )
     # Convert to set to avoid failures due to sorting
     assert set(paircombs) == set()
 
-    paircombs = JsonGzDataHandler.trades_get_available_data(testdatadir, TradingMode.SPOT)
+    paircombs = JsonGzDataHandler.trades_get_available_data(
+        testdatadir, TradingMode.SPOT
+    )
     assert set(paircombs) == {"XRP/ETH", "XRP/OLD"}
 
 
@@ -724,22 +780,30 @@ def test_feather_trades_timerange_filter_fullspan(feather_dh, trades_full):
         stopts=int(trades_full["timestamp"].max()),
     )
     # Full-span filter should equal unfiltered
-    filtered = feather_dh.trades_load("XRP/ETH", TradingMode.SPOT, timerange=timerange_full)
+    filtered = feather_dh.trades_load(
+        "XRP/ETH", TradingMode.SPOT, timerange=timerange_full
+    )
     assert_frame_equal(
-        trades_full.reset_index(drop=True), filtered.reset_index(drop=True), check_exact=True
+        trades_full.reset_index(drop=True),
+        filtered.reset_index(drop=True),
+        check_exact=True,
     )
 
 
 def test_feather_trades_timerange_filter_subset(feather_dh, trades_full, timerange_mid):
     # Subset filter should be a subset of the full-span filter
-    subset = feather_dh.trades_load("XRP/ETH", TradingMode.SPOT, timerange=timerange_mid)
+    subset = feather_dh.trades_load(
+        "XRP/ETH", TradingMode.SPOT, timerange=timerange_mid
+    )
     assert not subset.empty
     assert subset["timestamp"].min() >= timerange_mid.startts
     assert subset["timestamp"].max() <= timerange_mid.stopts
     assert len(subset) < len(trades_full)
 
 
-@pytest.mark.parametrize("exception", [ValueError("fail"), ArrowNotImplementedError("fail")])
+@pytest.mark.parametrize(
+    "exception", [ValueError("fail"), ArrowNotImplementedError("fail")]
+)
 def test_feather_trades_timerange_pushdown_fallback(
     feather_dh, trades_full, timerange_mid, mocker, caplog, exception
 ):
@@ -750,7 +814,9 @@ def test_feather_trades_timerange_pushdown_fallback(
     )
 
     with caplog.at_level("WARNING"):
-        out = feather_dh.trades_load("XRP/ETH", TradingMode.SPOT, timerange=timerange_mid)
+        out = feather_dh.trades_load(
+            "XRP/ETH", TradingMode.SPOT, timerange=timerange_mid
+        )
 
     assert len(out) == len(trades_full)
     assert any(
@@ -790,7 +856,9 @@ def test_feather_trades_timerange_fully_open(feather_dh, trades_full):
     filtered = feather_dh.trades_load("XRP/ETH", TradingMode.SPOT, timerange=tr)
     # Should equal unfiltered load
     assert_frame_equal(
-        trades_full.reset_index(drop=True), filtered.reset_index(drop=True), check_exact=True
+        trades_full.reset_index(drop=True),
+        filtered.reset_index(drop=True),
+        check_exact=True,
     )
 
 
@@ -866,7 +934,10 @@ def test_build_arrow_ohlcv_filter(feather_dh):
         ("20180101-20180119", True),  # starts before the available data
         ("20180115-20180201", True),  # ends after the available data
         ("20250101-20250201", True),  # no data in range at all
-        ("1516003320-1516348980", True),  # not aligned to the candle grid (08:02 / 08:03)
+        (
+            "1516003320-1516348980",
+            True,
+        ),  # not aligned to the candle grid (08:02 / 08:03)
         # Starts inside the gap punched below, which is wider than the one candle the bounds
         # are widened by. The pushdown then sees no candle before the requested start and
         # warns that the data starts late - a full read, seeing the whole file, does not.
@@ -878,7 +949,9 @@ def test_ohlcv_load_pushdown_matches_full_read(
 ):
     # Pushing the timerange filter into Arrow must not change data or warnings.
     dh = get_datahandler(tmp_path, datahandler)
-    ohlcv = get_datahandler(testdatadir, "feather")._ohlcv_load("UNITTEST/BTC", "5m", None, "spot")
+    ohlcv = get_datahandler(testdatadir, "feather")._ohlcv_load(
+        "UNITTEST/BTC", "5m", None, "spot"
+    )
     # Drop 2018-01-16 00:00 - 12:00, so gaps (exchange downtime) are covered as well.
     gap = (ohlcv["date"] >= Timestamp("2018-01-16", tz="UTC")) & (
         ohlcv["date"] < Timestamp("2018-01-16 12:00", tz="UTC")
@@ -907,7 +980,9 @@ def test_ohlcv_load_pushdown_matches_full_read(
 def test_ohlcv_load_pushdown_limits_read(testdatadir, tmp_path, datahandler):
     # The timerange must actually reach Arrow - _ohlcv_load does not trim by itself.
     dh = get_datahandler(tmp_path, datahandler)
-    ohlcv = get_datahandler(testdatadir, "feather")._ohlcv_load("UNITTEST/BTC", "5m", None, "spot")
+    ohlcv = get_datahandler(testdatadir, "feather")._ohlcv_load(
+        "UNITTEST/BTC", "5m", None, "spot"
+    )
     dh.ohlcv_store("UNITTEST/BTC", "5m", ohlcv, "spot")
 
     timerange = TimeRange.parse_timerange("20180115-20180119")
@@ -942,8 +1017,13 @@ def test_ohlcv_load_pushdown_fallback(feather_dh, mocker, caplog, exception):
 
     with caplog.at_level("WARNING"):
         out = feather_dh.ohlcv_load(
-            "UNITTEST/BTC", "5m", "spot", timerange=TimeRange.parse_timerange("20180115-20180119")
+            "UNITTEST/BTC",
+            "5m",
+            "spot",
+            timerange=TimeRange.parse_timerange("20180115-20180119"),
         )
 
-    assert log_has_re("Unable to use Arrow filtering, loading entire ohlcv file.*", caplog)
+    assert log_has_re(
+        "Unable to use Arrow filtering, loading entire ohlcv file.*", caplog
+    )
     assert_frame_equal(expected, out, check_exact=True)

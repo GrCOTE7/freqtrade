@@ -12,7 +12,6 @@ from pandas import DataFrame
 
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -79,7 +78,9 @@ class BaseEnvironment(gym.Env):
         self.rl_config: dict = config["freqai"]["rl_config"]
         self.add_state_info: bool = self.rl_config.get("add_state_info", False)
         self.id: str = id
-        self.max_drawdown: float = 1 - self.rl_config.get("max_training_drawdown_pct", 0.8)
+        self.max_drawdown: float = 1 - self.rl_config.get(
+            "max_training_drawdown_pct", 0.8
+        )
         self.compound_trades: bool = config["stake_amount"] == "unlimited"
         self.pair: str = pair
         self.raw_features: DataFrame = df_raw
@@ -133,7 +134,9 @@ class BaseEnvironment(gym.Env):
             self.total_features = self.signal_features.shape[1]
         self.shape = (window_size, self.total_features)
         self.set_action_space()
-        self.observation_space = spaces.Box(low=-1, high=1, shape=self.shape, dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=-1, high=1, shape=self.shape, dtype=np.float32
+        )
 
         # episode
         self._start_tick: int = self.window_size
@@ -268,7 +271,9 @@ class BaseEnvironment(gym.Env):
             features_and_state["current_profit_pct"] = self.get_unrealized_profit()
             features_and_state["position"] = self._position.value
             features_and_state["trade_duration"] = self.get_trade_duration()
-            features_and_state = pd.concat([features_window, features_and_state], axis=1)
+            features_and_state = pd.concat(
+                [features_window, features_and_state], axis=1
+            )
             return features_and_state
         else:
             return features_window
@@ -292,12 +297,18 @@ class BaseEnvironment(gym.Env):
         if self._position == Positions.Neutral:
             return 0.0
         elif self._position == Positions.Short:
-            current_price = self.add_entry_fee(self.prices.iloc[self._current_tick].open)
-            last_trade_price = self.add_exit_fee(self.prices.iloc[self._last_trade_tick].open)
+            current_price = self.add_entry_fee(
+                self.prices.iloc[self._current_tick].open
+            )
+            last_trade_price = self.add_exit_fee(
+                self.prices.iloc[self._last_trade_tick].open
+            )
             return (last_trade_price - current_price) / last_trade_price
         elif self._position == Positions.Long:
             current_price = self.add_exit_fee(self.prices.iloc[self._current_tick].open)
-            last_trade_price = self.add_entry_fee(self.prices.iloc[self._last_trade_tick].open)
+            last_trade_price = self.add_entry_fee(
+                self.prices.iloc[self._last_trade_tick].open
+            )
             return (current_price - last_trade_price) / last_trade_price
         else:
             return 0.0

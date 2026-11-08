@@ -7,7 +7,6 @@ from freqtrade.constants import USERPATH_STRATEGIES
 from freqtrade.enums import RunMode
 from freqtrade.exceptions import ConfigurationError, OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +20,10 @@ def start_create_userdir(args: dict[str, Any]) -> None:
     :param args: Cli args from Arguments()
     :return: None
     """
-    from freqtrade.configuration.directory_operations import copy_sample_files, create_userdata_dir
+    from freqtrade.configuration.directory_operations import (
+        copy_sample_files,
+        create_userdata_dir,
+    )
 
     if user_data_dir := args.get("user_data_dir"):
         userdir = create_userdata_dir(user_data_dir, create_dir=True)
@@ -31,7 +33,9 @@ def start_create_userdir(args: dict[str, Any]) -> None:
         sys.exit(1)
 
 
-def deploy_new_strategy(strategy_name: str, strategy_path: Path, subtemplate: str) -> None:
+def deploy_new_strategy(
+    strategy_name: str, strategy_path: Path, subtemplate: str
+) -> None:
     """
     Deploy new strategy from template to strategy_path
     """

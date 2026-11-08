@@ -63,7 +63,9 @@ def _add_open_exit_order(trade: Trade, rate: float) -> None:
     )
 
 
-def _get_bot(mocker, conf, margin_mode: str, rate: float, trades: list[Trade], warn_ratio=0.2):
+def _get_bot(
+    mocker, conf, margin_mode: str, rate: float, trades: list[Trade], warn_ratio=0.2
+):
     """Helper to get a mocked bot as all tests here need a very similar same setup."""
     conf["trading_mode"] = "futures"
     conf["margin_mode"] = margin_mode
@@ -85,7 +87,9 @@ def test_liquidation_warning_isolated(mocker, default_conf_usdt, is_short) -> No
         _make_trade(2, "XRP/USDT:USDT", 1.5 if is_short else 0.5, is_short),
     ]
     rate = 1.081 if is_short else 0.919
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", rate, trades, warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", rate, trades, warn_ratio=0.2
+    )
 
     freqtrade.check_liquidation_warnings()
 
@@ -116,7 +120,9 @@ def test_liquidation_warning_cross(mocker, default_conf_usdt) -> None:
         _make_trade(1, "ETH/USDT:USDT", 0.9),
         _make_trade(2, "XRP/USDT:USDT", 0.91),
     ]
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", 0.919, trades, warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", 0.919, trades, warn_ratio=0.2
+    )
 
     freqtrade.check_liquidation_warnings()
 
@@ -139,7 +145,9 @@ def test_liquidation_warning_cross_tracks_closest(mocker, default_conf_usdt) -> 
         _make_trade(1, "ETH/USDT:USDT", 0.9),
         _make_trade(2, "XRP/USDT:USDT", 0.5),
     ]
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", 0.905, trades, warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", 0.905, trades, warn_ratio=0.2
+    )
 
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 1
@@ -197,7 +205,9 @@ def test_liquidation_warning_cross_tracks_closest(mocker, default_conf_usdt) -> 
 def test_liquidation_warning_cross_many_positions(mocker, default_conf_usdt) -> None:
     """Several positions approaching liquidation together result in one message, not one each."""
     trades = [_make_trade(i, f"{i}/USDT:USDT", 0.9) for i in range(1, 6)]
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", 0.919, trades, warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", 0.919, trades, warn_ratio=0.2
+    )
     # Approaching together - 19%, 15% and 12% left
     for rate in (0.919, 0.915, 0.912):
         mocker.patch(f"{EXMS}.get_rate", return_value=rate)
@@ -221,7 +231,9 @@ def test_liquidation_warning_past_stop(mocker, default_conf_usdt, is_short) -> N
     """
     trade = _make_trade(1, "ETH/USDT:USDT", 1.1 if is_short else 0.9, is_short)
     rate = 1.11 if is_short else 0.89
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2
+    )
 
     for _ in range(3):
         freqtrade.check_liquidation_warnings()
@@ -230,7 +242,9 @@ def test_liquidation_warning_past_stop(mocker, default_conf_usdt, is_short) -> N
 
 
 @pytest.mark.parametrize("is_short", [False, True])
-def test_liquidation_warning_open_exit_order(mocker, default_conf_usdt, is_short) -> None:
+def test_liquidation_warning_open_exit_order(
+    mocker, default_conf_usdt, is_short
+) -> None:
     """
     Once the liquidation exit is placed there is nothing left to warn about - even if the
     order sits unfilled while the price keeps moving.
@@ -238,7 +252,9 @@ def test_liquidation_warning_open_exit_order(mocker, default_conf_usdt, is_short
     trade = _make_trade(1, "ETH/USDT:USDT", 1.1 if is_short else 0.9, is_short)
     rate = 1.11 if is_short else 0.89
     _add_open_exit_order(trade, rate)
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2
+    )
 
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 0
@@ -256,7 +272,9 @@ def test_liquidation_warning_cross_exiting_position_not_shadowing(
         _make_trade(1, "ETH/USDT:USDT", 0.9),
         _make_trade(2, "XRP/USDT:USDT", 0.9),
     ]
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", 0.5, trades, warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", 0.5, trades, warn_ratio=0.2
+    )
     rates = {"ETH/USDT:USDT": 0.89, "XRP/USDT:USDT": 0.95}
     mocker.patch(f"{EXMS}.get_rate", side_effect=lambda pair, **kwargs: rates[pair])
 
@@ -279,17 +297,23 @@ def test_liquidation_warning_cross_exiting_position_not_shadowing(
 
 
 @pytest.mark.parametrize("is_short", [False, True])
-def test_liquidation_warning_stop_beyond_open_rate(mocker, default_conf_usdt, is_short) -> None:
+def test_liquidation_warning_stop_beyond_open_rate(
+    mocker, default_conf_usdt, is_short
+) -> None:
     """
     In cross margin, losses on other positions can push the liquidation stop past the open rate.
     The distance is then measured from the stop in the direction that liquidates - against the
     current rate, as the position is in profit.
     """
     # Long: open 100, stop 105 - Short: open 100, stop 95
-    trade = _make_trade(1, "ETH/USDT:USDT", 95.0 if is_short else 105.0, is_short, open_rate=100.0)
+    trade = _make_trade(
+        1, "ETH/USDT:USDT", 95.0 if is_short else 105.0, is_short, open_rate=100.0
+    )
     # 5 away from the stop, 10x - about half the 10% move the margin covers is left.
     rate = 90.0 if is_short else 110.0
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", rate, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", rate, [trade], warn_ratio=0.2
+    )
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 0
 
@@ -308,8 +332,12 @@ def test_liquidation_warning_dragged_stop(mocker, default_conf_usdt, is_short) -
     creeps towards the price and the warning has to pick that up.
     """
     # Long 10x at 100 (short at 100), the stop set from a well funded account.
-    trade = _make_trade(1, "ETH/USDT:USDT", 120.0 if is_short else 80.0, is_short, open_rate=100.0)
-    freqtrade = _get_bot(mocker, default_conf_usdt, "cross", 100.0, [trade], warn_ratio=0.2)
+    trade = _make_trade(
+        1, "ETH/USDT:USDT", 120.0 if is_short else 80.0, is_short, open_rate=100.0
+    )
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "cross", 100.0, [trade], warn_ratio=0.2
+    )
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 0
 
@@ -317,7 +345,9 @@ def test_liquidation_warning_dragged_stop(mocker, default_conf_usdt, is_short) -
     trade.liquidation_price = 101.5 if is_short else 98.5
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 1
-    assert pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.15
+    assert (
+        pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.15
+    )
 
     # The position is in profit when that happens - the stop's distance from the current
     # price is what counts (1.5% here), not the distance from the open rate.
@@ -327,13 +357,17 @@ def test_liquidation_warning_dragged_stop(mocker, default_conf_usdt, is_short) -
     mocker.patch(f"{EXMS}.get_rate", return_value=50.0 if is_short else 200.0)
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 1
-    assert pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.15
+    assert (
+        pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.15
+    )
 
 
 def test_liquidation_warning_escalates_and_resets(mocker, default_conf_usdt) -> None:
     # Open rate 1.0, liquidation stop 0.9 at 10x - 0.1 of price movement is the full distance.
     trade = _make_trade(1, "ETH/USDT:USDT", 0.9)
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio=0.2
+    )
 
     # 19% left - first warning
     freqtrade.check_liquidation_warnings()
@@ -374,12 +408,23 @@ def test_liquidation_warning_escalates_and_resets(mocker, default_conf_usdt) -> 
 def test_liquidation_warning_leverage_independent(mocker, default_conf_usdt) -> None:
     """Warns at any leverage - a plain price distance would not."""
     # 2x: liquidation at 50, 5x: at 80, 20x: at 95 - each 90% of the way to its stop.
-    for leverage, liq_price, rate in [(2, 50.0, 55.0), (5, 80.0, 82.0), (20, 95.0, 95.5)]:
-        trade = _make_trade(1, "ETH/USDT:USDT", liq_price, open_rate=100.0, leverage=leverage)
-        freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2)
+    for leverage, liq_price, rate in [
+        (2, 50.0, 55.0),
+        (5, 80.0, 82.0),
+        (20, 95.0, 95.5),
+    ]:
+        trade = _make_trade(
+            1, "ETH/USDT:USDT", liq_price, open_rate=100.0, leverage=leverage
+        )
+        freqtrade = _get_bot(
+            mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2
+        )
         freqtrade.check_liquidation_warnings()
         assert freqtrade.rpc.send_msg.call_count == 1
-        assert pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.1
+        assert (
+            pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"])
+            == 0.1
+        )
 
     # A freshly opened position never warns, no matter the leverage - even though the stop
     # (0.5% maintenance margin plus the 5% buffer) sits closer than 1/leverage, so what's
@@ -391,12 +436,18 @@ def test_liquidation_warning_leverage_independent(mocker, default_conf_usdt) -> 
         (50, 98.58, 0.71),
         (100, 99.53, 0.47),
     ]:
-        trade = _make_trade(1, "ETH/USDT:USDT", liq_price, open_rate=100.0, leverage=leverage)
-        freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", 100.0, [trade], warn_ratio=0.2)
+        trade = _make_trade(
+            1, "ETH/USDT:USDT", liq_price, open_rate=100.0, leverage=leverage
+        )
+        freqtrade = _get_bot(
+            mocker, default_conf_usdt, "isolated", 100.0, [trade], warn_ratio=0.2
+        )
         freqtrade.check_liquidation_warnings()
         assert freqtrade.rpc.send_msg.call_count == 0
 
-        freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", 100.0, [trade], 0.99)
+        freqtrade = _get_bot(
+            mocker, default_conf_usdt, "isolated", 100.0, [trade], 0.99
+        )
         freqtrade.check_liquidation_warnings()
         assert freqtrade.rpc.send_msg.call_count == 1
         remaining = freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]
@@ -412,12 +463,18 @@ def test_liquidation_warning_measured_from_open_rate_at_loss(
     current rate, a 2x long would be warned about late and a 2x short early.
     """
     # 2x, open 100 - stop at 53 (147 for shorts). 10 away from the stop: 20% of the 50% move.
-    trade = _make_trade(1, "ETH/USDT:USDT", 147.0 if is_short else 53.0, is_short, 100.0, 2)
+    trade = _make_trade(
+        1, "ETH/USDT:USDT", 147.0 if is_short else 53.0, is_short, 100.0, 2
+    )
     rate = 137.0 if is_short else 63.0
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", rate, [trade], warn_ratio=0.2
+    )
     freqtrade.check_liquidation_warnings()
     assert freqtrade.rpc.send_msg.call_count == 1
-    assert pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.2
+    assert (
+        pytest.approx(freqtrade.rpc.send_msg.call_args[0][0]["remaining_ratio"]) == 0.2
+    )
 
 
 @pytest.mark.parametrize(
@@ -441,7 +498,9 @@ def test_liquidation_warning_not_sent(
 ) -> None:
     trade = _make_trade(1, "ETH/USDT:USDT", liq_price)
     trade.amount = amount
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio
+    )
     freqtrade.trading_mode = TradingMode(trading_mode)
 
     freqtrade.check_liquidation_warnings()
@@ -449,9 +508,13 @@ def test_liquidation_warning_not_sent(
 
 
 @pytest.mark.parametrize("exception", [PricingError, TemporaryError])
-def test_liquidation_warning_pricing_error(mocker, default_conf_usdt, exception) -> None:
+def test_liquidation_warning_pricing_error(
+    mocker, default_conf_usdt, exception
+) -> None:
     trade = _make_trade(1, "ETH/USDT:USDT", 0.9)
-    freqtrade = _get_bot(mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio=0.2)
+    freqtrade = _get_bot(
+        mocker, default_conf_usdt, "isolated", 0.919, [trade], warn_ratio=0.2
+    )
     mocker.patch(f"{EXMS}.get_rate", side_effect=exception())
 
     freqtrade.check_liquidation_warnings()

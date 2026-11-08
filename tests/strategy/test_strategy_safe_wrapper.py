@@ -25,14 +25,18 @@ def test_strategy_safe_wrapper_error(caplog, error):
         strategy_safe_wrapper(failing_method, message="DeadBeef")()
 
     assert log_has_re(r"DeadBeef.*", caplog)
-    ret = strategy_safe_wrapper(failing_method, message="DeadBeef", default_retval=True)()
+    ret = strategy_safe_wrapper(
+        failing_method, message="DeadBeef", default_retval=True
+    )()
 
     assert isinstance(ret, bool)
     assert ret
 
     caplog.clear()
     # Test suppressing error
-    ret = strategy_safe_wrapper(failing_method, message="DeadBeef", supress_error=True)()
+    ret = strategy_safe_wrapper(
+        failing_method, message="DeadBeef", supress_error=True
+    )()
     assert log_has_re(r"DeadBeef.*", caplog)
 
 

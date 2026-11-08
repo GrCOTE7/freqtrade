@@ -11,7 +11,6 @@ from freqtrade.persistence.pairlock import PairLock
 from freqtrade.persistence.trade_model import Order, Trade
 from freqtrade.persistence.wallet_history import WalletHistory
 
-
 logger = logging.getLogger(__name__)
 
 

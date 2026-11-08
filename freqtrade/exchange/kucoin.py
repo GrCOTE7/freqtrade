@@ -6,7 +6,6 @@ from freqtrade.constants import BuySell
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.exchange_types import CcxtOrder, FtHas
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +29,9 @@ class Kucoin(Exchange):
         "order_time_in_force": ["GTC", "FOK", "IOC"],
     }
 
-    def _get_stop_params(self, side: BuySell, ordertype: str, stop_price: float) -> dict:
+    def _get_stop_params(
+        self, side: BuySell, ordertype: str, stop_price: float
+    ) -> dict:
         params = self._params.copy()
         params.update({"stopPrice": stop_price, "stop": "loss"})
         return params

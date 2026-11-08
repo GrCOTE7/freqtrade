@@ -5,7 +5,6 @@ import requests
 
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 # Timeout for requests
@@ -16,7 +15,9 @@ def clean_ui_subdir(directory: Path):
     if directory.is_dir():
         logger.info("Removing UI directory content.")
 
-        for p in reversed(list(directory.glob("**/*"))):  # iterate contents from leaves to root
+        for p in reversed(
+            list(directory.glob("**/*"))
+        ):  # iterate contents from leaves to root
             if p.name in (".gitkeep", "fallback_file.html"):
                 continue
             if p.is_file():

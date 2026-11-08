@@ -14,7 +14,6 @@ from freqtrade.exchange import timeframe_to_seconds
 
 from .idatahandler import IDataHandler
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -59,11 +58,16 @@ class ArrowDataHandler(IDataHandler):
         self.create_dir_if_needed(filename)
 
         self._store_dataframe(
-            data.reset_index(drop=True).loc[:, get_candle_columns(candle_type)], filename
+            data.reset_index(drop=True).loc[:, get_candle_columns(candle_type)],
+            filename,
         )
 
     def _ohlcv_load(
-        self, pair: str, timeframe: str, timerange: TimeRange | None, candle_type: CandleType
+        self,
+        pair: str,
+        timeframe: str,
+        timerange: TimeRange | None,
+        candle_type: CandleType,
     ) -> DataFrame:
         """
         Internal method used to load data for one pair from disk.
@@ -77,11 +81,17 @@ class ArrowDataHandler(IDataHandler):
         :param candle_type: Candle type to use (spot, futures, funding_rate, ...)
         :return: DataFrame with ohlcv data, or empty DataFrame
         """
-        filename = self._pair_data_filename(self._datadir, pair, timeframe, candle_type=candle_type)
+        filename = self._pair_data_filename(
+            self._datadir, pair, timeframe, candle_type=candle_type
+        )
         if not filename.exists():
             # Fallback mode for 1M files
             filename = self._pair_data_filename(
-                self._datadir, pair, timeframe, candle_type=candle_type, no_timeframe_modify=True
+                self._datadir,
+                pair,
+                timeframe,
+                candle_type=candle_type,
+                no_timeframe_modify=True,
             )
             if not filename.exists():
                 return self._empty_ohlcv_df(candle_type)
@@ -148,11 +158,15 @@ class ArrowDataHandler(IDataHandler):
         """
         time_filter = self._build_arrow_ohlcv_filter(timerange, timeframe)
         try:
-            dataset_reader = dataset.dataset(filename, format=self._get_file_extension())
+            dataset_reader = dataset.dataset(
+                filename, format=self._get_file_extension()
+            )
             pairdata = dataset_reader.to_table(filter=time_filter).to_pandas()
         except (ImportError, AttributeError, ValueError, ArrowException) as e:
             # Fallback: load entire file
-            logger.warning(f"Unable to use Arrow filtering, loading entire ohlcv file: {e}")
+            logger.warning(
+                f"Unable to use Arrow filtering, loading entire ohlcv file: {e}"
+            )
             return self._load_dataframe(filename)
 
         if time_filter is not None and pairdata.empty:
@@ -174,7 +188,9 @@ class ArrowDataHandler(IDataHandler):
         """
         raise NotImplementedError()
 
-    def _trades_store(self, pair: str, data: DataFrame, trading_mode: TradingMode) -> None:
+    def _trades_store(
+        self, pair: str, data: DataFrame, trading_mode: TradingMode
+    ) -> None:
         """
         Store trades data (list of Dicts) to file
         :param pair: Pair - used for filename
@@ -237,7 +253,9 @@ class ArrowDataHandler(IDataHandler):
 
         # Use Arrow dataset with optional timerange filtering, fallback to a full read
         try:
-            dataset_reader = dataset.dataset(filename, format=self._get_file_extension())
+            dataset_reader = dataset.dataset(
+                filename, format=self._get_file_extension()
+            )
             time_filter = self._build_arrow_trades_filter(timerange)
             tradesdata = dataset_reader.to_table(filter=time_filter).to_pandas()
             logger.debug(
@@ -246,7 +264,9 @@ class ArrowDataHandler(IDataHandler):
             )
         except (ImportError, AttributeError, ValueError, ArrowException) as e:
             # Fallback: load entire file
-            logger.warning(f"Unable to use Arrow filtering, loading entire trades file: {e}")
+            logger.warning(
+                f"Unable to use Arrow filtering, loading entire trades file: {e}"
+            )
             tradesdata = self._load_dataframe(filename)
 
         return tradesdata

@@ -18,7 +18,9 @@ class OnlyProfitHyperOptLoss(IHyperOptLoss):
     """
 
     @staticmethod
-    def hyperopt_loss_function(results: DataFrame, trade_count: int, *args, **kwargs) -> float:
+    def hyperopt_loss_function(
+        results: DataFrame, trade_count: int, *args, **kwargs
+    ) -> float:
         """
         Objective function, returns smaller number for better results.
         """

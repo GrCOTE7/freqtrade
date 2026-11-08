@@ -5,7 +5,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from freqtrade.optimize.hyperopt.hyperopt_logger import logging_mp_handle, logging_mp_setup
+from freqtrade.optimize.hyperopt.hyperopt_logger import (
+    logging_mp_handle,
+    logging_mp_setup,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -58,9 +61,17 @@ def test_logging_mp_setup_child_process(mocker):
 
 def test_logging_mp_handle(caplog):
     q: Queue = Queue()
-    q.put(logging.LogRecord("ft_test", logging.WARNING, "path", 1, "test message", None, None))
+    q.put(
+        logging.LogRecord(
+            "ft_test", logging.WARNING, "path", 1, "test message", None, None
+        )
+    )
     q.put(None)
-    q.put(logging.LogRecord("ft_test", logging.WARNING, "path", 1, "not handled", None, None))
+    q.put(
+        logging.LogRecord(
+            "ft_test", logging.WARNING, "path", 1, "not handled", None, None
+        )
+    )
 
     with caplog.at_level(logging.WARNING):
         logging_mp_handle(q)
