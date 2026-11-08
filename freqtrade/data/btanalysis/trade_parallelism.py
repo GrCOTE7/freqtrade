@@ -11,7 +11,6 @@ from freqtrade.exchange import (
 )
 from freqtrade.util import dt_from_ts
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -98,14 +97,18 @@ def balance_distribution_over_time(
     """
     min_date_res = timeframe_to_prev_date(timeframe, min_date)
     max_date_res = timeframe_to_prev_date(timeframe, max_date)
-    index = pd.date_range(min_date_res, max_date_res, freq=timeframe_to_resample_freq(timeframe))
+    index = pd.date_range(
+        min_date_res, max_date_res, freq=timeframe_to_resample_freq(timeframe)
+    )
     pairs_lev = [f"{pair}_leverage" for pair in pairlist]
     pairs_is_short = [f"{pair}_is_short" for pair in pairlist]
     pairs_collateral = [f"{pair}_collateral" for pair in pairlist]
     pairs_lev += pairs_is_short
 
     df = pd.DataFrame(
-        index=index, columns=[stake_currency] + pairlist + pairs_lev + pairs_collateral, dtype=float
+        index=index,
+        columns=[stake_currency] + pairlist + pairs_lev + pairs_collateral,
+        dtype=float,
     )
     # Initialize variables to starting values
     df[stake_currency] = float(start_balance)
@@ -117,7 +120,9 @@ def balance_distribution_over_time(
         end_date = trade.close_date if trade.close_date is not pd.NaT else None
         # Exclude open orders - these won't have order_filled_timestamp set.
         df.loc[trade.open_date : end_date, f"{pair}_leverage"] = trade.leverage
-        df.loc[trade.open_date : end_date, f"{pair}_is_short"] = 1 if trade.is_short else 0
+        df.loc[trade.open_date : end_date, f"{pair}_is_short"] = (
+            1 if trade.is_short else 0
+        )
         orders = [o for o in trade.orders if o["order_filled_timestamp"]]
         current_position = 0
         current_collateral = 0

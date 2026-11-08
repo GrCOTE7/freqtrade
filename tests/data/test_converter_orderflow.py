@@ -13,7 +13,6 @@ from freqtrade.data.converter.trade_converter import trades_list_to_df
 from freqtrade.data.dataprovider import DataProvider
 from tests.strategy.strats.strategy_test_v3 import StrategyTestV3
 
-
 BIN_SIZE_SCALE = 0.5
 
 
@@ -31,12 +30,16 @@ def read_csv(filename):
 
 @pytest.fixture
 def populate_dataframe_with_trades_dataframe(testdatadir):
-    return pd.read_feather(testdatadir / "orderflow/populate_dataframe_with_trades_DF.feather")
+    return pd.read_feather(
+        testdatadir / "orderflow/populate_dataframe_with_trades_DF.feather"
+    )
 
 
 @pytest.fixture
 def populate_dataframe_with_trades_trades(testdatadir):
-    return pd.read_feather(testdatadir / "orderflow/populate_dataframe_with_trades_TRADES.feather")
+    return pd.read_feather(
+        testdatadir / "orderflow/populate_dataframe_with_trades_TRADES.feather"
+    )
 
 
 @pytest.fixture
@@ -46,7 +49,9 @@ def public_trades_list(testdatadir):
 
 @pytest.fixture
 def public_trades_list_simple(testdatadir):
-    return read_csv(testdatadir / "orderflow/public_trades_list_simple_example.csv").copy()
+    return read_csv(
+        testdatadir / "orderflow/public_trades_list_simple_example.csv"
+    ).copy()
 
 
 def test_public_trades_columns_before_change(
@@ -279,7 +284,16 @@ def test_public_trades_trades_mock_populate_dataframe_with_trades__check_trades(
 
     # Assert specific details of the first trade
     t = row["trades"][0]
-    assert list(t.keys()) == ["timestamp", "id", "type", "side", "price", "amount", "cost", "date"]
+    assert list(t.keys()) == [
+        "timestamp",
+        "id",
+        "type",
+        "side",
+        "price",
+        "amount",
+        "cost",
+        "date",
+    ]
     assert trades["id"][0] == t["id"]
     assert int(trades["timestamp"][0]) == int(t["timestamp"])
     assert t["side"] == "sell"
@@ -299,10 +313,14 @@ def test_public_trades_put_volume_profile_into_ohlcv_candles(public_trades_list_
     """
 
     # Convert the trade list to a DataFrame
-    trades_df = trades_list_to_df(public_trades_list_simple[DEFAULT_TRADES_COLUMNS].values.tolist())
+    trades_df = trades_list_to_df(
+        public_trades_list_simple[DEFAULT_TRADES_COLUMNS].values.tolist()
+    )
 
     # Generate the volume profile with the specified bin size
-    df = trades_to_volumeprofile_with_total_delta_bid_ask(trades_df, scale=BIN_SIZE_SCALE)
+    df = trades_to_volumeprofile_with_total_delta_bid_ask(
+        trades_df, scale=BIN_SIZE_SCALE
+    )
 
     # Assert the delta value in the total-bid/delta response of the second candle
     assert 0.14 == df.values.tolist()[1][2]
@@ -321,7 +339,9 @@ def test_public_trades_binned_big_sample_list(public_trades_list):
     BIN_SIZE_SCALE = 0.05
 
     # Convert the trade list to a DataFrame
-    trades = trades_list_to_df(public_trades_list[DEFAULT_TRADES_COLUMNS].values.tolist())
+    trades = trades_list_to_df(
+        public_trades_list[DEFAULT_TRADES_COLUMNS].values.tolist()
+    )
 
     # Generate the volume profile with the specified bin size
     df = trades_to_volumeprofile_with_total_delta_bid_ask(trades, scale=BIN_SIZE_SCALE)
@@ -343,9 +363,13 @@ def test_public_trades_binned_big_sample_list(public_trades_list):
     # Assert that the index values are in ascending order and spaced correctly
     assert all(df.index[i] < df.index[i + 1] for i in range(len(df) - 1))
     assert df.index[0] + BIN_SIZE_SCALE == df.index[1]
-    assert (trades["price"].min() - BIN_SIZE_SCALE) < df.index[0] < trades["price"].max()
+    assert (
+        (trades["price"].min() - BIN_SIZE_SCALE) < df.index[0] < trades["price"].max()
+    )
     assert (df.index[0] + BIN_SIZE_SCALE) >= df.index[1]
-    assert (trades["price"].max() - BIN_SIZE_SCALE) < df.index[-1] < trades["price"].max()
+    assert (
+        (trades["price"].max() - BIN_SIZE_SCALE) < df.index[-1] < trades["price"].max()
+    )
 
     # Assert specific values in the first and last rows of the DataFrame
     assert 32 == df["bid"].iloc[0]  # bid price
@@ -372,9 +396,13 @@ def test_public_trades_binned_big_sample_list(public_trades_list):
 
     # Repeat similar assertions for index ordering and spacing
     assert all(df.index[i] < df.index[i + 1] for i in range(len(df) - 1))
-    assert (trades["price"].min() - BIN_SIZE_SCALE) < df.index[0] < trades["price"].max()
+    assert (
+        (trades["price"].min() - BIN_SIZE_SCALE) < df.index[0] < trades["price"].max()
+    )
     assert (df.index[0] + BIN_SIZE_SCALE) >= df.index[1]
-    assert (trades["price"].max() - BIN_SIZE_SCALE) < df.index[-1] < trades["price"].max()
+    assert (
+        (trades["price"].max() - BIN_SIZE_SCALE) < df.index[-1] < trades["price"].max()
+    )
 
     # Assert the value in the last row of the DataFrame with the larger bin size
     assert 1667.0 == df.index[-1]
@@ -384,7 +412,9 @@ def test_public_trades_binned_big_sample_list(public_trades_list):
 
 
 def test_public_trades_config_max_trades(
-    default_conf, populate_dataframe_with_trades_dataframe, populate_dataframe_with_trades_trades
+    default_conf,
+    populate_dataframe_with_trades_dataframe,
+    populate_dataframe_with_trades_trades,
 ):
     dataframe = populate_dataframe_with_trades_dataframe.copy()
     trades = populate_dataframe_with_trades_trades.copy()
@@ -401,7 +431,9 @@ def test_public_trades_config_max_trades(
         },
     }
 
-    df, _ = populate_dataframe_with_trades(None, default_conf | orderflow_config, dataframe, trades)
+    df, _ = populate_dataframe_with_trades(
+        None, default_conf | orderflow_config, dataframe, trades
+    )
     assert df.delta.count() == 1
 
 
@@ -491,10 +523,14 @@ def test_analyze_with_orderflow(
     strategy = StrategyTestV3(config=default_conf_usdt)
     strategy.dp = DataProvider(default_conf_usdt, None, None)
 
-    mocker.patch.object(strategy.dp, "trades", return_value=populate_dataframe_with_trades_trades)
+    mocker.patch.object(
+        strategy.dp, "trades", return_value=populate_dataframe_with_trades_trades
+    )
     import freqtrade.data.converter.orderflow as orderflow_module
 
-    spy = mocker.spy(orderflow_module, "trades_to_volumeprofile_with_total_delta_bid_ask")
+    spy = mocker.spy(
+        orderflow_module, "trades_to_volumeprofile_with_total_delta_bid_ask"
+    )
 
     pair = "ETH/BTC"
     df = strategy.advise_indicators(ohlcv_history, {"pair:": pair})
@@ -527,7 +563,9 @@ def test_analyze_with_orderflow(
         assert col in df1.columns, f"Column {col} not found in df.columns"
 
         if col not in ("stacked_imbalances_bid", "stacked_imbalances_ask"):
-            assert df1[col].count() == 5, f"Column {col} has {df1[col].count()} non-NaN values"
+            assert (
+                df1[col].count() == 5
+            ), f"Column {col} has {df1[col].count()} non-NaN values"
 
     assert len(strategy._cached_grouped_trades_per_pair[pair]) == 5
 
@@ -548,9 +586,9 @@ def test_analyze_with_orderflow(
         assert col in df2.columns, f"Round2: Column {col} not found in df.columns"
 
         if col not in ("stacked_imbalances_bid", "stacked_imbalances_ask"):
-            assert df2[col].count() == 5, (
-                f"Round2: Column {col} has {df2[col].count()} non-NaN values"
-            )
+            assert (
+                df2[col].count() == 5
+            ), f"Round2: Column {col} has {df2[col].count()} non-NaN values"
 
     lastval_trade2 = df2.at[len(df2) - 1, "trades"]
     assert isinstance(lastval_trade2, list)

@@ -14,7 +14,6 @@ from freqtrade.data.btanalysis import (
 from freqtrade.exceptions import ConfigurationError, OperationalException
 from freqtrade.util import print_df_rich_table
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,8 +27,10 @@ def _process_candles_and_indicators(
 
         for pair in pairlist:
             if pair in signal_candles[strategy_name]:
-                analysed_trades_dict[strategy_name][pair] = _analyze_candles_and_indicators(
-                    pair, trades, signal_candles[strategy_name][pair], date_col
+                analysed_trades_dict[strategy_name][pair] = (
+                    _analyze_candles_and_indicators(
+                        pair, trades, signal_candles[strategy_name][pair], date_col
+                    )
                 )
     except Exception as e:
         print(f"Cannot process entry/exit reasons for {strategy_name}: ", e)
@@ -38,7 +39,10 @@ def _process_candles_and_indicators(
 
 
 def _analyze_candles_and_indicators(
-    pair: str, trades: pd.DataFrame, signal_candles: pd.DataFrame, date_col: str = "open_date"
+    pair: str,
+    trades: pd.DataFrame,
+    signal_candles: pd.DataFrame,
+    date_col: str = "open_date",
 ) -> pd.DataFrame:
     buyf = signal_candles
 
@@ -60,10 +64,14 @@ def _analyze_candles_and_indicators(
                     trades_inds = pd.concat([trades_inds, tmp_inds])
 
             if "signal_date" in trades_red:
-                trades_red["signal_date"] = pd.to_datetime(trades_red["signal_date"], utc=True)
+                trades_red["signal_date"] = pd.to_datetime(
+                    trades_red["signal_date"], utc=True
+                )
                 trades_red = trades_red.set_index("signal_date")
 
-                trades_red = pd.merge(trades_red, trades_inds, on="signal_date", how="outer")
+                trades_red = pd.merge(
+                    trades_red, trades_inds, on="signal_date", how="outer"
+                )
         return trades_red
     else:
         return pd.DataFrame()
@@ -80,12 +88,16 @@ def _do_group_table_output(
         if g == "0":
             group_mask = ["enter_reason"]
             wins = (
-                bigdf.loc[bigdf["profit_abs"] >= 0].groupby(group_mask).agg({"profit_abs": ["sum"]})
+                bigdf.loc[bigdf["profit_abs"] >= 0]
+                .groupby(group_mask)
+                .agg({"profit_abs": ["sum"]})
             )
 
             wins.columns = ["profit_abs_wins"]
             loss = (
-                bigdf.loc[bigdf["profit_abs"] < 0].groupby(group_mask).agg({"profit_abs": ["sum"]})
+                bigdf.loc[bigdf["profit_abs"] < 0]
+                .groupby(group_mask)
+                .agg({"profit_abs": ["sum"]})
             )
             loss.columns = ["profit_abs_loss"]
 
@@ -100,7 +112,11 @@ def _do_group_table_output(
             new["avg_loss"] = (new["profit_abs_loss"] / new.iloc[:, 2]).fillna(0)
 
             new["exp_ratio"] = (
-                ((1 + (new["avg_win"] / abs(new["avg_loss"]))) * (new["wl_ratio_pct"] / 100)) - 1
+                (
+                    (1 + (new["avg_win"] / abs(new["avg_loss"])))
+                    * (new["wl_ratio_pct"] / 100)
+                )
+                - 1
             ).fillna(0)
 
             new.columns = [
@@ -119,7 +135,12 @@ def _do_group_table_output(
             sortcols = ["total_num_buys"]
 
             _print_table(
-                new, sortcols, show_index=True, name="Group 0:", to_csv=to_csv, csv_path=csv_path
+                new,
+                sortcols,
+                show_index=True,
+                name="Group 0:",
+                to_csv=to_csv,
+                csv_path=csv_path,
             )
 
         else:
@@ -166,7 +187,9 @@ def _do_group_table_output(
                 new["mean_profit_pct"] = new["mean_profit_pct"] * 100
                 new["total_profit_pct"] = new["total_profit_pct"] * 100
 
-                _print_table(new, sortcols, name=f"Group {g}:", to_csv=to_csv, csv_path=csv_path)
+                _print_table(
+                    new, sortcols, name=f"Group {g}:", to_csv=to_csv, csv_path=csv_path
+                )
             else:
                 logger.warning("Invalid group mask specified.")
 
@@ -215,7 +238,11 @@ def prepare_results(
 
     res_df = _select_rows_within_dates(res_df, timerange)
 
-    if res_df is not None and res_df.shape[0] > 0 and ("enter_reason" in res_df.columns):
+    if (
+        res_df is not None
+        and res_df.shape[0] > 0
+        and ("enter_reason" in res_df.columns)
+    ):
         res_df = _select_rows_by_tags(res_df, enter_reason_list, exit_reason_list)
 
     return res_df
@@ -234,18 +261,26 @@ def print_results(
 ):
     if res_df.shape[0] > 0:
         if analysis_groups:
-            _do_group_table_output(res_df, analysis_groups, to_csv=to_csv, csv_path=csv_path)
+            _do_group_table_output(
+                res_df, analysis_groups, to_csv=to_csv, csv_path=csv_path
+            )
 
         if rejected_signals is not None:
             if rejected_signals.empty:
                 print("There were no rejected signals.")
             else:
-                _do_rejected_signals_output(rejected_signals, to_csv=to_csv, csv_path=csv_path)
+                _do_rejected_signals_output(
+                    rejected_signals, to_csv=to_csv, csv_path=csv_path
+                )
 
         # NB this can be large for big dataframes!
         if "all" in indicator_list:
             _print_table(
-                res_df, show_index=False, name="Indicators:", to_csv=to_csv, csv_path=csv_path
+                res_df,
+                show_index=False,
+                name="Indicators:",
+                to_csv=to_csv,
+                csv_path=csv_path,
             )
         elif indicator_list is not None and indicator_list:
             available_inds = []
@@ -253,7 +288,9 @@ def print_results(
                 if ind in res_df:
                     available_inds.append(ind)
 
-            merged_df = _merge_dfs(res_df, exit_df, available_inds, entry_only, exit_only)
+            merged_df = _merge_dfs(
+                res_df, exit_df, available_inds, entry_only, exit_only
+            )
 
             _print_table(
                 merged_df,
@@ -298,7 +335,13 @@ def _merge_dfs(
 
 
 def _print_table(
-    df: pd.DataFrame, sortcols=None, *, show_index=False, name=None, to_csv=False, csv_path: Path
+    df: pd.DataFrame,
+    sortcols=None,
+    *,
+    show_index=False,
+    name=None,
+    to_csv=False,
+    csv_path: Path,
 ):
     if sortcols is not None:
         data = df.sort_values(sortcols)
@@ -306,7 +349,9 @@ def _print_table(
         data = df
 
     if to_csv:
-        safe_name = Path(csv_path, name.lower().replace(" ", "_").replace(":", "") + ".csv")
+        safe_name = Path(
+            csv_path, name.lower().replace(" ", "_").replace(":", "") + ".csv"
+        )
         data.to_csv(safe_name)
         print(f"Saved {name} to {safe_name}")
     else:
@@ -335,7 +380,9 @@ def process_entry_exit_reasons(config: Config):
                 "Cannot use --entry-only and --exit-only at the same time. Please choose one."
             )
         if to_csv and not csv_path.is_dir():
-            raise OperationalException(f"Specified directory {csv_path} does not exist.")
+            raise OperationalException(
+                f"Specified directory {csv_path} does not exist."
+            )
 
         timerange = TimeRange.parse_timerange(
             None if config.get("timerange") is None else str(config.get("timerange"))

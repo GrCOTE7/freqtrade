@@ -18,11 +18,12 @@ from freqtrade.candle_columns import (
 from freqtrade.constants import Config
 from freqtrade.enums import CandleType, TradingMode
 
-
 logger = logging.getLogger(__name__)
 
 
-def add_candle_aliases(dataframe: DataFrame, candle_type: CandleType | str | None) -> DataFrame:
+def add_candle_aliases(
+    dataframe: DataFrame, candle_type: CandleType | str | None
+) -> DataFrame:
     """
     Add the "open" compatibility alias to funding rate dataframes.
 
@@ -68,7 +69,9 @@ def ohlcv_to_dataframe(
     resample_interval = timeframe_to_floor_freq(timeframe)
 
     df["date"] = (
-        to_datetime(df["date"], unit="ms", utc=True).dt.as_unit("ms").dt.floor(resample_interval)
+        to_datetime(df["date"], unit="ms", utc=True)
+        .dt.as_unit("ms")
+        .dt.floor(resample_interval)
     )
 
     # Some exchanges return int values for Volume and even for OHLC.
@@ -119,7 +122,9 @@ def clean_ohlcv_dataframe(
         logger.debug("Dropping last candle")
 
     if fill_missing:
-        dataframe = ohlcv_fill_up_missing_data(dataframe, timeframe, pair, candle_type=candle_type)
+        dataframe = ohlcv_fill_up_missing_data(
+            dataframe, timeframe, pair, candle_type=candle_type
+        )
     # The aggregation above drops any column that isn't aggregated - so aliases have to be
     # (re-)added afterwards.
     return add_candle_aliases(dataframe, candle_type)
@@ -139,12 +144,20 @@ def ohlcv_fill_up_missing_data(
     inventing one would silently make up rates - so they are returned unchanged.
     """
     if not candle_type_is_ohlcv(candle_type):
-        logger.debug(f"Skipping fillup for {pair}, {timeframe} - not applicable to {candle_type}.")
+        logger.debug(
+            f"Skipping fillup for {pair}, {timeframe} - not applicable to {candle_type}."
+        )
         return dataframe
 
     from freqtrade.exchange import timeframe_to_resample_freq
 
-    ohlcv_dict = {"open": "first", "high": "max", "low": "min", "close": "last", "volume": "sum"}
+    ohlcv_dict = {
+        "open": "first",
+        "high": "max",
+        "low": "min",
+        "close": "last",
+        "volume": "sum",
+    }
     resample_interval = timeframe_to_resample_freq(timeframe)
     # Resample to create "NAN" values
     df = dataframe.resample(resample_interval, on="date").agg(ohlcv_dict)
@@ -292,7 +305,9 @@ def convert_ohlcv_format(
     ]
     logger.info(candle_types)
     paircombs = src.ohlcv_get_available_data(config["datadir"], TradingMode.SPOT)
-    paircombs.extend(src.ohlcv_get_available_data(config["datadir"], TradingMode.FUTURES))
+    paircombs.extend(
+        src.ohlcv_get_available_data(config["datadir"], TradingMode.FUTURES)
+    )
 
     if "pairs" in config:
         # Filter pairs
@@ -305,7 +320,10 @@ def convert_ohlcv_format(
     paircombs = sorted(paircombs, key=lambda x: (x[0], x[1], x[2].value))
 
     formatted_paircombs = "\n".join(
-        [f"{pair}, {timeframe}, {candle_type}" for pair, timeframe, candle_type in paircombs]
+        [
+            f"{pair}, {timeframe}, {candle_type}"
+            for pair, timeframe, candle_type in paircombs
+        ]
     )
 
     logger.info(
@@ -322,9 +340,13 @@ def convert_ohlcv_format(
             startup_candles=0,
             candle_type=candle_type,
         )
-        logger.info(f"Converting {len(data)} {timeframe} {candle_type} candles for {pair}")
+        logger.info(
+            f"Converting {len(data)} {timeframe} {candle_type} candles for {pair}"
+        )
         if len(data) > 0:
-            trg.ohlcv_store(pair=pair, timeframe=timeframe, data=data, candle_type=candle_type)
+            trg.ohlcv_store(
+                pair=pair, timeframe=timeframe, data=data, candle_type=candle_type
+            )
             if erase and convert_from != convert_to:
                 logger.info(f"Deleting source data for {pair} / {timeframe}")
                 src.ohlcv_purge(pair=pair, timeframe=timeframe, candle_type=candle_type)
@@ -337,7 +359,9 @@ def reduce_dataframe_footprint(df: DataFrame) -> DataFrame:
     :return: Dataframe converted to float/int 32s
     """
 
-    logger.debug(f"Memory usage of dataframe is {df.memory_usage().sum() / 1024**2:.2f} MB")
+    logger.debug(
+        f"Memory usage of dataframe is {df.memory_usage().sum() / 1024**2:.2f} MB"
+    )
 
     df_dtypes = df.dtypes
     for column, dtype in df_dtypes.items():
@@ -349,6 +373,8 @@ def reduce_dataframe_footprint(df: DataFrame) -> DataFrame:
             df_dtypes[column] = np.int32
     df = df.astype(df_dtypes)
 
-    logger.debug(f"Memory usage after optimization is: {df.memory_usage().sum() / 1024**2:.2f} MB")
+    logger.debug(
+        f"Memory usage after optimization is: {df.memory_usage().sum() / 1024**2:.2f} MB"
+    )
 
     return df

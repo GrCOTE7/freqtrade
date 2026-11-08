@@ -21,7 +21,6 @@ from freqtrade.rpc.api_server.ws_schemas import (
 )
 from freqtrade.rpc.rpc import RPC
 
-
 logger = logging.getLogger(__name__)
 
 # Private router, protected by API Key authentication
@@ -52,7 +51,9 @@ def _full_analyzed_df_message(message: dict[str, Any], rpc: RPC) -> dict[str, An
     return WSAnalyzedDFMessage(data=data).model_dump(exclude_none=True)
 
 
-async def channel_broadcaster(channel: WebSocketChannel, message_stream: MessageStream, rpc: RPC):
+async def channel_broadcaster(
+    channel: WebSocketChannel, message_stream: MessageStream, rpc: RPC
+):
     """
     Iterate over messages in the message stream and send them
     """
@@ -67,7 +68,9 @@ async def channel_broadcaster(channel: WebSocketChannel, message_stream: Message
                 message = _full_analyzed_df_message(message, rpc)
             except Exception:
                 # Fall back to the incremental message rather than killing the channel
-                logger.exception(f"Error building full analyzed dataframe for {channel}")
+                logger.exception(
+                    f"Error building full analyzed dataframe for {channel}"
+                )
         elif not channel.subscribed_to(msg_type):
             continue
 
@@ -84,7 +87,9 @@ async def channel_broadcaster(channel: WebSocketChannel, message_stream: Message
         await channel.send(message, use_timeout=True)
 
 
-async def _process_consumer_request(request: dict[str, Any], channel: WebSocketChannel, rpc: RPC):
+async def _process_consumer_request(
+    request: dict[str, Any], channel: WebSocketChannel, rpc: RPC
+):
     """
     Validate and handle a request from a websocket consumer
     """
@@ -146,5 +151,6 @@ async def message_endpoint(
     if token:
         async with create_channel(websocket) as channel:
             await channel.run_channel_tasks(
-                channel_reader(channel, rpc), channel_broadcaster(channel, message_stream, rpc)
+                channel_reader(channel, rpc),
+                channel_broadcaster(channel, message_stream, rpc),
             )

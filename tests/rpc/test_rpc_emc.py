@@ -15,7 +15,6 @@ from freqtrade.enums import CandleType
 from freqtrade.rpc.external_message_consumer import ExternalMessageConsumer
 from tests.conftest import generate_test_data, log_has, log_has_re, log_has_when
 
-
 _TEST_WS_TOKEN = "secret_Ws_t0ken"
 _TEST_WS_HOST = "127.0.0.1"
 _TEST_WS_PORT = 9989
@@ -28,7 +27,12 @@ def patched_emc(default_conf, mocker):
             "external_message_consumer": {
                 "enabled": True,
                 "producers": [
-                    {"name": "default", "host": "null", "port": 9891, "ws_token": _TEST_WS_TOKEN}
+                    {
+                        "name": "default",
+                        "host": "null",
+                        "port": 9891,
+                        "ws_token": _TEST_WS_TOKEN,
+                    }
                 ],
             }
         }
@@ -82,7 +86,9 @@ def test_emc_initial_candle_limit(default_conf, mocker, limit):
     mocker.patch.object(ExternalMessageConsumer, "start")
     emc_config = {
         "enabled": True,
-        "producers": [{"name": "default", "host": "null", "port": 9891, "ws_token": "x"}],
+        "producers": [
+            {"name": "default", "host": "null", "port": 9891, "ws_token": "x"}
+        ],
     }
     if limit is not None:
         emc_config["initial_candle_limit"] = limit
@@ -100,14 +106,21 @@ def test_emc_initial_candle_limit(default_conf, mocker, limit):
     "full_df,expected_topic",
     [(None, "analyzed_df"), (False, "analyzed_df"), (True, "full_analyzed_df")],
 )
-def test_emc_initial_requests_subscription(default_conf, mocker, full_df, expected_topic):
+def test_emc_initial_requests_subscription(
+    default_conf, mocker, full_df, expected_topic
+):
     mocker.patch.object(ExternalMessageConsumer, "start")
     producer = {"name": "default", "host": "null", "port": 9891, "ws_token": "x"}
     if full_df is not None:
         producer["request_full_dataframe"] = full_df
-    default_conf["external_message_consumer"] = {"enabled": True, "producers": [producer]}
+    default_conf["external_message_consumer"] = {
+        "enabled": True,
+        "producers": [producer],
+    }
 
-    emc = ExternalMessageConsumer(default_conf, DataProvider(default_conf, None, None, None))
+    emc = ExternalMessageConsumer(
+        default_conf, DataProvider(default_conf, None, None, None)
+    )
 
     subscribe = emc._get_initial_requests(emc.producers[0])[0]
     assert subscribe.type == "subscribe"
@@ -127,9 +140,12 @@ def test_emc_handle_producer_message(patched_emc, caplog, ohlcv_history):
     whitelist_message = {"type": "whitelist", "data": ["BTC/USDT"]}
     patched_emc.handle_producer_message(test_producer, whitelist_message)
 
-    assert log_has(f"Received message of type `whitelist` from `{producer_name}`", caplog)
     assert log_has(
-        f"Consumed message from `{producer_name}` of type `RPCMessageType.WHITELIST`", caplog
+        f"Received message of type `whitelist` from `{producer_name}`", caplog
+    )
+    assert log_has(
+        f"Consumed message from `{producer_name}` of type `RPCMessageType.WHITELIST`",
+        caplog,
     )
 
     # Test handle analyzed_df single candle message
@@ -145,8 +161,12 @@ def test_emc_handle_producer_message(patched_emc, caplog, ohlcv_history):
     }
     patched_emc.handle_producer_message(test_producer, df_message)
 
-    assert log_has(f"Received message of type `analyzed_df` from `{producer_name}`", caplog)
-    assert log_has_re(r"Holes in data or no existing df, requesting 500 candles .+", caplog)
+    assert log_has(
+        f"Received message of type `analyzed_df` from `{producer_name}`", caplog
+    )
+    assert log_has_re(
+        r"Holes in data or no existing df, requesting 500 candles .+", caplog
+    )
     # No existing df - a full dataframe is requested
     channel_stream.publish.assert_called_once()
     request = channel_stream.publish.call_args[0][0]
@@ -194,7 +214,9 @@ def test_emc_handle_producer_message(patched_emc, caplog, ohlcv_history):
     }
     patched_emc.handle_producer_message(test_producer, malformed_message)
 
-    assert log_has(f"Received message of type `analyzed_df` from `{producer_name}`", caplog)
+    assert log_has(
+        f"Received message of type `analyzed_df` from `{producer_name}`", caplog
+    )
     assert log_has_re(invalid_msg, caplog)
     caplog.clear()
 
@@ -209,7 +231,9 @@ def test_emc_handle_producer_message(patched_emc, caplog, ohlcv_history):
     }
     patched_emc.handle_producer_message(test_producer, malformed_message)
 
-    assert log_has(f"Received message of type `analyzed_df` from `{producer_name}`", caplog)
+    assert log_has(
+        f"Received message of type `analyzed_df` from `{producer_name}`", caplog
+    )
     assert not log_has_re(invalid_msg, caplog)
     assert log_has_re(r"Received Empty Dataframe for.+", caplog)
 
@@ -248,7 +272,8 @@ async def test_emc_create_connection_success(default_conf, caplog, mocker):
     )
 
     mocker.patch(
-        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start", MagicMock()
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start",
+        MagicMock(),
     )
     dp = DataProvider(default_conf, None, None, None)
     emc = ExternalMessageConsumer(default_conf, dp)
@@ -277,13 +302,20 @@ async def test_emc_create_connection_success(default_conf, caplog, mocker):
         ("10000.1241..2121/", _TEST_WS_PORT),
     ],
 )
-async def test_emc_create_connection_invalid_url(default_conf, caplog, mocker, host, port):
+async def test_emc_create_connection_invalid_url(
+    default_conf, caplog, mocker, host, port
+):
     default_conf.update(
         {
             "external_message_consumer": {
                 "enabled": True,
                 "producers": [
-                    {"name": "default", "host": host, "port": port, "ws_token": _TEST_WS_TOKEN}
+                    {
+                        "name": "default",
+                        "host": host,
+                        "port": port,
+                        "ws_token": _TEST_WS_TOKEN,
+                    }
                 ],
                 "wait_timeout": 60,
                 "ping_timeout": 60,
@@ -294,7 +326,9 @@ async def test_emc_create_connection_invalid_url(default_conf, caplog, mocker, h
 
     dp = DataProvider(default_conf, None, None, None)
     # Handle start explicitly to avoid messing with threading in tests
-    mocker.patch("freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start")
+    mocker.patch(
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start"
+    )
     mocker.patch("freqtrade.rpc.api_server.ws.channel.create_channel")
     emc = ExternalMessageConsumer(default_conf, dp)
 
@@ -331,14 +365,19 @@ async def test_emc_create_connection_error(default_conf, caplog, mocker):
 
     dp = DataProvider(default_conf, None, None, None)
     # Handle start explicitly to avoid messing with threading in tests
-    mocker.patch("freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start")
+    mocker.patch(
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start"
+    )
     emc = ExternalMessageConsumer(default_conf, dp)
 
     async def stop_running(*args, **kwargs):
         emc._running = False
 
     # Stop the connection loop on the first retry-sleep instead of waiting
-    mocker.patch("freqtrade.rpc.external_message_consumer.asyncio.sleep", side_effect=stop_running)
+    mocker.patch(
+        "freqtrade.rpc.external_message_consumer.asyncio.sleep",
+        side_effect=stop_running,
+    )
 
     try:
         emc._running = True
@@ -371,7 +410,8 @@ async def test_emc_receive_messages_valid(default_conf, caplog, mocker):
     )
 
     mocker.patch(
-        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start", MagicMock()
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start",
+        MagicMock(),
     )
 
     lock = asyncio.Lock()
@@ -418,7 +458,8 @@ async def test_emc_receive_messages_invalid(default_conf, caplog, mocker):
     )
 
     mocker.patch(
-        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start", MagicMock()
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start",
+        MagicMock(),
     )
 
     lock = asyncio.Lock()
@@ -465,7 +506,8 @@ async def test_emc_receive_messages_timeout(default_conf, caplog, mocker):
     )
 
     mocker.patch(
-        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start", MagicMock()
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start",
+        MagicMock(),
     )
 
     lock = asyncio.Lock()
@@ -516,7 +558,8 @@ async def test_emc_receive_messages_handle_error(default_conf, caplog, mocker):
     )
 
     mocker.patch(
-        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start", MagicMock()
+        "freqtrade.rpc.external_message_consumer.ExternalMessageConsumer.start",
+        MagicMock(),
     )
 
     lock = asyncio.Lock()

@@ -12,9 +12,12 @@ from freqtrade.constants import ListPairsWithTimeframes
 from freqtrade.exceptions import OperationalException
 from freqtrade.exchange.exchange_types import Tickers
 from freqtrade.misc import plural
-from freqtrade.plugins.pairlist.IPairList import IPairList, PairlistParameter, SupportsBacktesting
+from freqtrade.plugins.pairlist.IPairList import (
+    IPairList,
+    PairlistParameter,
+    SupportsBacktesting,
+)
 from freqtrade.util import FtTTLCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +36,13 @@ class VolatilityFilter(IPairList):
         self._max_volatility = self._pairlistconfig.get("max_volatility", sys.maxsize)
         self._refresh_period = self._pairlistconfig.get("refresh_period", 1440)
         self._def_candletype = self._config["candle_type_def"]
-        self._sort_direction: str | None = self._pairlistconfig.get("sort_direction", None)
+        self._sort_direction: str | None = self._pairlistconfig.get(
+            "sort_direction", None
+        )
 
-        self._pair_cache: FtTTLCache = FtTTLCache(maxsize=1000, ttl=self._refresh_period)
+        self._pair_cache: FtTTLCache = FtTTLCache(
+            maxsize=1000, ttl=self._refresh_period
+        )
 
         self._init_lookback_config(required=True, deprecated_fallback=10)
 
@@ -106,7 +113,9 @@ class VolatilityFilter(IPairList):
         resulting_pairlist: list[str] = []
         volatilitys: dict[str, float] = {}
         for p in pairlist:
-            pair_candles = candles.get((p, self._lookback_timeframe, self._def_candletype), None)
+            pair_candles = candles.get(
+                (p, self._lookback_timeframe, self._def_candletype), None
+            )
 
             volatility_avg = self._calculate_volatility(p, pair_candles)
 
@@ -114,10 +123,14 @@ class VolatilityFilter(IPairList):
                 if self._validate_pair_loc(p, volatility_avg):
                     resulting_pairlist.append(p)
                     volatilitys[p] = (
-                        volatility_avg if volatility_avg and not np.isnan(volatility_avg) else 0
+                        volatility_avg
+                        if volatility_avg and not np.isnan(volatility_avg)
+                        else 0
                     )
             else:
-                self.log_once(f"Removed {p} from whitelist, no candles found.", logger.info)
+                self.log_once(
+                    f"Removed {p} from whitelist, no candles found.", logger.info
+                )
 
         if self._sort_direction:
             resulting_pairlist = sorted(
@@ -136,9 +149,9 @@ class VolatilityFilter(IPairList):
             returns = np.log(pair_candles["close"].shift(1) / pair_candles["close"])
             returns = returns.fillna(0)
 
-            volatility_series = returns.rolling(window=self._lookback_period).std() * np.sqrt(
-                self._lookback_period
-            )
+            volatility_series = returns.rolling(
+                window=self._lookback_period
+            ).std() * np.sqrt(self._lookback_period)
             volatility_avg = volatility_series.mean()
             self._pair_cache[pair] = volatility_avg
 

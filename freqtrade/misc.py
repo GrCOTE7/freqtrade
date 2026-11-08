@@ -16,7 +16,6 @@ import rapidjson
 
 from freqtrade.enums import SignalTagType, SignalType
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -27,11 +26,15 @@ def dump_json_to_file(file_obj: TextIO, data: Any) -> None:
     :param data: JSON Data to save
     """
     file_obj.write(
-        orjson.dumps(data, default=str, option=orjson.OPT_SERIALIZE_NUMPY).decode("utf-8")
+        orjson.dumps(data, default=str, option=orjson.OPT_SERIALIZE_NUMPY).decode(
+            "utf-8"
+        )
     )
 
 
-def file_dump_json(filename: Path, data: Any, is_zip: bool = False, log: bool = True) -> None:
+def file_dump_json(
+    filename: Path, data: Any, is_zip: bool = False, log: bool = True
+) -> None:
     """
     Dump JSON data into a file
     :param filename: file to create
@@ -145,7 +148,9 @@ def round_dict(d, n):
 DictMap = dict[str, Any] | Mapping[str, Any]
 
 
-def safe_value_nested(obj: DictMap, keys: str, default_value=None, *, preserve_none=False):
+def safe_value_nested(
+    obj: DictMap, keys: str, default_value=None, *, preserve_none=False
+):
     """
     Search a nested dict for a value.
     :param obj: dict to search in
@@ -171,7 +176,9 @@ def safe_value_nested(obj: DictMap, keys: str, default_value=None, *, preserve_n
     return nested_obj
 
 
-def safe_value_fallback(obj: DictMap, key1: str, key2: str | None = None, default_value=None):
+def safe_value_fallback(
+    obj: DictMap, key1: str, key2: str | None = None, default_value=None
+):
     """
     Search a value in obj, return this if it's not None.
     Then search key2 in obj - return that if it's not none - then use default_value.
@@ -185,7 +192,9 @@ def safe_value_fallback(obj: DictMap, key1: str, key2: str | None = None, defaul
     return default_value
 
 
-def safe_value_fallback2(dict1: DictMap, dict2: DictMap, key1: str, key2: str, default_value=None):
+def safe_value_fallback2(
+    dict1: DictMap, dict2: DictMap, key1: str, key2: str, default_value=None
+):
     """
     Search a value in dict1, return this if it's not None.
     Fall back to dict2 - return key2 from dict2 if it's not None.
@@ -222,7 +231,9 @@ def parse_db_uri_for_logging(uri: str):
     :param uri: DB URI to parse for logging
     """
     parsed_db_uri = urlparse(uri)
-    if parsed_db_uri.password is None:  # No need for censoring as no password was provided
+    if (
+        parsed_db_uri.password is None
+    ):  # No need for censoring as no password was provided
         return uri
     netloc = parsed_db_uri.netloc.replace(f":{parsed_db_uri.password}@", ":*****@", 1)
     return urlunparse(parsed_db_uri._replace(netloc=netloc))
@@ -234,11 +245,15 @@ def dataframe_to_json(dataframe: pd.DataFrame) -> str:
     :param dataframe: A pandas DataFrame
     :returns: A JSON string of the pandas DataFrame
     """
-    date_columns = dataframe.select_dtypes(include=["datetime", "datetime64", "datetimetz"])
+    date_columns = dataframe.select_dtypes(
+        include=["datetime", "datetime64", "datetimetz"]
+    )
     # Explicit conversion to ms
     # This used to be part of to_json, but was deprecated in pandas 3
     for date_column in date_columns:
-        dataframe[date_column] = date_columns[date_column].dt.as_unit("ms").astype("int64")
+        dataframe[date_column] = (
+            date_columns[date_column].dt.as_unit("ms").astype("int64")
+        )
 
     return dataframe.to_json(orient="split")
 
@@ -251,7 +266,9 @@ def json_to_dataframe(data: str) -> pd.DataFrame:
     """
     dataframe = pd.read_json(StringIO(data), orient="split")
     if "date" in dataframe.columns:
-        dataframe["date"] = pd.to_datetime(dataframe["date"], unit="ms", utc=True).dt.as_unit("ms")
+        dataframe["date"] = pd.to_datetime(
+            dataframe["date"], unit="ms", utc=True
+        ).dt.as_unit("ms")
 
     return dataframe
 
@@ -272,7 +289,9 @@ def remove_entry_exit_signals(dataframe: pd.DataFrame):
     return dataframe
 
 
-def append_candles_to_dataframe(left: pd.DataFrame, right: pd.DataFrame) -> pd.DataFrame:
+def append_candles_to_dataframe(
+    left: pd.DataFrame, right: pd.DataFrame
+) -> pd.DataFrame:
     """
     Append the `right` dataframe to the `left` dataframe
 

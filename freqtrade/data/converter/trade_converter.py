@@ -19,7 +19,6 @@ from freqtrade.constants import (
 from freqtrade.enums import CandleType, TradingMode
 from freqtrade.exceptions import OperationalException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +46,9 @@ def trades_convert_types(trades: DataFrame) -> DataFrame:
     Convert Trades dtypes and add 'date' column
     """
     trades = trades.astype(TRADES_DTYPES)
-    trades["date"] = to_datetime(trades["timestamp"], unit="ms", utc=True).dt.as_unit("ms")
+    trades["date"] = to_datetime(trades["timestamp"], unit="ms", utc=True).dt.as_unit(
+        "ms"
+    )
     return trades
 
 
@@ -111,21 +112,31 @@ def convert_trades_to_ohlcv(
         f"About to convert pairs: '{', '.join(pairs)}', "
         f"intervals: '{', '.join(timeframes)}' to {datadir}"
     )
-    trading_mode = TradingMode.FUTURES if candle_type != CandleType.SPOT else TradingMode.SPOT
+    trading_mode = (
+        TradingMode.FUTURES if candle_type != CandleType.SPOT else TradingMode.SPOT
+    )
     for pair in pairs:
         trades = data_handler_trades.trades_load(pair, trading_mode)
         for timeframe in timeframes:
-            if erase and data_handler_ohlcv.ohlcv_purge(pair, timeframe, candle_type=candle_type):
-                logger.info(f"Deleting existing data for pair {pair}, interval {timeframe}.")
+            if erase and data_handler_ohlcv.ohlcv_purge(
+                pair, timeframe, candle_type=candle_type
+            ):
+                logger.info(
+                    f"Deleting existing data for pair {pair}, interval {timeframe}."
+                )
             try:
                 ohlcv = trades_to_ohlcv(trades, timeframe)
                 # Store ohlcv
-                data_handler_ohlcv.ohlcv_store(pair, timeframe, data=ohlcv, candle_type=candle_type)
+                data_handler_ohlcv.ohlcv_store(
+                    pair, timeframe, data=ohlcv, candle_type=candle_type
+                )
             except ValueError:
                 logger.warning(f"Could not convert {pair} to OHLCV.")
 
 
-def convert_trades_format(config: Config, convert_from: str, convert_to: str, erase: bool):
+def convert_trades_format(
+    config: Config, convert_from: str, convert_to: str, erase: bool
+):
     """
     Convert trades from one format to another format.
     :param config: Config dictionary
@@ -139,7 +150,9 @@ def convert_trades_format(config: Config, convert_from: str, convert_to: str, er
                 "Converting from csv is only supported for kraken."
                 "Please refer to the documentation for details about this special mode."
             )
-        from freqtrade.data.converter.trade_converter_kraken import import_kraken_trades_from_csv
+        from freqtrade.data.converter.trade_converter_kraken import (
+            import_kraken_trades_from_csv,
+        )
 
         import_kraken_trades_from_csv(config, convert_to)
         return

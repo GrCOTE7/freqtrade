@@ -12,7 +12,6 @@ from typing import Any, Union
 from freqtrade.enums import HyperoptState
 from freqtrade.optimize.hyperopt_tools import HyperoptStateContainer
 
-
 with suppress(ImportError):
     from freqtrade.optimize.space import (
         Categorical,
@@ -22,7 +21,6 @@ with suppress(ImportError):
     )
 
 from freqtrade.exceptions import OperationalException
-
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +105,9 @@ class BaseParameter(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def get_space(self, name: str) -> Union["Integer", "Real", "SKDecimal", "Categorical"]:
+    def get_space(
+        self, name: str
+    ) -> Union["Integer", "Real", "SKDecimal", "Categorical"]:
         """
         Get-space - will be used by Hyperopt to get the hyperopt Space
         """
@@ -156,13 +156,17 @@ class NumericParameter(BaseParameter):
             raise OperationalException(f"{self.__class__.__name__} space invalid.")
         if high is None or isinstance(low, Sequence):
             if not isinstance(low, Sequence) or len(low) != 2:
-                raise OperationalException(f"{self.__class__.__name__} space must be [low, high]")
+                raise OperationalException(
+                    f"{self.__class__.__name__} space must be [low, high]"
+                )
             self.low, self.high = low
         else:
             self.low = low
             self.high = high
 
-        super().__init__(default=default, space=space, optimize=optimize, load=load, **kwargs)
+        super().__init__(
+            default=default, space=space, optimize=optimize, load=load, **kwargs
+        )
 
 
 class IntParameter(NumericParameter):
@@ -197,7 +201,13 @@ class IntParameter(NumericParameter):
         """
 
         super().__init__(
-            low=low, high=high, default=default, space=space, optimize=optimize, load=load, **kwargs
+            low=low,
+            high=high,
+            default=default,
+            space=space,
+            optimize=optimize,
+            load=load,
+            **kwargs,
         )
 
     def get_space(self, name: str) -> "Integer":
@@ -251,7 +261,13 @@ class RealParameter(NumericParameter):
         :param kwargs: Extra parameters to optuna.distributions.FloatDistribution.
         """
         super().__init__(
-            low=low, high=high, default=default, space=space, optimize=optimize, load=load, **kwargs
+            low=low,
+            high=high,
+            default=default,
+            space=space,
+            optimize=optimize,
+            load=load,
+            **kwargs,
         )
 
     def get_space(self, name: str) -> "Real":
@@ -295,7 +311,13 @@ class DecimalParameter(NumericParameter):
         default = round(default, self.decimals)
 
         super().__init__(
-            low=low, high=high, default=default, space=space, optimize=optimize, load=load, **kwargs
+            low=low,
+            high=high,
+            default=default,
+            space=space,
+            optimize=optimize,
+            load=load,
+            **kwargs,
         )
 
     @property
@@ -313,7 +335,11 @@ class DecimalParameter(NumericParameter):
         :param name: A name of parameter field.
         """
         return SKDecimal(
-            low=self.low, high=self.high, decimals=self.decimals, name=name, **self._space_params
+            low=self.low,
+            high=self.high,
+            decimals=self.decimals,
+            name=name,
+            **self._space_params,
         )
 
     @property
@@ -367,7 +393,9 @@ class CategoricalParameter(BaseParameter):
                 "CategoricalParameter space must be [a, b, ...] (at least two parameters)"
             )
         self.opt_range = categories
-        super().__init__(default=default, space=space, optimize=optimize, load=load, **kwargs)
+        super().__init__(
+            default=default, space=space, optimize=optimize, load=load, **kwargs
+        )
 
     def get_space(self, name: str) -> "Categorical":
         """

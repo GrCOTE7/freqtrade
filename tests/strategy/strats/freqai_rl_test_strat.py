@@ -6,7 +6,6 @@ from pandas import DataFrame
 
 from freqtrade.strategy import IStrategy
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,13 +30,17 @@ class freqai_rl_test_strat(IStrategy):
 
         return dataframe
 
-    def feature_engineering_expand_basic(self, dataframe: DataFrame, metadata: dict, **kwargs):
+    def feature_engineering_expand_basic(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ):
         dataframe["%-pct-change"] = dataframe["close"].pct_change()
         dataframe["%-raw_volume"] = dataframe["volume"]
 
         return dataframe
 
-    def feature_engineering_standard(self, dataframe: DataFrame, metadata: dict, **kwargs):
+    def feature_engineering_standard(
+        self, dataframe: DataFrame, metadata: dict, **kwargs
+    ):
         dataframe["%-day_of_week"] = dataframe["date"].dt.day_of_week
         dataframe["%-hour_of_day"] = dataframe["date"].dt.hour
 
@@ -63,14 +66,16 @@ class freqai_rl_test_strat(IStrategy):
 
         if enter_long_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_long_conditions), ["enter_long", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_long_conditions),
+                ["enter_long", "enter_tag"],
             ] = (1, "long")
 
         enter_short_conditions = [df["do_predict"] == 1, df["&-action"] == 3]
 
         if enter_short_conditions:
             df.loc[
-                reduce(lambda x, y: x & y, enter_short_conditions), ["enter_short", "enter_tag"]
+                reduce(lambda x, y: x & y, enter_short_conditions),
+                ["enter_short", "enter_tag"],
             ] = (1, "short")
 
         return df

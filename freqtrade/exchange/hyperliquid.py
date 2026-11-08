@@ -19,9 +19,13 @@ from freqtrade.exceptions import (
 )
 from freqtrade.exchange import Exchange
 from freqtrade.exchange.common import retrier
-from freqtrade.exchange.exchange_types import CcxtBalances, CcxtOrder, CcxtPosition, FtHas
+from freqtrade.exchange.exchange_types import (
+    CcxtBalances,
+    CcxtOrder,
+    CcxtPosition,
+    FtHas,
+)
 from freqtrade.util.datetime_helpers import dt_from_ts
-
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +94,10 @@ class Hyperliquid(Exchange):
                     "user": self._api.walletAddress,
                 }
                 response = self._api.publicPostInfo(request)
-                self.unified_account = response in ('"unifiedAccount"', '"portfolioMargin"')
+                self.unified_account = response in (
+                    '"unifiedAccount"',
+                    '"portfolioMargin"',
+                )
                 if self.unified_account:
                     logger.info("Unified Hyperliquid account detected.")
 
@@ -180,7 +187,14 @@ class Hyperliquid(Exchange):
                     dex_balance = super().get_balances(params={"dex": dex})
 
                     for currency, amount_info in dex_balance.items():
-                        if currency in ["info", "free", "used", "total", "datetime", "timestamp"]:
+                        if currency in [
+                            "info",
+                            "free",
+                            "used",
+                            "total",
+                            "datetime",
+                            "timestamp",
+                        ]:
                             continue
 
                         if currency not in balances:
@@ -194,7 +208,9 @@ class Hyperliquid(Exchange):
                     logger.error(f"Could not fetch balance for HIP-3 DEX '{dex}': {e}")
 
             if dexes:
-                self._log_exchange_response("fetch_balance", balances, add_info="combined")
+                self._log_exchange_response(
+                    "fetch_balance", balances, add_info="combined"
+                )
         return balances
 
     def fetch_positions(
@@ -209,7 +225,9 @@ class Hyperliquid(Exchange):
             except Exception as e:
                 logger.error(f"Could not fetch positions from HIP-3 DEX '{dex}': {e}")
         if dexes:
-            self._log_exchange_response("fetch_positions", positions, add_info="combined")
+            self._log_exchange_response(
+                "fetch_positions", positions, add_info="combined"
+            )
         return positions
 
     def get_max_leverage(self, pair: str, stake_amount: float | None) -> float:
@@ -219,7 +237,9 @@ class Hyperliquid(Exchange):
         else:
             return 1.0
 
-    def _lev_prep(self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False):
+    def _lev_prep(
+        self, pair: str, leverage: float, side: BuySell, accept_fail: bool = False
+    ):
         if self.trading_mode != TradingMode.SPOT:
             # Hyperliquid expects leverage to be an int
             leverage = int(leverage)
@@ -280,7 +300,9 @@ class Hyperliquid(Exchange):
             # Docs: margin_available (cross) = account_value - maintenance_margin_required
             margin_available = wallet_balance - maintenance_margin_required
         else:
-            raise OperationalException("Unsupported margin mode for liquidation price calculation")
+            raise OperationalException(
+                "Unsupported margin mode for liquidation price calculation"
+            )
 
         # Docs: The maintenance margin is half of the initial margin at max leverage
         # The docs don't explicitly specify maintenance leverage, but this works.
@@ -319,7 +341,9 @@ class Hyperliquid(Exchange):
         # Hyperliquid does not have fetchFundingHistory
         if self.trading_mode == TradingMode.FUTURES:
             try:
-                return self._fetch_and_calculate_funding_fees(pair, amount, is_short, open_date)
+                return self._fetch_and_calculate_funding_fees(
+                    pair, amount, is_short, open_date
+                )
             except ExchangeError:
                 logger.warning(f"Could not update funding fees for {pair}.")
         return 0.0
@@ -353,7 +377,9 @@ class Hyperliquid(Exchange):
                     else None
                 )
                 # Fill lastTradeTimestamp - used to set filled date
-                order["lastTradeTimestamp"] = max(t.get("timestamp") or 0 for t in trades)
+                order["lastTradeTimestamp"] = max(
+                    t.get("timestamp") or 0 for t in trades
+                )
                 if total_amount < order["filled"]:
                     # ccxt derives filled as origSz - sz, which reports the full order size
                     # for reduce-only orders capped by a smaller position.
@@ -362,7 +388,9 @@ class Hyperliquid(Exchange):
                     order["remaining"] = order["amount"] - total_amount
         return order
 
-    def fetch_order(self, order_id: str, pair: str, params: dict | None = None) -> CcxtOrder:
+    def fetch_order(
+        self, order_id: str, pair: str, params: dict | None = None
+    ) -> CcxtOrder:
         order = super().fetch_order(order_id, pair, params)
 
         order = self._adjust_hyperliquid_order(order)

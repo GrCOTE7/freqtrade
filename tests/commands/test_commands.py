@@ -108,7 +108,9 @@ def test_setup_utils_configuration_download_convert_flag():
 
 
 def test_start_trading_fail(mocker, caplog):
-    mocker.patch("freqtrade.worker.Worker.run", MagicMock(side_effect=OperationalException))
+    mocker.patch(
+        "freqtrade.worker.Worker.run", MagicMock(side_effect=OperationalException)
+    )
 
     mocker.patch("freqtrade.worker.Worker.__init__", MagicMock(return_value=None))
 
@@ -120,7 +122,9 @@ def test_start_trading_fail(mocker, caplog):
 
     exitmock.reset_mock()
     caplog.clear()
-    mocker.patch("freqtrade.worker.Worker.__init__", MagicMock(side_effect=OperationalException))
+    mocker.patch(
+        "freqtrade.worker.Worker.__init__", MagicMock(side_effect=OperationalException)
+    )
     with pytest.raises(OperationalException):
         start_trading(get_args(args))
     assert exitmock.call_count == 0
@@ -245,7 +249,8 @@ def test_list_timeframes(mocker, capsys):
     start_list_timeframes(get_args(args))
     captured = capsys.readouterr()
     assert re.match(
-        "Timeframes available for the exchange `Bybit`: 1m, 5m, 30m, 1h, 1d", captured.out
+        "Timeframes available for the exchange `Bybit`: 1m, 5m, 30m, 1h, 1d",
+        captured.out,
     )
 
     # Test with --exchange bybit
@@ -257,7 +262,8 @@ def test_list_timeframes(mocker, capsys):
     start_list_timeframes(get_args(args))
     captured = capsys.readouterr()
     assert re.match(
-        "Timeframes available for the exchange `Bybit`: 1m, 5m, 30m, 1h, 1d", captured.out
+        "Timeframes available for the exchange `Bybit`: 1m, 5m, 30m, 1h, 1d",
+        captured.out,
     )
 
     api_mock.timeframes = {
@@ -362,7 +368,9 @@ def test_list_timeframes(mocker, capsys):
 
 def test_list_markets(mocker, markets_static, capsys):
     api_mock = MagicMock()
-    patch_exchange(mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static)
+    patch_exchange(
+        mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static
+    )
 
     # Test with no --config
     args = [
@@ -390,7 +398,9 @@ def test_list_markets(mocker, markets_static, capsys):
         "LTC/ETH, LTC/USD, NEO/BTC, TKN/BTC, XLTCUSDT, XRP/BTC.\n" in captured.out
     )
 
-    patch_exchange(mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static)
+    patch_exchange(
+        mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static
+    )
     # Test with --exchange
     args = ["list-markets", "--exchange", "binance"]
     pargs = get_args(args)
@@ -399,7 +409,9 @@ def test_list_markets(mocker, markets_static, capsys):
     captured = capsys.readouterr()
     assert re.search(r".*Exchange Binance has 12 active markets.*", captured.out)
 
-    patch_exchange(mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static)
+    patch_exchange(
+        mocker, api_mock=api_mock, exchange="binance", mock_markets=markets_static
+    )
     # Test with --all: all markets
     args = [
         "list-markets",
@@ -462,7 +474,8 @@ def test_list_markets(mocker, markets_static, capsys):
     captured = capsys.readouterr()
     assert (
         "Exchange Binance has 7 active markets with ETH, LTC as base currencies: "
-        "ETH/BTC, ETH/USDT, ETH/USDT:USDT, LTC/BTC, LTC/ETH, LTC/USD, XLTCUSDT.\n" in captured.out
+        "ETH/BTC, ETH/USDT, ETH/USDT:USDT, LTC/BTC, LTC/ETH, LTC/USD, XLTCUSDT.\n"
+        in captured.out
     )
 
     # active markets, base=LTC
@@ -625,7 +638,8 @@ def test_list_markets(mocker, markets_static, capsys):
     captured = capsys.readouterr()
     assert (
         '["ADA/USDT:USDT","BLK/BTC","ETH/BTC","ETH/USDT","ETH/USDT:USDT",'
-        '"LTC/BTC","LTC/ETH","LTC/USD","NEO/BTC","TKN/BTC","XLTCUSDT","XRP/BTC"]' in captured.out
+        '"LTC/BTC","LTC/ETH","LTC/USD","NEO/BTC","TKN/BTC","XLTCUSDT","XRP/BTC"]'
+        in captured.out
     )
 
     # Test --print-csv
@@ -701,11 +715,18 @@ def test_start_new_strategy(caplog, user_dir):
     assert log_has_re("Writing strategy to .*", caplog)
 
     with pytest.raises(
-        OperationalException, match=r".* already exists. Please choose another Strategy Name\."
+        OperationalException,
+        match=r".* already exists. Please choose another Strategy Name\.",
     ):
         start_new_strategy(get_args(args))
 
-    args = ["new-strategy", "--strategy", "CoolNewStrategy", "--strategy-path", str(user_dir)]
+    args = [
+        "new-strategy",
+        "--strategy",
+        "CoolNewStrategy",
+        "--strategy-path",
+        str(user_dir),
+    ]
     start_new_strategy(get_args(args))
     assert (user_dir / "CoolNewStrategy.py").exists()
 
@@ -794,7 +815,9 @@ def test_download_and_install_ui(mocker, tmp_path):
     file_like_object.seek(0)
     requests_mock.content = file_like_object.read()
 
-    mocker.patch("freqtrade.commands.deploy_ui.requests.get", return_value=requests_mock)
+    mocker.patch(
+        "freqtrade.commands.deploy_ui.requests.get", return_value=requests_mock
+    )
 
     mocker.patch("freqtrade.commands.deploy_ui.Path.is_dir", side_effect=[True, False])
     wb_mock = mocker.patch("freqtrade.commands.deploy_ui.Path.write_bytes")
@@ -811,7 +834,9 @@ def test_download_and_install_ui(mocker, tmp_path):
     assert read_ui_version(folder) == "22"
 
 
-@pytest.mark.parametrize("dangerous_path", ["../../dangerous.txt", "/etc/passwd", "../foo"])
+@pytest.mark.parametrize(
+    "dangerous_path", ["../../dangerous.txt", "/etc/passwd", "../foo"]
+)
 def test_download_and_install_ui_dangerous_paths(mocker, tmp_path, dangerous_path):
     requests_mock = MagicMock()
     file_like_object = BytesIO()
@@ -820,7 +845,9 @@ def test_download_and_install_ui_dangerous_paths(mocker, tmp_path, dangerous_pat
     file_like_object.seek(0)
     requests_mock.content = file_like_object.read()
 
-    mocker.patch("freqtrade.commands.deploy_ui.requests.get", return_value=requests_mock)
+    mocker.patch(
+        "freqtrade.commands.deploy_ui.requests.get", return_value=requests_mock
+    )
 
     folder = tmp_path / "uitests_dl_dangerous"
     folder.mkdir(exist_ok=True)
@@ -850,7 +877,9 @@ def test_get_ui_download_url(mocker):
         [{"browser_download_url": "http://download.zip"}],
     ]
     response.json = MagicMock(side_effect=responses)
-    get_mock = mocker.patch("freqtrade.commands.deploy_ui.requests.get", return_value=response)
+    get_mock = mocker.patch(
+        "freqtrade.commands.deploy_ui.requests.get", return_value=response
+    )
     x, last_version = get_ui_download_url(None, False)
     assert get_mock.call_count == 2
     assert last_version == "0.0.1"
@@ -884,7 +913,9 @@ def test_get_ui_download_url_direct(mocker):
             },
         ]
     )
-    get_mock = mocker.patch("freqtrade.commands.deploy_ui.requests.get", return_value=response)
+    get_mock = mocker.patch(
+        "freqtrade.commands.deploy_ui.requests.get", return_value=response
+    )
     x, last_version = get_ui_download_url(None, False)
     assert get_mock.call_count == 1
     assert last_version == "0.0.2"
@@ -949,7 +980,9 @@ def test_download_data_timerange(mocker, markets, time_machine, time, tzoffset):
         "--timerange",
         "20200101-",
     ]
-    with pytest.raises(OperationalException, match=r"--days and --timerange are mutually.*"):
+    with pytest.raises(
+        OperationalException, match=r"--days and --timerange are mutually.*"
+    ):
         pargs = get_args(args)
         pargs["config"] = None
         start_download_data(pargs)
@@ -990,7 +1023,9 @@ def test_download_data_timerange(mocker, markets, time_machine, time, tzoffset):
     start_download_data(pargs)
     assert dl_mock.call_count == 1
 
-    assert dl_mock.call_args_list[0][1]["timerange"].startts == int(dt_utc(2020, 1, 1).timestamp())
+    assert dl_mock.call_args_list[0][1]["timerange"].startts == int(
+        dt_utc(2020, 1, 1).timestamp()
+    )
 
 
 def test_download_data_no_exchange(mocker):
@@ -1068,7 +1103,8 @@ def test_download_data_trades(mocker):
         MagicMock(return_value=[]),
     )
     convert_mock = mocker.patch(
-        "freqtrade.data.history.history_utils.convert_trades_to_ohlcv", MagicMock(return_value=[])
+        "freqtrade.data.history.history_utils.convert_trades_to_ohlcv",
+        MagicMock(return_value=[]),
     )
     patch_exchange(mocker)
     mocker.patch(f"{EXMS}.get_markets", return_value={"ETH/BTC": {}, "XRP/BTC": {}})
@@ -1119,7 +1155,9 @@ def test_download_data_data_invalid(mocker):
     ]
     pargs = get_args(args)
     pargs["config"] = None
-    with pytest.raises(OperationalException, match=r"Historic klines not available for .*"):
+    with pytest.raises(
+        OperationalException, match=r"Historic klines not available for .*"
+    ):
         start_download_data(pargs)
 
 
@@ -1282,7 +1320,9 @@ def test_start_test_pairlist(mocker, caplog, tickers, default_conf, capsys):
     assert log_has_re(r"^Using resolved pairlist PriceFilter.*", caplog)
     captured = capsys.readouterr()
     assert re.match(r"Pairs for .*", captured.out)
-    assert re.match("['ETH/BTC', 'TKN/BTC', 'BLK/BTC', 'LTC/BTC', 'XRP/BTC']", captured.out)
+    assert re.match(
+        "['ETH/BTC', 'TKN/BTC', 'BLK/BTC', 'LTC/BTC', 'XRP/BTC']", captured.out
+    )
 
     args = [
         "test-pairlist",
@@ -1325,7 +1365,8 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
         yield from [saved_hyperopt_results]
 
     mocker.patch(
-        "freqtrade.optimize.hyperopt_tools.HyperoptTools._read_results", side_effect=fake_iterator
+        "freqtrade.optimize.hyperopt_tools.HyperoptTools._read_results",
+        side_effect=fake_iterator,
     )
 
     args = [
@@ -1367,7 +1408,17 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
     assert all(x in captured.out for x in [" 1/12", " 5/12", " 10/12"])
     assert all(
         x not in captured.out
-        for x in [" 2/12", " 3/12", " 4/12", " 6/12", " 7/12", " 8/12", " 9/12", " 11/12", " 12/12"]
+        for x in [
+            " 2/12",
+            " 3/12",
+            " 4/12",
+            " 6/12",
+            " 7/12",
+            " 8/12",
+            " 9/12",
+            " 11/12",
+            " 12/12",
+        ]
     )
     args = [
         "hyperopt-list",
@@ -1442,7 +1493,9 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
     pargs["config"] = None
     start_hyperopt_list(pargs)
     captured = capsys.readouterr()
-    assert all(x in captured.out for x in [" 3/12", " 6/12", " 7/12", " 9/12", " 11/12"])
+    assert all(
+        x in captured.out for x in [" 3/12", " 6/12", " 7/12", " 9/12", " 11/12"]
+    )
     assert all(
         x not in captured.out
         for x in [" 1/12", " 2/12", " 4/12", " 5/12", " 8/12", " 10/12", " 12/12"]
@@ -1517,7 +1570,16 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
     captured = capsys.readouterr()
     assert all(
         x in captured.out
-        for x in [" 1/12", " 3/12", " 5/12", " 6/12", " 7/12", " 8/12", " 9/12", " 11/12"]
+        for x in [
+            " 1/12",
+            " 3/12",
+            " 5/12",
+            " 6/12",
+            " 7/12",
+            " 8/12",
+            " 9/12",
+            " 11/12",
+        ]
     )
     assert all(x not in captured.out for x in [" 2/12", " 4/12", " 10/12", " 12/12"])
     args = [
@@ -1561,7 +1623,17 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
     captured = capsys.readouterr()
     assert all(
         x in captured.out
-        for x in [" 1/12", " 2/12", " 3/12", " 5/12", " 6/12", " 7/12", " 8/12", " 9/12", " 11/12"]
+        for x in [
+            " 1/12",
+            " 2/12",
+            " 3/12",
+            " 5/12",
+            " 6/12",
+            " 7/12",
+            " 8/12",
+            " 9/12",
+            " 11/12",
+        ]
     )
     assert all(x not in captured.out for x in [" 4/12", " 10/12", " 12/12"])
     args = [
@@ -1604,7 +1676,17 @@ def test_hyperopt_list(mocker, capsys, caplog, tmp_path):
     captured = capsys.readouterr()
     assert all(
         x in captured.out
-        for x in [" 1/12", " 2/12", " 3/12", " 5/12", " 6/12", " 7/12", " 8/12", " 9/12", " 11/12"]
+        for x in [
+            " 1/12",
+            " 2/12",
+            " 3/12",
+            " 5/12",
+            " 6/12",
+            " 7/12",
+            " 8/12",
+            " 9/12",
+            " 11/12",
+        ]
     )
     assert all(x not in captured.out for x in [" 4/12", " 10/12", " 12/12"])
     args = [
@@ -1695,7 +1777,8 @@ def test_hyperopt_show(mocker, capsys):
         yield from [saved_hyperopt_results]
 
     mocker.patch(
-        "freqtrade.optimize.hyperopt_tools.HyperoptTools._read_results", side_effect=fake_iterator
+        "freqtrade.optimize.hyperopt_tools.HyperoptTools._read_results",
+        side_effect=fake_iterator,
     )
     mocker.patch("freqtrade.optimize.optimize_reports.show_backtest_result")
 
@@ -1740,7 +1823,8 @@ def test_hyperopt_show(mocker, capsys):
     pargs = get_args(args)
     pargs["config"] = None
     with pytest.raises(
-        OperationalException, match=r"The index of the epoch to show should be greater than -4\."
+        OperationalException,
+        match=r"The index of the epoch to show should be greater than -4\.",
     ):
         start_hyperopt_show(pargs)
 
@@ -1748,7 +1832,8 @@ def test_hyperopt_show(mocker, capsys):
     pargs = get_args(args)
     pargs["config"] = None
     with pytest.raises(
-        OperationalException, match=r"The index of the epoch to show should be less than 4\."
+        OperationalException,
+        match=r"The index of the epoch to show should be less than 4\.",
     ):
         start_hyperopt_show(pargs)
 
@@ -1861,7 +1946,9 @@ def test_start_list_data(testdatadir, capsys):
     start_list_data(pargs)
     captured = capsys.readouterr()
     assert "Found 2 pair / timeframe combinations." in captured.out
-    assert re.search(r".*Pair.*Timeframe.*Type.*From .* To .* Candles .*\n", captured.out)
+    assert re.search(
+        r".*Pair.*Timeframe.*Type.*From .* To .* Candles .*\n", captured.out
+    )
     assert "UNITTEST/BTC" not in captured.out
     assert re.search(
         r"\n.* XRP/USDT .* 1m .* spot .* 2019-10-11 00:00:00 .* 2019-10-13 11:19:00 .* 2469 |\n",
@@ -1882,7 +1969,9 @@ def test_start_list_data(testdatadir, capsys):
     start_list_data(pargs)
     captured = capsys.readouterr()
     assert "Found 1 pair / timeframe combinations." in captured.out
-    assert re.search(r".*Pair.*Timeframe.*Type.*From .* To .* Candles .*\n", captured.out)
+    assert re.search(
+        r".*Pair.*Timeframe.*Type.*From .* To .* Candles .*\n", captured.out
+    )
     assert "UNITTEST/BTC" not in captured.out
     assert re.search(
         r"\n.* XMR/USDT .* 5m .* spot .* 2019-10-11 00:00:00 .* 2019-10-13 11:19:00 .* 2469 |\n",
@@ -1984,7 +2073,15 @@ def test_show_trades(mocker, fee, capsys, caplog):
     assert "Trade(id=1" in captured.out
     assert "Trade(id=2" in captured.out
     assert "Trade(id=3" in captured.out
-    args = ["show-trades", "--db-url", "sqlite:///", "--print-json", "--trade-ids", "1", "2"]
+    args = [
+        "show-trades",
+        "--db-url",
+        "sqlite:///",
+        "--print-json",
+        "--trade-ids",
+        "1",
+        "2",
+    ]
     pargs = get_args(args)
     pargs["config"] = None
     start_show_trades(pargs)
@@ -2000,7 +2097,9 @@ def test_show_trades(mocker, fee, capsys, caplog):
     pargs = get_args(args)
     pargs["config"] = None
 
-    with pytest.raises(OperationalException, match=r"--db-url is required for this command."):
+    with pytest.raises(
+        OperationalException, match=r"--db-url is required for this command."
+    ):
         start_show_trades(pargs)
 
 
@@ -2030,7 +2129,8 @@ def test_backtesting_show_params(mocker, tmp_path, user_dir, capsys, caplog):
     strategy_dir.mkdir(parents=True)
     strategy_file = strategy_dir / "strategy_test_v3.py"
     shutil.copy(
-        Path(__file__).parent.parent / "strategy" / "strats" / "strategy_test_v3.py", strategy_file
+        Path(__file__).parent.parent / "strategy" / "strats" / "strategy_test_v3.py",
+        strategy_file,
     )
     params_file = strategy_file.with_suffix(".json")
 
@@ -2122,7 +2222,9 @@ def test_start_convert_db(fee, tmp_path):
 
 
 def test_start_strategy_updater(mocker, tmp_path):
-    sc_mock = mocker.patch("freqtrade.commands.strategy_utils_commands.start_conversion")
+    sc_mock = mocker.patch(
+        "freqtrade.commands.strategy_utils_commands.start_conversion"
+    )
     teststrats = Path(__file__).parent.parent / "strategy/strats"
     args = [
         "strategy-updater",
@@ -2182,7 +2284,9 @@ def test_start_show_config(capsys, caplog):
     assert "Your combined configuration is:" in captured.out
     assert '"max_open_trades":' in captured.out
     assert '"secret": "REDACTED"' not in captured.out
-    assert log_has_re(r"Sensitive information will be shown in the upcoming output.*", caplog)
+    assert log_has_re(
+        r"Sensitive information will be shown in the upcoming output.*", caplog
+    )
 
 
 def test_start_edge():
