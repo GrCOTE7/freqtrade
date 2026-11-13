@@ -9,6 +9,10 @@ user_data/*
 !user_data/notebooks
 !user_data/models
 !user_data/freqaimodels
+# Exceptions pour ParisBot
+!user_data/paris_formatter.py
+!user_data/config.json
+!user_data/strategies/str_sample.py
 user_data/freqaimodels/*
 user_data/models/*
 user_data/notebooks/*
