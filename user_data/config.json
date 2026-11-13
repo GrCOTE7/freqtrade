@@ -1,35 +1,35 @@
 {
   "$schema": "https://schema.freqtrade.io/schema.json",
-  "log_config": {
-    // $env:PYTHONPATH = "F:\freqtrade" si module not found
-    "version": 1,
-    "disable_existing_loggers": false,
-    "formatters": {
-      "paris_time": {
-        "()": "user_data.paris_formatter.ParisTimeFormatter",
-        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-      }
-    },
-    "handlers": {
-      "file": {
-        "class": "logging.handlers.RotatingFileHandler",
-        "formatter": "paris_time",
-        "filename": "user_data/logs/freqtrade.log",
-        "maxBytes": 10485760,
-        "backupCount": 10,
-        "encoding": "utf-8"
-      },
-      "console": {
-        "class": "logging.StreamHandler",
-        "formatter": "paris_time",
-        "stream": "ext://sys.stdout"
-      }
-    },
-    "root": {
-      "level": "INFO",
-      "handlers": ["file", "console"]
-    }
-  },
+  // "log_config": {
+  //   // $env:PYTHONPATH = "F:\freqtrade" si module not found
+  //   "version": 1,
+  //   "disable_existing_loggers": false,
+  //   "formatters": {
+  //     "paris_time": {
+  //       "()": "user_data.paris_formatter.ParisTimeFormatter",
+  //       "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  //     }
+  //   },
+  //   "handlers": {
+  //     "file": {
+  //       "class": "logging.handlers.RotatingFileHandler",
+  //       "formatter": "paris_time",
+  //       "filename": "user_data/logs/freqtrade.log",
+  //       "maxBytes": 10485760,
+  //       "backupCount": 10,
+  //       "encoding": "utf-8"
+  //     },
+  //     "console": {
+  //       "class": "logging.StreamHandler",
+  //       "formatter": "paris_time",
+  //       "stream": "ext://sys.stdout"
+  //     }
+  //   },
+  //   "root": {
+  //     "level": "INFO",
+  //     "handlers": ["file", "console"]
+  //   }
+  // },
   "max_open_trades": 20,
   "stake_currency": "USD",
   "stake_amount": 100,
