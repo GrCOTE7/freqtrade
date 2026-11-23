@@ -1058,7 +1058,10 @@ class FreqaiDataKitchen:
         identifier = str(freqai_config.get("identifier"))
         models_dir = Path(config["user_data_dir"] / "models")
         full_path = models_dir / identifier
-        if not is_path_in_dir(full_path, models_dir) or full_path.resolve() == models_dir.resolve():
+        if (
+            not is_path_in_dir(full_path, models_dir)
+            or full_path.resolve() == models_dir.resolve()
+        ):
             raise OperationalException(
                 f"Invalid freqai identifier '{identifier}' - it must stay within {models_dir}."
             )
