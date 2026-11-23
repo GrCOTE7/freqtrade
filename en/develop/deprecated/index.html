@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../images/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -2034,6 +2034,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#armhf-32bit-raspberry-pi-docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        armhf (32bit Raspberry Pi) docker images
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#funding-rate-data-storage-format" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2391,6 +2402,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#armhf-32bit-raspberry-pi-docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        armhf (32bit Raspberry Pi) docker images
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#funding-rate-data-storage-format" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2538,6 +2560,11 @@ We do however recommend switching to other supported model libraries like LightG
 <li><a href="https://github.com/freqtrade/freqtrade/blob/c6f3b0081927e161a16b116cc47fb663f7831d30/freqtrade/freqai/prediction_models/CatboostClassifier.py">CatboostClassifier</a></li>
 <li><a href="https://github.com/freqtrade/freqtrade/blob/c6f3b0081927e161a16b116cc47fb663f7831d30/freqtrade/freqai/prediction_models/CatboostClassifierMultiTarget.py">CatboostClassifierMultiTarget</a></li>
 </ul>
+<h2 id="armhf-32bit-raspberry-pi-docker-images">armhf (32bit Raspberry Pi) docker images<a class="headerlink" href="#armhf-32bit-raspberry-pi-docker-images" title="Permanent link">&para;</a></h2>
+<p>Pre-built armhf (32bit / <code>linux/arm/v7</code>) docker images have been deprecated with version 2025.9, and are no longer built or published past 2026.10.
+This only impacts older Raspberry Pi's with 32bit operating system.
+Users on these systems will have to install freqtrade natively, as described in the <a href="../installation/">installation documentation</a>.
+We recommend switching to a 64bit (arm64) operating system where possible, for which multi-arch docker images remain available.</p>
 <h2 id="funding-rate-data-storage-format">Funding rate data storage format<a class="headerlink" href="#funding-rate-data-storage-format" title="Permanent link">&para;</a></h2>
 <p>With version 2026.8, funding rate data is stored with the columns it actually has - <code>date</code> and <code>funding_rate</code>.
 Previously it was stored as a regular candle, with the rate in <code>open</code> and <code>high</code>, <code>low</code>, <code>close</code> and <code>volume</code> all set to 0.</p>
@@ -2656,10 +2683,10 @@ Refer to the corresponding section in the <a href="../strategy-customization/#hi
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.annotate", "search.share", "content.code.copy", "content.action.edit", "navigation.top", "navigation.footer"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.annotate", "search.share", "content.code.copy", "content.action.edit", "navigation.top", "navigation.footer"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../javascripts/config.js"></script>
       
